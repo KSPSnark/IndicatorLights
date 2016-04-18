@@ -1,0 +1,4 @@
+Pre-release v0.1
+
+* Initial implementation
+* A single blinkenlight with customizable colors that can be toggled on/off.
