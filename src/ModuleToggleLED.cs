@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -17,7 +18,12 @@ namespace IndicatorLights
         private static readonly Color DEFAULT_ACTIVE_COLOR = Color.green;
         private static readonly Color DEFAULT_INACTIVE_COLOR = Color.black;
 
-        [KSPField(guiName = "Status", isPersistant = true, guiActive = true, guiActiveEditor = true), UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "On", disabledText = "Off")]
+        internal override string EditorGuiDescription
+        {
+            get { return "Switchable Lamp"; }
+        }
+
+        [KSPField(guiName = "LED Status", isPersistant = true, guiActive = true, guiActiveEditor = true), UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "On", disabledText = "Off")]
         public bool status = false;
         private BaseField StatusField { get { return Fields["status"]; } }
 
@@ -90,8 +96,8 @@ namespace IndicatorLights
             GreenOffField.uiControlEditor.onFieldChanged = OnColorSliderChanged;
             BlueOffField.uiControlEditor.onFieldChanged = OnColorSliderChanged;
 
-            StatusField.uiControlEditor.onFieldChanged = OnBlinkenEditorToggleChanged;
-            StatusField.uiControlFlight.onFieldChanged = OnBlinkenFlightToggleChanged;
+            StatusField.uiControlEditor.onFieldChanged = OnEditorToggleChanged;
+            StatusField.uiControlFlight.onFieldChanged = OnFlightToggleChanged;
 
             SetState();
         }
@@ -151,7 +157,7 @@ namespace IndicatorLights
         /// </summary>
         /// <param name="field"></param>
         /// <param name="value"></param>
-        private void OnBlinkenEditorToggleChanged(BaseField field, object value)
+        private void OnEditorToggleChanged(BaseField field, object value)
         {
             // By design, the editor toggles symmetry groups on/off together.
             SetSymmetricState();
@@ -162,7 +168,7 @@ namespace IndicatorLights
         /// </summary>
         /// <param name="field"></param>
         /// <param name="value"></param>
-        private void OnBlinkenFlightToggleChanged(BaseField field, object value)
+        private void OnFlightToggleChanged(BaseField field, object value)
         {
             // In flight, we just toggle the individual part, not the symmetry group.
             SetState();

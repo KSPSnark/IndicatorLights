@@ -30,9 +30,9 @@ namespace IndicatorLights
             Error("(" + e.GetType().Name + ") " + e.Message + ": " + e.StackTrace);
         }
 
-        public static string ToString(Part part)
+        public static string GetTitle(this Part part)
         {
-            return part.partInfo.title;
+            return (part == null) ? "<null part>" : ((part.partInfo == null) ? part.partName : part.partInfo.title);
         }
     }
 }

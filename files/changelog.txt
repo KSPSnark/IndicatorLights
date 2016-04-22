@@ -1,4 +1,10 @@
+Pre-release v0.2
+
+* Breaking change for the v0.1 blinkenlight
+* Add on/off indicator lights to fuel cells, with a PartModule that works for any resource converter
+
+
 Pre-release v0.1
 
 * Initial implementation
-* A single blinkenlight with customizable colors that can be toggled on/off.
+* A single blinkenlight with customizable colors that can be toggled on/off with action groups.

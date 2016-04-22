@@ -25,6 +25,12 @@ namespace IndicatorLights
         public string target = null;
 
         /// <summary>
+        /// This is an identifier used by controllers to find the emissive to control.
+        /// </summary>
+        [KSPField]
+        public string emissiveName = null;
+
+        /// <summary>
         /// Gets or sets the emissive color of the module.
         /// </summary>
         public Color Color
@@ -48,27 +54,36 @@ namespace IndicatorLights
             if (part.transform == null) return NO_MATERIALS;
             if (target == null)
             {
-                Logging.Warn("No emissive target identified for " + Logging.ToString(part));
+                Logging.Warn("No emissive target identified for " + part.GetTitle());
                 return null;
             }
             MeshRenderer[] renderers = part.transform.GetComponentsInChildren<MeshRenderer>();
             if (renderers == null) return null;
             int count = 0;
+
+            // If a model is added via ModuleManager config, it looks like it gets "(Clone)" added
+            // to the end of the renderer name.
+            string cloneTarget = target + "(Clone)";
+
             for (int rendererIndex = 0; rendererIndex < renderers.Length; ++rendererIndex)
             {
                 Renderer renderer = renderers[rendererIndex];
                 if (renderer == null) continue;
-                if (!target.Equals(renderer.name)) continue;
+                if (!target.Equals(renderer.name) && !cloneTarget.Equals(renderer.name)) continue;
                 ++count;
             }
-            if (count < 1) return NO_MATERIALS;
+            if (count < 1)
+            {
+                Logging.Warn("No emissive materials named '" + target + "' could be identified for " + part.GetTitle());
+                return NO_MATERIALS;
+            }
             Material[] emissiveMaterials = new Material[count];
             count = 0;
             for (int rendererIndex = 0; rendererIndex < renderers.Length; ++rendererIndex)
             {
                 Renderer renderer = renderers[rendererIndex];
                 if (renderer == null) continue;
-                if (!target.Equals(renderer.name)) continue;
+                if (!target.Equals(renderer.name) && !cloneTarget.Equals(renderer.name)) continue;
                 emissiveMaterials[count++] = renderer.material;
             }
 

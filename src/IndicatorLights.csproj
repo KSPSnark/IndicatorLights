@@ -46,10 +46,12 @@
   <ItemGroup>
     <Compile Include="Logging.cs" />
     <Compile Include="ModuleControllableEmissive.cs" />
+    <Compile Include="ModuleConverterIndicator.cs" />
     <Compile Include="ModuleEmissiveController.cs" />
     <Compile Include="ModuleToggleLED.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SplashScreen.cs" />
+    <Compile Include="ChangeMonitor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
