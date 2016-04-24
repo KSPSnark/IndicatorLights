@@ -1,3 +1,7 @@
+Pre-release v0.3
+* Add charge indicator lights to batteries, with a PartModule that works for any resource container
+
+
 Pre-release v0.2
 
 * Breaking change for the v0.1 blinkenlight
