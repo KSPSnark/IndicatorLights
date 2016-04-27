@@ -9,9 +9,9 @@ namespace IndicatorLights
     /// </summary>
     class ModuleResourceIndicator : ModuleEmissiveController
     {
-        private static readonly ColorGradient HIGH_COLOR = new ColorGradient(Color.black, Color.green);
-        private static readonly ColorGradient MEDIUM_COLOR = new ColorGradient(Color.black, Color.Lerp(Color.black, Color.yellow, 0.9f));
-        private static readonly ColorGradient LOW_COLOR = new ColorGradient(Color.black, Color.Lerp(Color.black, Color.red, 0.6f));
+        private static readonly ColorGradient HIGH_COLOR = new ColorGradient(Color.black, Configuration.highResourceColor);
+        private static readonly ColorGradient MEDIUM_COLOR = new ColorGradient(Color.black,Configuration.mediumResourceColor);
+        private static readonly ColorGradient LOW_COLOR = new ColorGradient(Color.black, Configuration.lowResourceColor);
         private static readonly AnimateGradient CRITICAL_FADE = AnimateGradient.Fade(LOW_COLOR, 1200, 0.5);
         private static readonly AnimateGradient HIGH_BLINK = AnimateGradient.Blink(HIGH_COLOR, 900, 300);
         private static readonly AnimateGradient MEDIUM_BLINK = AnimateGradient.Blink(MEDIUM_COLOR, 900, 300);
@@ -90,7 +90,14 @@ namespace IndicatorLights
                 Logging.Warn(part.GetTitle() + " has no resources, can't track");
                 return null;
             }
-            if (resourceName == null) return part.Resources[0];
+            if ((resourceName == null) || (resourceName.Length == 0))
+            {
+                if (part.Resources.Count > 1)
+                {
+                    Logging.Log(part.GetTitle() + " has multiple resources; indicator is defaulting to " + part.Resources[0].resourceName);
+                }
+                return part.Resources[0];
+            }
             for (int i = 0; i < part.Resources.Count; ++i)
             {
                 PartResource resource = part.Resources[i];

@@ -63,7 +63,8 @@ namespace IndicatorLights
 
             // If a model is added via ModuleManager config, it looks like it gets "(Clone)" added
             // to the end of the renderer name.
-            string cloneTarget = target + "(Clone)";
+            string CLONE_TAG = "(Clone)";
+            string cloneTarget = target + CLONE_TAG;
 
             for (int rendererIndex = 0; rendererIndex < renderers.Length; ++rendererIndex)
             {
@@ -75,6 +76,12 @@ namespace IndicatorLights
             if (count < 1)
             {
                 Logging.Warn("No emissive materials named '" + target + "' could be identified for " + part.GetTitle());
+                for (int rendererIndex = 0; rendererIndex < renderers.Length; ++rendererIndex)
+                {
+                    string rendererName = renderers[rendererIndex].name;
+                    if (rendererName.EndsWith(CLONE_TAG)) rendererName = rendererName.Substring(rendererName.Length - CLONE_TAG.Length);
+                    Logging.Warn("Did you mean this?  " + rendererName);
+                }
                 return NO_MATERIALS;
             }
             Material[] emissiveMaterials = new Material[count];

@@ -45,6 +45,14 @@ namespace IndicatorLights
         }
 
         /// <summary>
+        /// Gets the gradient upon which this animation is based.
+        /// </summary>
+        public ColorGradient Gradient
+        {
+            get { return gradient; }
+        }
+
+        /// <summary>
         /// Gets the current phase of the animation, from 0 to 1.
         /// </summary>
         protected abstract double Phase { get; }

@@ -46,10 +46,13 @@
   <ItemGroup>
     <Compile Include="AnimateGradient.cs" />
     <Compile Include="ColorGradient.cs" />
+    <Compile Include="Colors.cs" />
+    <Compile Include="Configuration.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="ModuleControllableEmissive.cs" />
     <Compile Include="ModuleConverterIndicator.cs" />
     <Compile Include="ModuleEmissiveController.cs" />
+    <Compile Include="ModuleReactionWheelIndicator.cs" />
     <Compile Include="ModuleResourceIndicator.cs" />
     <Compile Include="ModuleToggleLED.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

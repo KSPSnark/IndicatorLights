@@ -15,11 +15,9 @@ namespace IndicatorLights
     /// </summary>
     class ModuleConverterIndicator : ModuleEmissiveController
     {
-        // The default emissive colors for the "on" and "off" states.
-        private static readonly Color DEFAULT_ACTIVE_COLOR = Color.green;
         private static readonly Color INACTIVE_COLOR = Color.black;
 
-        private Color activeColor = DEFAULT_ACTIVE_COLOR;
+        private Color activeColor = Configuration.resourceConverterActiveColor;
         private BaseConverter converter = null;
         private ChangeMonitor<bool> converterActiveMonitor = null;
 
@@ -39,19 +37,19 @@ namespace IndicatorLights
         /// The red component of the "lit" color.
         /// </summary>
         [KSPField]
-        public float red = DEFAULT_ACTIVE_COLOR.r;
+        public float red = Configuration.resourceConverterActiveColor.r;
 
         /// <summary>
         /// The green component of the "lit" color.
         /// </summary>
         [KSPField]
-        public float green = DEFAULT_ACTIVE_COLOR.g;
+        public float green = Configuration.resourceConverterActiveColor.g;
 
         /// <summary>
         /// The blue component of the "lit" color.
         /// </summary>
         [KSPField]
-        public float blue = DEFAULT_ACTIVE_COLOR.b;
+        public float blue = Configuration.resourceConverterActiveColor.b;
 
         /// <summary>
         /// Called when the module is starting up.
