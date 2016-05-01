@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -7,9 +8,9 @@ namespace IndicatorLights
     /// 
     /// Note that there may be multiple controllers targeting the same emissive.
     /// </summary>
-    public abstract class ModuleEmissiveController : PartModule
+    public abstract class ModuleEmissiveController : PartModule, IColorSource
     {
-        private ModuleControllableEmissive controlledEmissive = null;
+        private List<ModuleControllableEmissive> controlledEmissives = null;
 
         /// <summary>
         /// This identifies the ModuleControllableEmissive within the part whose material's emissive color
@@ -19,67 +20,69 @@ namespace IndicatorLights
         public string emissiveName = null;
 
         /// <summary>
-        /// Indicates whether this module is "active".  When inactive, it will do nothing to set
-        /// the color.  Normally, you'd want this to always be true, if there's just a single
-        /// controller module per target material. However, if there are multiple controller modules
-        /// targeting the same material, only one should be active at a time so that they don't
-        /// end up arm-wrestling over it. Thus, this field is available for a manager module to
-        /// use to set the behavior.
+        /// This is used to uniquely identify a particular controller. Use the ControllerName
+        /// property to access at run time. If not specified, ControllerName will simply
+        /// return the name of the class.
+        /// 
+        /// The use case for this property is if you want to have a controller that specifies
+        /// an output color, but doesn't actually point at any emissiveName that it controls.
+        /// This can be useful if you want to have "compound controllers", where the output
+        /// from one controller serves as an input for another.
         /// </summary>
         [KSPField]
-        public bool isControlActive = true;
+        public string controllerName = null;
 
         /// <summary>
-        /// This is used as a "mode" description in the editor. It's displayed when there are multiple
-        /// controllers on the part, and the user needs to pick one-- e.g. "do I want this to act like
-        /// a toggle on/off light, or a resource indicator, or what".
+        /// Indicates whether the module's UI (if any) is enabled on the part. This base
+        /// class has no UI, but subclasses might.  If they do, they should override
+        /// the OnUiEnabled property.
         /// </summary>
-        internal abstract string EditorGuiDescription { get; }
+        [KSPField(isPersistant = true)]
+        public bool isUiEnabled = true;
 
         /// <summary>
-        /// This is used to communicate to a controller manager in the editor whether it's possible for this
-        /// controller to be used in its current situation or not. Defaults to just return true always.
-        /// Should return false if not applicable, e.g. if it's a resource-based controller and it's on a
-        /// part with no resource capacity.
+        /// Call this at runtime to identify the controller.
         /// </summary>
-        internal virtual bool CanControl
+        public string ColorSourceID
+        {
+            get
+            {
+                return ((controllerName == null) || string.Empty.Equals(controllerName))
+                    ? GetType().Name
+                    : controllerName;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether this controller has an output color available. Default implementation
+        /// is to return true. The contract is that if this returns false, should not try to
+        /// get the OutputColor.
+        /// </summary>
+        public virtual bool HasColor
         {
             get { return true; }
         }
 
         /// <summary>
-        /// This fires when the module updates in such a way that a controller manager might need to
-        /// update (e.g. if the display named changed, or the state of CanControl changed, etc.)
+        /// Gets the output color of this controller. Won't be called unless HasColor
+        /// returns true.
         /// </summary>
-        internal Callback<ModuleEmissiveController> ControllerUpdated;
+        public abstract Color OutputColor { get; }
 
         /// <summary>
-        /// Use this to fire the ControllerUpdated event.
+        /// Called on every frame. Note that this implements Unity's Update method, rather
+        /// than overriding the OnUpdate method of PartModule, because this needs to get
+        /// called regardless of whether the part is active or not.
         /// </summary>
-        protected void AnnounceUpdate()
+        void Update()
         {
-            if (ControllerUpdated != null)
+            if ((controlledEmissives != null) && HasColor)
             {
-                ControllerUpdated(this);
+                for (int i = 0; i < controlledEmissives.Count; ++i)
+                {
+                    controlledEmissives[i].Color = OutputColor;
+                }
             }
-        }
-
-        /// <summary>
-        /// This is called any time anything changes on the ship.
-        /// </summary>
-        internal virtual void OnEditorShipModified(ShipConstruct construct)
-        {
-            // Default behavior is to do nothing
-        }
-
-        /// <summary>
-        /// This is called any time any part on the ship receives a relevant event.
-        /// </summary>
-        /// <param name="eventType"></param>
-        /// <param name="affectedPart"></param>
-        internal virtual void OnEditorPartEvent(ConstructionEventType eventType, Part affectedPart)
-        {
-            // Default behavior is to do nothing.
         }
 
         /// <summary>
@@ -91,38 +94,43 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
-            if (emissiveName == null)
-            {
-                Logging.Warn("No controllable emissive specified for " + part.GetTitle());
-                return;
-            }
-            for (int i = 0; i < part.Modules.Count; ++i)
-            {
-                ModuleControllableEmissive candidate = part.Modules[i] as ModuleControllableEmissive;
-                if (candidate == null) continue;
-                if (emissiveName.Equals(candidate.emissiveName))
-                {
-                    // got a match!
-                    controlledEmissive = candidate;
-                    return;
-                }
-                Logging.Warn("No controllable emissive '" + emissiveName + "' found for " + part.GetTitle());
-            }
+            controlledEmissives = ModuleControllableEmissive.Find(part, emissiveName);
         }
 
         /// <summary>
-        /// Gets or sets the color of the controlled emissive.
+        /// Subclasses should call this to enable or disable UI.
         /// </summary>
-        protected Color Color
+        /// <param name="enabled"></param>
+        internal void SetUiEnabled(bool enabled)
         {
-            get
+            OnUiEnabled(enabled);
+            isUiEnabled = enabled;
+        }
+
+        /// <summary>
+        /// This is called whenever UI is toggled for the module. Subclasses should
+        /// do whatever is appropriate to activate/deactivate their UI.
+        /// </summary>
+        /// <param name="enabled"></param>
+        protected virtual void OnUiEnabled(bool enabled)
+        {
+            // Base class has no UI, so default behavior is to do nothing.
+        }
+
+        /// <summary>
+        /// Try to find a PartModule of the specified class; null if none.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        protected T FindFirst<T>() where T : PartModule
+        {
+            if (part == null) return null;
+            for (int i = 0; i < part.Modules.Count; ++i)
             {
-                return (controlledEmissive == null) ? Color.black : controlledEmissive.Color;
+                T candidate = part.Modules[i] as T;
+                if (candidate != null) return candidate;
             }
-            set
-            {
-                if (isControlActive && (controlledEmissive != null)) controlledEmissive.Color = value;
-            }
+            return null;
         }
     }
 }

@@ -65,6 +65,13 @@ All [reaction wheels](http://wiki.kerbalspaceprogram.com/wiki/Parts#Reaction_whe
 * Dimmer when not in active use (i.e. no SAS or player input).
 * Blinks brightly if electricity-deprived while turned on.
 
+### Docking ports
+The small, medium, and large [docking ports](http://wiki.kerbalspaceprogram.com/wiki/Parts#Docking) now have LED indicators that show their fuel crossfeed status (red/green for enabled/disabled).  These lights are toggle on-off via action group, like the BL-01 standalone lamp. If you have [DefaultActionGroups](/mod/24/DefaultActionGroups) installed, then the "toggle light" action will automatically get added to the Light action group by default.
+
+![docking ports](https://raw.githubusercontent.com/KSPSnark/IndicatorLights/master/screenshots/docking%20ports.png)
+
+(I've left all the other docking ports alone, for the time being: shielded, in-line, Mk2. Those were trickier due to animations. I may come back to revisit them later.)
+
 
 ## Configuration
 I use color a *lot* in this mod, as a way of conveying information. My choice of colors may not be to everyone's liking, though.  Maybe you'd like all of them to be dimmer.  Maybe you have color-blindness issues and my choice of red-versus-green for status doesn't work well for you.

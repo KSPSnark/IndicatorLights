@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -23,28 +22,20 @@ namespace IndicatorLights
         private ModuleReactionWheel wheel = null;
         private StartState startState = StartState.None;
 
-        internal override string EditorGuiDescription
-        {
-            get { return "Reaction Wheel Status"; }
-        }
-
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
             this.startState = state;
-            this.wheel = FindReactionWheel();
+            this.wheel = FindFirst<ModuleReactionWheel>();
+            if (wheel == null) Logging.Warn("No ModuleReactionWheel found for " + part.GetTitle() + "; ModuleReactionWheelIndicator is inactive");
         }
 
-        void Update()
+        public override bool HasColor
         {
-            if (wheel == null) return;
-            Color = WheelStateColor;
+            get { return wheel != null; }
         }
 
-        /// <summary>
-        /// Gets the color to use for indicating the wheel, based on its current state.
-        /// </summary>
-        private Color WheelStateColor
+        public override Color OutputColor
         {
             get
             {
@@ -111,18 +102,6 @@ namespace IndicatorLights
                         return NORMAL_STARVED;
                 }
             }
-        }
-
-        private ModuleReactionWheel FindReactionWheel()
-        {
-            if (part == null) return null;
-            for (int i = 0; i < part.Modules.Count; ++i)
-            {
-                ModuleReactionWheel candidate = part.Modules[i] as ModuleReactionWheel;
-                if (candidate != null) return candidate;
-            }
-            Logging.Warn("No ModuleReactionWheel found for " + part.GetTitle() + "; ModuleReactionWheelIndicator is inactive");
-            return null;
         }
     }
 }

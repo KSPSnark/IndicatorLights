@@ -15,41 +15,26 @@ namespace IndicatorLights
     /// </summary>
     public class ModuleToggleLED : ModuleEmissiveController
     {
-        private static readonly Color DEFAULT_ACTIVE_COLOR = Color.green;
-        private static readonly Color DEFAULT_INACTIVE_COLOR = Color.black;
-
-        internal override string EditorGuiDescription
-        {
-            get { return "Switchable Lamp"; }
-        }
-
         [KSPField(guiName = "LED Status", isPersistant = true, guiActive = true, guiActiveEditor = true), UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "On", disabledText = "Off")]
         public bool status = false;
         private BaseField StatusField { get { return Fields["status"]; } }
 
-        [KSPField(guiName = "On: Red", isPersistant = true), UI_FloatRange(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, minValue = 0, maxValue = 1, stepIncrement = 0.01f)]
-        public float redOn = DEFAULT_ACTIVE_COLOR.r;
-        private BaseField RedOnField { get { return Fields["redOn"]; } }
+        /// <summary>
+        /// This specifies the color of the toggle when it's in the "on" state. This might be a literal
+        /// color string, or it might be the controllerName of another controller on the part.
+        /// </summary>
+        [KSPField]
+        public string activeColor = null;
 
-        [KSPField(guiName = "On: Green", isPersistant = true), UI_FloatRange(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, minValue = 0, maxValue = 1, stepIncrement = 0.01f)]
-        public float greenOn = DEFAULT_ACTIVE_COLOR.g;
-        private BaseField GreenOnField { get { return Fields["greenOn"]; } }
+        /// <summary>
+        /// This specifies the color of the toggle when it's in the "off" state. This might be a literal
+        /// color string, or it might be the controllerName of another controller on the part.
+        /// </summary>
+        [KSPField]
+        public string inactiveColor = null;
 
-        [KSPField(guiName = "On: Blue", isPersistant = true), UI_FloatRange(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, minValue = 0, maxValue = 1, stepIncrement = 0.01f)]
-        public float blueOn = DEFAULT_ACTIVE_COLOR.b;
-        private BaseField BlueOnField { get { return Fields["blueOn"]; } }
-
-        [KSPField(guiName = "Off: Red", isPersistant = true), UI_FloatRange(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, minValue = 0, maxValue = 1, scene = UI_Scene.Editor, stepIncrement = 0.01f)]
-        public float redOff = DEFAULT_INACTIVE_COLOR.r;
-        private BaseField RedOffField { get { return Fields["redOff"]; } }
-
-        [KSPField(guiName = "Off: Green", isPersistant = true), UI_FloatRange(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, minValue = 0, maxValue = 1, scene = UI_Scene.Editor, stepIncrement = 0.01f)]
-        public float greenOff = DEFAULT_INACTIVE_COLOR.g;
-        private BaseField GreenOffField { get { return Fields["greenOff"]; } }
-
-        [KSPField(guiName = "Off: Blue", isPersistant = true), UI_FloatRange(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, minValue = 0, maxValue = 1, scene = UI_Scene.Editor, stepIncrement = 0.01f)]
-        public float blueOff = DEFAULT_INACTIVE_COLOR.b;
-        private BaseField BlueOffField { get { return Fields["blueOff"]; } }
+        private IColorSource inputActive = null;
+        private IColorSource inputInactive = null;
 
 
         /// <summary>
@@ -60,7 +45,6 @@ namespace IndicatorLights
         public void ToggleAction(KSPActionParam actionParam)
         {
             status = !status;
-            SetState();
         }
 
         /// <summary>
@@ -71,7 +55,6 @@ namespace IndicatorLights
         public void ActivateAction(KSPActionParam actionParam)
         {
             status = true;
-            SetState();
         }
 
         /// <summary>
@@ -82,74 +65,40 @@ namespace IndicatorLights
         public void DeactivateAction(KSPActionParam actionParam)
         {
             status = false;
-            SetState();
         }
 
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
 
-            RedOnField.uiControlEditor.onFieldChanged = OnColorSliderChanged;
-            GreenOnField.uiControlEditor.onFieldChanged = OnColorSliderChanged;
-            BlueOnField.uiControlEditor.onFieldChanged = OnColorSliderChanged;
-            RedOffField.uiControlEditor.onFieldChanged = OnColorSliderChanged;
-            GreenOffField.uiControlEditor.onFieldChanged = OnColorSliderChanged;
-            BlueOffField.uiControlEditor.onFieldChanged = OnColorSliderChanged;
-
             StatusField.uiControlEditor.onFieldChanged = OnEditorToggleChanged;
-            StatusField.uiControlFlight.onFieldChanged = OnFlightToggleChanged;
 
-            SetState();
+            inputActive = ColorSources.Find(part, activeColor);
+            inputInactive = ColorSources.Find(part, inactiveColor);
+
+            SetInputUIState();
         }
 
-        public override void OnLoad(ConfigNode node)
+
+        public override Color OutputColor
         {
-            // When the part is loaded, initialize the blinkenlight state based on active/inactive
-            // state in this module.
-            base.OnLoad(node);
-            SetState();
+            get
+            {
+                IColorSource source = status ? inputActive : inputInactive;
+                return source.HasColor ? source.OutputColor : Color.black;
+            }
         }
 
         /// <summary>
         /// Updates the state of the controller.
         /// </summary>
-        private void SetState()
+        private void SetInputUIState()
         {
-            RedOnField.guiActiveEditor = status;
-            GreenOnField.guiActiveEditor = status;
-            BlueOnField.guiActiveEditor = status;
-            RedOffField.guiActiveEditor = !status;
-            GreenOffField.guiActiveEditor = !status;
-            BlueOffField.guiActiveEditor = !status;
+            ModuleEmissiveController activeController = inputActive as ModuleEmissiveController;
+            if (activeController != null) activeController.SetUiEnabled(status);
 
-            Color = status ? ActiveColor : InactiveColor;
-        }
-
-        /// <summary>
-        /// Updates the state of the controller, along with any symmetry counterparts.
-        /// </summary>
-        private void SetSymmetricState()
-        {
-            foreach (Part counterpart in part.symmetryCounterparts)
-            {
-                for (int i = 0; i < counterpart.Modules.Count; ++i)
-                {
-                    ModuleToggleLED controller = counterpart.Modules[i] as ModuleToggleLED;
-                    if (controller != null) controller.SetState();
-                }
-            }
-            SetState();
-        }
-
-        /// <summary>
-        /// Here whenever a color slider changes.
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="value"></param>
-        private void OnColorSliderChanged(BaseField field, object value)
-        {
-            // Adjust everything in the symmetry group, since this can only happen in the editor.
-            SetSymmetricState();
+            ModuleEmissiveController inactiveController = inputInactive as ModuleEmissiveController;
+            if (inactiveController != null) inactiveController.SetUiEnabled(!status);
         }
 
         /// <summary>
@@ -160,40 +109,15 @@ namespace IndicatorLights
         private void OnEditorToggleChanged(BaseField field, object value)
         {
             // By design, the editor toggles symmetry groups on/off together.
-            SetSymmetricState();
-        }
-
-        /// <summary>
-        /// Here when the toggle changes while we're in the flight scene.
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="value"></param>
-        private void OnFlightToggleChanged(BaseField field, object value)
-        {
-            // In flight, we just toggle the individual part, not the symmetry group.
-            SetState();
-        }
-
-        /// <summary>
-        /// Gets the color in the "on" state.
-        /// </summary>
-        private Color ActiveColor
-        {
-            get
+            foreach (Part counterpart in part.symmetryCounterparts)
             {
-                return new Color(redOn, greenOn, blueOn, 1);
+                for (int i = 0; i < counterpart.Modules.Count; ++i)
+                {
+                    ModuleToggleLED controller = counterpart.Modules[i] as ModuleToggleLED;
+                    if (controller != null) controller.SetInputUIState();
+                }
             }
-        }
-
-        /// <summary>
-        /// Gets the color in the "off" state.
-        /// </summary>
-        private Color InactiveColor
-        {
-            get
-            {
-                return new Color(redOff, greenOff, blueOff, 1);
-            }
+            SetInputUIState();
         }
     }
 }

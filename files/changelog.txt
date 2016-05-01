@@ -1,3 +1,8 @@
+Pre-release v0.5
+* Added status indicators to small, medium, and large docking ports, with a PartModule that works for any docking port.
+* Slightly adjusted the position of the indicator on the Z400 battery.
+* Significant re-architecture of internal controller logic. No effect on players, but a potential breaking change to any modders working with ModuleToggleLED.
+
 Pre-release v0.4
 * Added status indicators for reaction wheels.
 * Made the default colors of all indicators user-configurable

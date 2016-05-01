@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -8,6 +9,8 @@ namespace IndicatorLights
     internal static class Colors
     {
         private static readonly string HEX_DIGITS = "0123456789ABCDEF";
+        private static readonly string[] defaultColorNames = Enum.GetNames(typeof(DefaultColor));
+
         /// <summary>
         /// Parse a color from the provided text string, which is assummed to be of
         /// the form "#xxxxxx", where the x's are hex digits. In case of a parse error,
@@ -18,15 +21,20 @@ namespace IndicatorLights
         /// <returns></returns>
         public static Color Parse(string text, Color defaultColor)
         {
-            if (text == null) return defaultColor;
-            text = text.Trim().ToUpper();
-            if (text.Length != 7) return defaultColor;
-            if (!text.StartsWith("#")) return defaultColor;
-            int red, green, blue;
-            if (!TryParseHex(text.Substring(1, 2), out red)) return defaultColor;
-            if (!TryParseHex(text.Substring(3, 2), out green)) return defaultColor;
-            if (!TryParseHex(text.Substring(5, 2), out blue)) return defaultColor;
-            return new Color(ChannelValue(red), ChannelValue(green), ChannelValue(blue), 1f);
+            Color color;
+            bool success = Parse(text, out color);
+            return success ? color : defaultColor;
+        }
+
+        /// <summary>
+        /// Determines whether the specified string is a valid color specification.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static bool IsColorString(string text)
+        {
+            Color color;
+            return Parse(text, out color);
         }
 
         /// <summary>
@@ -43,6 +51,83 @@ namespace IndicatorLights
                 + IntToHexString(red)
                 + IntToHexString(green)
                 + IntToHexString(blue);
+        }
+
+        /// <summary>
+        /// Gets the physical color associated with the specified logical ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static Color Default(DefaultColor id)
+        {
+            switch (id)
+            {
+                case DefaultColor.TOGGLE_LED:
+                    return Configuration.toggleLEDColor;
+                case DefaultColor.HIGH_RESOURCE:
+                    return Configuration.highResourceColor;
+                case DefaultColor.MEDIUM_RESOURCE:
+                    return Configuration.mediumResourceColor;
+                case DefaultColor.LOW_RESOURCE:
+                    return Configuration.lowResourceColor;
+                case DefaultColor.REACTION_WHEEL_PROBLEM:
+                    return Configuration.reactionWheelProblemColor;
+                case DefaultColor.REACTION_WHEEL_NORMAL:
+                    return Configuration.reactionWheelNormalColor;
+                case DefaultColor.REACTION_WHEEL_PILOT_ONLY:
+                    return Configuration.reactionWheelPilotOnlyColor;
+                case DefaultColor.REACTION_WHEEL_SAS_ONLY:
+                    return Configuration.reactionWheelSasOnlyColor;
+                case DefaultColor.OFF:
+                default:
+                    return Color.black;
+            }
+        }
+
+        /// <summary>
+        /// Try to parse the specified text into a color. Returns true if successful.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        private static bool Parse(string text, out Color color)
+        {
+            if (text != null)
+            {
+                text = text.Trim().ToUpper();
+                if (text.Length > 1)
+                {
+                    // Did they specify a default color by name?
+                    if (text.StartsWith("$"))
+                    {
+                        string logicalName = text.Substring(1);
+                        for (int i = 0; i < defaultColorNames.Length; ++i)
+                        {
+                            if (defaultColorNames[i].Equals(logicalName))
+                            {
+                                color = Default((DefaultColor)i);
+                                return true;
+                            }
+                        }
+                    }
+                    // No, so it must be a literal RGB value.
+                    if ((text.Length == 7) && text.StartsWith("#"))
+                    {
+                        int red, green, blue;
+                        if (TryParseHex(text.Substring(1, 2), out red)
+                            && TryParseHex(text.Substring(3, 2), out green)
+                            && TryParseHex(text.Substring(5, 2), out blue))
+                        {
+                            color = new Color(ChannelValue(red), ChannelValue(green), ChannelValue(blue), 1f);
+                            return true;
+                        }
+                    }
+                } // if the text is long enough
+            } // if the text's not null
+
+            // Not a valid color string.
+            color = Color.black;
+            return false;
         }
 
         private static bool TryParseHex(string text, out int value)
@@ -71,5 +156,6 @@ namespace IndicatorLights
         {
             return (float)colorLevel / 255f;
         }
+
     }
 }

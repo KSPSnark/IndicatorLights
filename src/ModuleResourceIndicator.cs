@@ -20,11 +20,6 @@ namespace IndicatorLights
 
         private PartResource resource = null;
 
-        internal override string EditorGuiDescription
-        {
-            get { return "Resource Level"; }
-        }
-
         /// <summary>
         /// The name of the resource which this controller tracks. If left null, the controller will
         /// pick the first resource it finds.
@@ -66,16 +61,24 @@ namespace IndicatorLights
             }
         }
 
-        /// <summary>
-        /// Called on every frame. Note that this implements Unity's Update method, rather
-        /// than overriding the OnUpdate method of PartModule, because this needs to get
-        /// called regardless of whether the part is active or not.
-        /// </summary>
-        void Update()
+        public override bool HasColor
         {
-            if (resource == null) return;
-            Color newColor = ChooseColor();
-            Color = newColor;
+            get { return resource != null; }
+        }
+
+        public override Color OutputColor
+        {
+            get
+            {
+                if (resource.amount == 0) return Color.black;
+                double fraction = resource.amount / resource.maxAmount;
+                if (!resource.flowState)
+                {
+                    return ((fraction > highThreshold) ? HIGH_BLINK : ((fraction > lowThreshold) ? MEDIUM_BLINK : LOW_BLINK)).Color;
+                }
+                if (fraction < criticalThreshold) return CRITICAL_FADE.Color;
+                return ((fraction > highThreshold) ? HIGH_COLOR : ((fraction > lowThreshold) ? MEDIUM_COLOR : LOW_COLOR)).To;
+            }
         }
 
         /// <summary>
@@ -108,24 +111,6 @@ namespace IndicatorLights
             }
             Logging.Warn("No resource '" + resourceName + "' found in " + part.GetTitle() + ", defaulting to " + part.Resources[0].resourceName);
             return part.Resources[0];
-        }
-
-        /// <summary>
-        /// Chooses a color to display, based on the resource fraction and on how long it's been since the resource
-        /// amount last changed.
-        /// </summary>
-        /// <param name="resourceFraction"></param>
-        /// <returns></returns>
-        private Color ChooseColor()
-        {
-            if (resource.amount == 0) return Color.black;
-            double fraction = resource.amount / resource.maxAmount;
-            if (!resource.flowState)
-            {
-                return ((fraction > highThreshold) ? HIGH_BLINK : ((fraction > lowThreshold) ? MEDIUM_BLINK : LOW_BLINK)).Color;
-            }
-            if (fraction < criticalThreshold) return CRITICAL_FADE.Color;
-            return ((fraction > highThreshold) ? HIGH_COLOR : ((fraction > lowThreshold) ? MEDIUM_COLOR : LOW_COLOR)).To;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -16,6 +17,7 @@ namespace IndicatorLights
         private static readonly Material[] NO_MATERIALS = new Material[0];
 
         private Material[] materials;
+        private Color cachedColor = new Color(0, 0, 0, 0);
 
         /// <summary>
         /// This identifies the target renderer within the part whose material's emissive color
@@ -41,11 +43,40 @@ namespace IndicatorLights
             }
             set
             {
-                for (int i = 0; i < Materials.Length; ++i)
+                if (!cachedColor.Equals(value))
                 {
-                    Materials[i].SetColor(emissiveColorId, value);
+                    cachedColor = value;
+                    for (int i = 0; i < Materials.Length; ++i)
+                    {
+                        Materials[i].SetColor(emissiveColorId, value);
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// Tries to find an emissive with the specified name, or null if not found.
+        /// </summary>
+        /// <param name="part"></param>
+        /// <param name="emissiveName"></param>
+        /// <returns></returns>
+        public static List<ModuleControllableEmissive> Find(Part part, string emissiveName)
+        {
+            if ((emissiveName == null) || string.Empty.Equals(emissiveName)) return null;
+            List<ModuleControllableEmissive> emissives = new List<ModuleControllableEmissive>();
+            for (int i = 0; i < part.Modules.Count; ++i)
+            {
+                ModuleControllableEmissive candidate = part.Modules[i] as ModuleControllableEmissive;
+                if (candidate == null) continue;
+                if (emissiveName.Equals(candidate.emissiveName))
+                {
+                    // got a match!
+                    emissives.Add(candidate);
+                }
+            }
+            if (emissives.Count > 0) return emissives;
+            Logging.Warn("No controllable emissive '" + emissiveName + "' found for " + part.GetTitle());
+            return null;
         }
 
         private Material[] GetEmissiveMaterials()

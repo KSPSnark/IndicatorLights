@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -13,18 +14,12 @@ namespace IndicatorLights
     /// However, the "lit" color can be customized via part config. The default if not
     /// specified is bright green, but any arbitrary color can be configured.
     /// </summary>
-    class ModuleConverterIndicator : ModuleEmissiveController
+    class ModuleConverterIndicator : ModuleBiStateIndicator
     {
         private static readonly Color INACTIVE_COLOR = Color.black;
 
         private Color activeColor = Configuration.resourceConverterActiveColor;
         private BaseConverter converter = null;
-        private ChangeMonitor<bool> converterActiveMonitor = null;
-
-        internal override string EditorGuiDescription
-        {
-            get { return "Converter Status"; }
-        }
 
         /// <summary>
         /// The name of the converter to which this controller is bound. This
@@ -66,30 +61,8 @@ namespace IndicatorLights
             {
                 // bad config!
                 Logging.Warn("Can't find converter named '" + converterName + "' on " + part.GetTitle());
-                Color = INACTIVE_COLOR;
                 return;
             }
-            converterActiveMonitor = new ChangeMonitor<bool>(IsConverterActivated);
-            SetState();
-        }
-
-        /// <summary>
-        /// Called on every frame. Note that this implements Unity's Update method, rather
-        /// than overriding the OnUpdate method of PartModule, because this needs to get
-        /// called regardless of whether the part is active or not.
-        /// </summary>
-        void Update()
-        {
-            if (DidConverterActivationChange) SetState();
-        }
-
-        /// <summary>
-        /// Here when the converter we're tracking changes its "activated" value.
-        /// </summary>
-        /// <param name="value"></param>
-        private void OnConverterActivationChanged(object value)
-        {
-            SetState();
         }
 
         /// <summary>
@@ -107,23 +80,32 @@ namespace IndicatorLights
             return null; // not found!
         }
 
-        private bool DidConverterActivationChange
-        {
-            get { return (converterActiveMonitor != null) && converterActiveMonitor.Update(IsConverterActivated); }
-        }
-
         private bool IsConverterActivated
         {
             get { return (converter != null) && converter.IsActivated; }
         }
 
-        private void SetState()
+        public override bool HasColor
         {
-            if (converter == null)
-            {
-                return;
-            }
-            Color = converter.IsActivated ? activeColor : INACTIVE_COLOR;
+            get { return converter != null; }
+        }
+
+        protected override Color ActiveColor
+        {
+            get { return activeColor; }
+        }
+
+        protected override Color InactiveColor
+        {
+            get { return INACTIVE_COLOR; }
+        }
+
+        /// <summary>
+        /// Gets whether the converter is currently active.
+        /// </summary>
+        protected override bool State
+        {
+            get { return (converter != null) && converter.IsActivated; }
         }
     }
 }
