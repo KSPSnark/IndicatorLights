@@ -9,7 +9,7 @@ namespace IndicatorLights
     internal static class Colors
     {
         private static readonly string HEX_DIGITS = "0123456789ABCDEF";
-        private static readonly string[] defaultColorNames = Enum.GetNames(typeof(DefaultColor));
+        private static readonly string[] DEFAULT_COLOR_NAMES = Enum.GetNames(typeof(DefaultColor));
 
         /// <summary>
         /// Parse a color from the provided text string, which is assummed to be of
@@ -54,6 +54,16 @@ namespace IndicatorLights
         }
 
         /// <summary>
+        /// Given a default color, produce a string of it that is parseable via Parse.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static string ToString(DefaultColor id)
+        {
+            return "$" + id.ToString();
+        }
+
+        /// <summary>
         /// Gets the physical color associated with the specified logical ID.
         /// </summary>
         /// <param name="id"></param>
@@ -78,6 +88,12 @@ namespace IndicatorLights
                     return Configuration.reactionWheelPilotOnlyColor;
                 case DefaultColor.REACTION_WHEEL_SAS_ONLY:
                     return Configuration.reactionWheelSasOnlyColor;
+                case DefaultColor.RESOURCE_CONVERTER_ACTIVE:
+                    return Configuration.resourceConverterActiveColor;
+                case DefaultColor.DOCKING_CROSSFEED_ON:
+                    return Configuration.dockingCrossfeedOnColor;
+                case DefaultColor.DOCKING_CROSSFEED_OFF:
+                    return Configuration.dockingCrossfeedOffColor;
                 case DefaultColor.OFF:
                 default:
                     return Color.black;
@@ -101,9 +117,9 @@ namespace IndicatorLights
                     if (text.StartsWith("$"))
                     {
                         string logicalName = text.Substring(1);
-                        for (int i = 0; i < defaultColorNames.Length; ++i)
+                        for (int i = 0; i < DEFAULT_COLOR_NAMES.Length; ++i)
                         {
-                            if (defaultColorNames[i].Equals(logicalName))
+                            if (DEFAULT_COLOR_NAMES[i].Equals(logicalName))
                             {
                                 color = Default((DefaultColor)i);
                                 return true;

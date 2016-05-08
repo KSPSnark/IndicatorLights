@@ -5,7 +5,7 @@ namespace IndicatorLights
     /// <summary>
     /// A module that sets the display based on the current status of a reaction wheel.
     /// </summary>
-    class ModuleReactionWheelIndicator : ModuleEmissiveController
+    class ModuleReactionWheelIndicator : ModuleSourceIndicator<ModuleReactionWheel>
     {
         private static readonly Color OFF_COLOR = Color.black;
         private static readonly ColorGradient PROBLEM_GRADIENT = new ColorGradient(Color.black, Configuration.reactionWheelProblemColor);
@@ -19,27 +19,19 @@ namespace IndicatorLights
         private static readonly AnimateGradient PILOT_ONLY_STARVED = AnimateGradient.Blink(PILOT_ONLY_GRADIENT, STARVED_BLINK_MILLIS, STARVED_BLINK_MILLIS);
         private static readonly AnimateGradient SAS_ONLY_STARVED = AnimateGradient.Blink(SAS_ONLY_GRADIENT, STARVED_BLINK_MILLIS, STARVED_BLINK_MILLIS);
 
-        private ModuleReactionWheel wheel = null;
         private StartState startState = StartState.None;
 
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
             this.startState = state;
-            this.wheel = FindFirst<ModuleReactionWheel>();
-            if (wheel == null) Logging.Warn("No ModuleReactionWheel found for " + part.GetTitle() + "; ModuleReactionWheelIndicator is inactive");
-        }
-
-        public override bool HasColor
-        {
-            get { return wheel != null; }
         }
 
         public override Color OutputColor
         {
             get
             {
-                switch (wheel.State)
+                switch (SourceModule.State)
                 {
                     case ModuleReactionWheel.WheelState.Disabled:
                         return OFF_COLOR;
@@ -76,10 +68,10 @@ namespace IndicatorLights
             get
             {
                 if (startState == StartState.Editor) return false;
-                if ((wheel == null) || (wheel.inputResources == null)) return false;
-                for (int i = 0; i < wheel.inputResources.Count; ++i)
+                if ((SourceModule == null) || (SourceModule.inputResources == null)) return false;
+                for (int i = 0; i < SourceModule.inputResources.Count; ++i)
                 {
-                    ModuleResource resource = wheel.inputResources[i];
+                    ModuleResource resource = SourceModule.inputResources[i];
                     // I'm using !available rather than isDeprived, because as far as I can tell, isDeprived is always false
                     if (!resource.available) return true;
                 }
@@ -91,8 +83,8 @@ namespace IndicatorLights
         {
             get
             {
-                if (wheel == null) return NORMAL_STARVED;
-                switch ((VesselActuatorMode)wheel.actuatorModeCycle)
+                if (SourceModule == null) return NORMAL_STARVED;
+                switch ((VesselActuatorMode)SourceModule.actuatorModeCycle)
                 {
                     case VesselActuatorMode.Pilot:
                         return PILOT_ONLY_STARVED;

@@ -47,9 +47,7 @@ namespace IndicatorLights
         {
             get
             {
-                return ((controllerName == null) || string.Empty.Equals(controllerName))
-                    ? GetType().Name
-                    : controllerName;
+                return string.IsNullOrEmpty(controllerName) ? GetType().Name : controllerName;
             }
         }
 
@@ -95,6 +93,7 @@ namespace IndicatorLights
             base.OnStart(state);
 
             controlledEmissives = ModuleControllableEmissive.Find(part, emissiveName);
+            SetUiEnabled(isUiEnabled);
         }
 
         /// <summary>

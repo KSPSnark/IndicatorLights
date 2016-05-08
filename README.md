@@ -29,11 +29,13 @@ At the moment there's just one part, the BL-01 Indicator Light:
 
 It's a small, light, radially attachable widget that you can put pretty much anywhere.  You can toggle it on/off via its right-click menu, or via action groups.
 
+The light supports two modes, "continuous" (the default) and "blinking". You can customize the blink period, and toggle blink mode via action groups.
+
 It doesn't emit any actual "light" in the sense of "illuminate objects around it"; it just glows.  So you can't light up a scene with it, but you *can* use lots of them, because they're computationally cheap.
 
 Both the "on" and the "off" colors are fully customizable in the editor.  (The default is "bright green" for on, and "completely dark" for off.)
 
-If you have [DefaultActionGroups](/mod/24/DefaultActionGroups) installed, this part's "toggle light" action will automatically get added to the Light action group by default.
+If you have [DefaultActionGroups](https://spacedock.info/mod/24/DefaultActionGroups) installed, this part's "toggle light" action will automatically get added to the Light action group by default.
 
 
 ### Batteries
@@ -66,11 +68,19 @@ All [reaction wheels](http://wiki.kerbalspaceprogram.com/wiki/Parts#Reaction_whe
 * Blinks brightly if electricity-deprived while turned on.
 
 ### Docking ports
-The small, medium, and large [docking ports](http://wiki.kerbalspaceprogram.com/wiki/Parts#Docking) now have LED indicators that show their fuel crossfeed status (red/green for enabled/disabled).  These lights are toggle on-off via action group, like the BL-01 standalone lamp. If you have [DefaultActionGroups](/mod/24/DefaultActionGroups) installed, then the "toggle light" action will automatically get added to the Light action group by default.
+The small, medium, and large [docking ports](http://wiki.kerbalspaceprogram.com/wiki/Parts#Docking) now have LED status indicators.
+
+(I've left all the other docking ports alone, for the time being: shielded, in-line, Mk2. Those were trickier due to animations. I may come back to revisit them later.)
 
 ![docking ports](https://raw.githubusercontent.com/KSPSnark/IndicatorLights/master/screenshots/docking%20ports.png)
 
-(I've left all the other docking ports alone, for the time being: shielded, in-line, Mk2. Those were trickier due to animations. I may come back to revisit them later.)
+* Color shows fuel crossfeed status: green (enabled), red (disabled)
+* Blinks rapidly when the docking field is engaged
+* After undocking, blinks slowly until the port is "reset" (has separated far enough to be dockable again).
+* Indicator lights on docking ports are toggleable on/off via action groups, like the BL-01 standalone lamp. They're off by default.
+* If you have [DefaultActionGroups](https://spacedock.info/mod/24/DefaultActionGroups) installed, then the "toggle light" action will automatically get added to the Light action group by default.
+
+
 
 
 ## Configuration

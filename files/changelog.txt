@@ -1,3 +1,10 @@
+Pre-release v0.6
+* Added blinking option to BL-01 indicator light.
+* Docking port indicators now blink when docking field is engaging/disengaging.
+* Significant internal refactoring for greatly increased flexibility. Blinking now addable to anything via ModuleManager config.
+* Likely breaking change for players: Doesn't break save games. However, any prior BL-01 lights or docking port indicators (either in flight, or in saved ships) won't work right
+
+
 Pre-release v0.5
 * Added status indicators to small, medium, and large docking ports, with a PartModule that works for any docking port.
 * Slightly adjusted the position of the indicator on the Z400 battery.

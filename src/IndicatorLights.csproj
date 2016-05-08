@@ -45,11 +45,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnimateGradient.cs" />
+    <Compile Include="Animations.cs" />
     <Compile Include="ColorSources.cs" />
     <Compile Include="DefaultColor.cs" />
     <Compile Include="IColorSource.cs" />
+    <Compile Include="ModuleCustomBlink.cs" />
     <Compile Include="ModuleCustomColoredEmissive.cs" />
-    <Compile Include="ModuleDockingPortIndicator.cs" />
+    <Compile Include="ModuleDockingCrossfeedIndicator.cs" />
+    <Compile Include="ModuleDockingStateIndicator.cs" />
+    <Compile Include="ModuleSourceIndicator.cs" />
     <Compile Include="ModuleBiStateIndicator.cs" />
     <Compile Include="ColorGradient.cs" />
     <Compile Include="Colors.cs" />
@@ -61,6 +65,7 @@
     <Compile Include="ModuleReactionWheelIndicator.cs" />
     <Compile Include="ModuleResourceIndicator.cs" />
     <Compile Include="ModuleToggleLED.cs" />
+    <Compile Include="ParsedParameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SplashScreen.cs" />
   </ItemGroup>
