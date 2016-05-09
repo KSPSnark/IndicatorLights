@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -8,8 +7,6 @@ namespace IndicatorLights
     /// </summary>
     class ModuleDockingStateIndicator : ModuleSourceIndicator<ModuleDockingNode>
     {
-        private static readonly Color NONE = Colors.Default(DefaultColor.OFF);
-
         [KSPField(isPersistant = true)]
         public string readyColor = null;
 

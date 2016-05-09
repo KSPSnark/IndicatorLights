@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace IndicatorLights
@@ -13,6 +14,7 @@ namespace IndicatorLights
     /// </summary>
     public class ModuleControllableEmissive : PartModule
     {
+        private static readonly Regex TARGET_PATTERN = new Regex("^(.+):(\\d+)$");
         private static readonly int emissiveColorId = Shader.PropertyToID("_EmissiveColor");
         private static readonly Material[] NO_MATERIALS = new Material[0];
 
@@ -55,7 +57,7 @@ namespace IndicatorLights
         }
 
         /// <summary>
-        /// Tries to find an emissive with the specified name, or null if not found.
+        /// Tries to find all the emissives with the specified name, or null if not found.
         /// </summary>
         /// <param name="part"></param>
         /// <param name="emissiveName"></param>
@@ -79,6 +81,12 @@ namespace IndicatorLights
             return null;
         }
 
+        /// <summary>
+        /// Searches the part for all emissive materials that match the specified target for this module.
+        /// Special case is when the target ends with a colon and a number, in which case it only tries
+        /// to get the Nth such instance.
+        /// </summary>
+        /// <returns></returns>
         private Material[] GetEmissiveMaterials()
         {
             if (part == null) return NO_MATERIALS;
@@ -90,6 +98,17 @@ namespace IndicatorLights
             }
             MeshRenderer[] renderers = part.transform.GetComponentsInChildren<MeshRenderer>();
             if (renderers == null) return null;
+
+            // Special case: if target ends with a colon and an integer, only get the Nth emissive material
+            // of that name.
+            Match match = TARGET_PATTERN.Match(target);
+            int targetIndex = -1;
+            if (match.Success)
+            {
+                target = match.Groups[1].Value;
+                targetIndex = int.Parse(match.Groups[2].Value);
+            }
+
             int count = 0;
 
             // If a model is added via ModuleManager config, it looks like it gets "(Clone)" added
@@ -115,14 +134,27 @@ namespace IndicatorLights
                 }
                 return NO_MATERIALS;
             }
-            Material[] emissiveMaterials = new Material[count];
+            if (targetIndex >= count) targetIndex = -1;
+            Material[] emissiveMaterials = (targetIndex < 0) ? new Material[count] : new Material[1];
             count = 0;
             for (int rendererIndex = 0; rendererIndex < renderers.Length; ++rendererIndex)
             {
                 Renderer renderer = renderers[rendererIndex];
                 if (renderer == null) continue;
                 if (!target.Equals(renderer.name) && !cloneTarget.Equals(renderer.name)) continue;
-                emissiveMaterials[count++] = renderer.material;
+                if (targetIndex < 0)
+                {
+                    emissiveMaterials[count] = renderer.material;
+                }
+                else
+                {
+                    if (count == targetIndex)
+                    {
+                        emissiveMaterials[0] = renderer.material;
+                        break;
+                    }
+                }
+                ++count;
             }
 
             return emissiveMaterials;

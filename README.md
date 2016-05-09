@@ -81,6 +81,19 @@ The small, medium, and large [docking ports](http://wiki.kerbalspaceprogram.com/
 * If you have [DefaultActionGroups](https://spacedock.info/mod/24/DefaultActionGroups) installed, then the "toggle light" action will automatically get added to the Light action group by default.
 
 
+### Crew indicators
+Various crew modules now have status indicators to show occupancy.
+
+(Only the parts shown here have the indicators, currently.)
+
+![crew indicators](https://raw.githubusercontent.com/KSPSnark/IndicatorLights/master/screenshots/crew.png)
+
+* Indicators light up when crew slot is occupied; dark when empty.
+* Color indicates profession (orange = pilot, green = engineer, blue = scientist, white = tourist).
+* I was concerned about these being annoying (the "Christmas tree" effect), so they're toggleable on/off, and are **off by default**. You can activate them via right-click menu or action groups.
+* **Note:** They don't light up in the editor, only in flight. Eventually I may add that, but it's a lot of code for a minor feature, so it's low priority for now.
+* Eventually, I intend to add indicators to the rest of the crewed parts. (For anyone who can't wait, you can do this yourself via ModuleManager config.)
+
 
 
 ## Configuration
@@ -112,3 +125,4 @@ One of my goals in producing this mod is to make it friendly to other modders, s
 ---
 #### A note of thanks
 Deep gratitude to [NecroBones](http://forum.kerbalspaceprogram.com/index.php?/profile/105424-necrobones/) and [VintageXP](http://forum.kerbalspaceprogram.com/index.php?/profile/76701-vintagexp/content/), both of whom provided patient, expert instruction to a clueless newbie (i.e. me) who didn't know Blender and Unity from a hole in the ground.  This is my first parts pack, and I would have been totally at sea without the help of these fine gentlemen.  Their assistance made this mod possible (though they bear no blame for the crudity of my models, that's entirely my own!) 
+

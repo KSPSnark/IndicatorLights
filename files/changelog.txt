@@ -1,3 +1,7 @@
+Pre-release v0.7
+* Add crew occupancy indicators to various crewed modules.
+
+
 Pre-release v0.6
 * Added blinking option to BL-01 indicator light.
 * Docking port indicators now blink when docking field is engaging/disengaging.
@@ -10,16 +14,17 @@ Pre-release v0.5
 * Slightly adjusted the position of the indicator on the Z400 battery.
 * Significant re-architecture of internal controller logic. No effect on players, but a potential breaking change to any modders working with ModuleToggleLED.
 
+
 Pre-release v0.4
 * Added status indicators for reaction wheels.
 * Made the default colors of all indicators user-configurable
+
 
 Pre-release v0.3
 * Add charge indicator lights to batteries, with a PartModule that works for any resource container
 
 
 Pre-release v0.2
-
 * Breaking change for the v0.1 blinkenlight
 * Add on/off indicator lights to fuel cells, with a PartModule that works for any resource converter
 

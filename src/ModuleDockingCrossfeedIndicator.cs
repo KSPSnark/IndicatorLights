@@ -8,10 +8,10 @@ namespace IndicatorLights
     public class ModuleDockingCrossfeedIndicator : ModuleSourceIndicator<ModuleDockingNode>
     {
         [KSPField(isPersistant = true)]
-        public string crossfeedOnSource = Colors.ToString(DefaultColor.DOCKING_CROSSFEED_ON);
+        public string crossfeedOnSource = Colors.ToString(DefaultColor.DockingCrossfeedOn);
 
         [KSPField(isPersistant = true)]
-        public string crossfeedOffSource = Colors.ToString(DefaultColor.DOCKING_CROSSFEED_OFF);
+        public string crossfeedOffSource = Colors.ToString(DefaultColor.DockingCrossfeedOff);
 
         private IColorSource onSource = null;
         private IColorSource offSource = null;

@@ -64,43 +64,6 @@ namespace IndicatorLights
         }
 
         /// <summary>
-        /// Gets the physical color associated with the specified logical ID.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public static Color Default(DefaultColor id)
-        {
-            switch (id)
-            {
-                case DefaultColor.TOGGLE_LED:
-                    return Configuration.toggleLEDColor;
-                case DefaultColor.HIGH_RESOURCE:
-                    return Configuration.highResourceColor;
-                case DefaultColor.MEDIUM_RESOURCE:
-                    return Configuration.mediumResourceColor;
-                case DefaultColor.LOW_RESOURCE:
-                    return Configuration.lowResourceColor;
-                case DefaultColor.REACTION_WHEEL_PROBLEM:
-                    return Configuration.reactionWheelProblemColor;
-                case DefaultColor.REACTION_WHEEL_NORMAL:
-                    return Configuration.reactionWheelNormalColor;
-                case DefaultColor.REACTION_WHEEL_PILOT_ONLY:
-                    return Configuration.reactionWheelPilotOnlyColor;
-                case DefaultColor.REACTION_WHEEL_SAS_ONLY:
-                    return Configuration.reactionWheelSasOnlyColor;
-                case DefaultColor.RESOURCE_CONVERTER_ACTIVE:
-                    return Configuration.resourceConverterActiveColor;
-                case DefaultColor.DOCKING_CROSSFEED_ON:
-                    return Configuration.dockingCrossfeedOnColor;
-                case DefaultColor.DOCKING_CROSSFEED_OFF:
-                    return Configuration.dockingCrossfeedOffColor;
-                case DefaultColor.OFF:
-                default:
-                    return Color.black;
-            }
-        }
-
-        /// <summary>
         /// Try to parse the specified text into a color. Returns true if successful.
         /// </summary>
         /// <param name="text"></param>
@@ -121,7 +84,7 @@ namespace IndicatorLights
                         {
                             if (DEFAULT_COLOR_NAMES[i].Equals(logicalName))
                             {
-                                color = Default((DefaultColor)i);
+                                color = ((DefaultColor)i).Value();
                                 return true;
                             }
                         }
