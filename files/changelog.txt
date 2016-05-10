@@ -1,5 +1,10 @@
+Pre-release v0.7.1
+* Fix bug introduced in 0.7 that broke lots of indicators.
+* Add crew indicator to cupola.
+
 Pre-release v0.7
 * Add crew occupancy indicators to various crewed modules.
+* BROKEN!  Do not use this version.
 
 
 Pre-release v0.6

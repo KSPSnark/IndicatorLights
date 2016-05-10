@@ -9,7 +9,7 @@ namespace IndicatorLights
     internal static class Colors
     {
         private static readonly string HEX_DIGITS = "0123456789ABCDEF";
-        private static readonly string[] DEFAULT_COLOR_NAMES = Enum.GetNames(typeof(DefaultColor));
+        private static readonly string[] DEFAULT_COLOR_NAMES = GetDefaultColorNames();
 
         /// <summary>
         /// Parse a color from the provided text string, which is assummed to be of
@@ -136,5 +136,15 @@ namespace IndicatorLights
             return (float)colorLevel / 255f;
         }
 
+        private static string[] GetDefaultColorNames()
+        {
+            // We make them all uppercase for case insensitivity
+            string[] names = Enum.GetNames(typeof(DefaultColor));
+            for (int i = 0; i < names.Length; ++i)
+            {
+                names[i] = names[i].ToUpper();
+            }
+            return names;
+        }
     }
 }
