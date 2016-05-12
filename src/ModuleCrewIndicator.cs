@@ -15,7 +15,7 @@ namespace IndicatorLights
         [KSPField(isPersistant = true)]
         public string toggleName = null;
 
-        private ModuleIndicatorToggle toggle = null;
+        private IToggle toggle = null;
 
         /// <summary>
         /// Here when we're starting up.
@@ -25,7 +25,7 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
-            toggle = ModuleIndicatorToggle.Find(part, toggleName);
+            toggle = Identifiers.FindFirst<IToggle>(part, toggleName);
 
             // The default value for slot is NO_SLOT. When we start up, we scan for all ModuleCrewIndicators
             // on the part, and assign them sequentially to slots, if available.
@@ -75,7 +75,7 @@ namespace IndicatorLights
         {
             get
             {
-                if ((toggle != null) && (!toggle.status)) return DefaultColor.Off.Value();
+                if ((toggle != null) && (!toggle.ToggleStatus)) return DefaultColor.Off.Value();
 
                 ProtoCrewMember crew = Crew;
                 if (crew == null) return DefaultColor.Off.Value();

@@ -92,7 +92,7 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
-            controlledEmissives = ModuleControllableEmissive.Find(part, emissiveName);
+            controlledEmissives = HasEmissive ? Identifiers.FindAll<ModuleControllableEmissive>(part, emissiveName) : null;
             SetUiEnabled(isUiEnabled);
         }
 
@@ -130,6 +130,11 @@ namespace IndicatorLights
                 if (candidate != null) return candidate;
             }
             return null;
+        }
+
+        private bool HasEmissive
+        {
+            get { return !string.IsNullOrEmpty(emissiveName); }
         }
     }
 }

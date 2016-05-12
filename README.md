@@ -95,6 +95,15 @@ Various crew modules now have status indicators to show occupancy.
 * Eventually, I intend to add indicators to the rest of the crewed parts. (For anyone who can't wait, you can do this yourself via ModuleManager config.)
 
 
+### ISRU units
+The large and small ISRU converters have status indicators to show operational status.
+
+![ISRU](https://raw.githubusercontent.com/KSPSnark/IndicatorLights/master/screenshots/isru.png)
+
+* Each of the four converters on the ISRU unit has its own status indicator.
+* Indicators are color-coded by resource:  LFO = cyan, liquid fuel = green, oxidizer = blue, monoprop = yellow.
+* Currently just a simple on/off indicator. In the future I may add some visualization of heat status.
+
 
 ## Configuration
 I use color a *lot* in this mod, as a way of conveying information. My choice of colors may not be to everyone's liking, though.  Maybe you'd like all of them to be dimmer.  Maybe you have color-blindness issues and my choice of red-versus-green for status doesn't work well for you.

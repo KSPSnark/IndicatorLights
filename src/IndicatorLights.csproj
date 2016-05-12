@@ -49,7 +49,10 @@
     <Compile Include="ColorSources.cs" />
     <Compile Include="DefaultColor.cs" />
     <Compile Include="IColorSource.cs" />
+    <Compile Include="Identifiers.cs" />
+    <Compile Include="IToggle.cs" />
     <Compile Include="ModuleCrewIndicator.cs" />
+    <Compile Include="ModuleCrewIndicatorToggle.cs" />
     <Compile Include="ModuleCustomBlink.cs" />
     <Compile Include="ModuleCustomColoredEmissive.cs" />
     <Compile Include="ModuleDockingCrossfeedIndicator.cs" />

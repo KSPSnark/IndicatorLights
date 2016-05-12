@@ -1,3 +1,8 @@
+Pre-release v0.8
+* Add indicators to the large and small ISRU units.
+* Add crew indicators to the Mk2 cockpit and Mk2 crew cabin.
+* Made the default on/off status of crew indicator lights configurable.
+
 Pre-release v0.7.1
 * Fix bug introduced in 0.7 that broke lots of indicators.
 * Add crew indicator to cupola.

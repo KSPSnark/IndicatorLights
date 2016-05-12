@@ -1,9 +1,11 @@
-﻿namespace IndicatorLights
+﻿using System;
+
+namespace IndicatorLights
 {
     /// <summary>
     /// A simple module that doesn't actually do anything, other than "own" a particular toggle state.
     /// </summary>
-    public class ModuleIndicatorToggle : PartModule
+    public class ModuleIndicatorToggle : PartModule, Identifiers.IIdentifiable, IToggle
     {
         [KSPField(guiName = "Status", isPersistant = true, guiActive = true, guiActiveEditor = true), UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "On", disabledText = "Off")]
         public bool status = false;
@@ -69,6 +71,15 @@
         }
         private BaseAction DeactivateAction { get { return Actions["OnDeactivateAction"]; } }
 
+        public string Identifier
+        {
+            get { return toggleName; }
+        }
+
+        public bool ToggleStatus
+        {
+            get { return status; }
+        }
 
         public override void OnStart(StartState state)
         {
@@ -92,27 +103,6 @@
             ToggleAction.guiName = toggleAction;
             ActivateAction.guiName = activateAction;
             DeactivateAction.guiName = deactivateAction;
-        }
-
-        /// <summary>
-        /// Tries to find a ModuleIndicatorToggle with the specified name. If the specified name
-        /// is null, will just return the first ModuleIndicatorToggle found. If not found, returns null.
-        /// </summary>
-        /// <param name="part"></param>
-        /// <param name="toggleName"></param>
-        /// <returns></returns>
-        public static ModuleIndicatorToggle Find(Part part, string toggleName)
-        {
-            if (part == null) return null;
-            bool findFirst = string.IsNullOrEmpty(toggleName);
-            for (int i = 0; i < part.Modules.Count; ++i)
-            {
-                ModuleIndicatorToggle candidate = part.Modules[i] as ModuleIndicatorToggle;
-                if (candidate == null) continue;
-                if (findFirst) return candidate;
-                if (toggleName.Equals(candidate.toggleName)) return candidate;
-            }
-            return null;
         }
     }
 }

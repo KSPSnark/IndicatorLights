@@ -20,17 +20,23 @@ namespace IndicatorLights
         public static readonly Color reactionWheelSasOnlyColor;
 
         // For resource converters
-        public static readonly Color resourceConverterActiveColor;
 
         // For docking ports
         public static readonly Color dockingCrossfeedOnColor;
         public static readonly Color dockingCrossfeedOffColor;
 
         // For crew status
+        public static readonly bool crewIndicatorDefaultStatus;
         public static readonly Color crewPilotColor;
         public static readonly Color crewEngineerColor;
         public static readonly Color crewScientistColor;
         public static readonly Color crewTouristColor;
+
+        // For resources
+        public static readonly Color lfoColor;
+        public static readonly Color liquidFuelColor;
+        public static readonly Color oxidizerColor;
+        public static readonly Color monopropellantColor;
 
         static Configuration()
         {
@@ -48,15 +54,19 @@ namespace IndicatorLights
             reactionWheelPilotOnlyColor = ParseColor(config, DefaultColor.ReactionWheelPilotOnly);
             reactionWheelSasOnlyColor = ParseColor(config, DefaultColor.ReactionWheelSASOnly);
 
-            resourceConverterActiveColor = ParseColor(config, DefaultColor.ResourceConverterActive);
-
             dockingCrossfeedOnColor = ParseColor(config, DefaultColor.DockingCrossfeedOn);
             dockingCrossfeedOffColor = ParseColor(config, DefaultColor.DockingCrossfeedOff);
 
+            crewIndicatorDefaultStatus = config.GetValue("CrewIndicatorDefaultStatus", false);
             crewPilotColor = ParseColor(config, DefaultColor.CrewPilot);
             crewEngineerColor = ParseColor(config, DefaultColor.CrewEngineer);
             crewScientistColor = ParseColor(config, DefaultColor.CrewScientist);
             crewTouristColor = ParseColor(config, DefaultColor.CrewTourist);
+
+            liquidFuelColor = ParseColor(config, DefaultColor.ResourceLiquidFuel);
+            oxidizerColor = ParseColor(config, DefaultColor.ResourceOxidizer);
+            lfoColor = Color.Lerp(liquidFuelColor, oxidizerColor, 0.5f);
+            monopropellantColor = ParseColor(config, DefaultColor.ResourceMonopropellant);
 
             config.save();
         }

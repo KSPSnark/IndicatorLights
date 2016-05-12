@@ -12,9 +12,9 @@ namespace IndicatorLights
     /// Typically there will be one instance of this module on a part for each emissive
     /// renderer present.
     /// </summary>
-    public class ModuleControllableEmissive : PartModule
+    public class ModuleControllableEmissive : PartModule, Identifiers.IIdentifiable
     {
-        private static readonly Regex TARGET_PATTERN = new Regex("^(.+):(\\d+)$");
+        private static readonly Regex TARGET_PATTERN = new Regex("^(.+):([\\d,]+)$");
         private static readonly int emissiveColorId = Shader.PropertyToID("_EmissiveColor");
         private static readonly Material[] NO_MATERIALS = new Material[0];
 
@@ -57,31 +57,6 @@ namespace IndicatorLights
         }
 
         /// <summary>
-        /// Tries to find all the emissives with the specified name, or null if not found.
-        /// </summary>
-        /// <param name="part"></param>
-        /// <param name="emissiveName"></param>
-        /// <returns></returns>
-        public static List<ModuleControllableEmissive> Find(Part part, string emissiveName)
-        {
-            if ((emissiveName == null) || string.Empty.Equals(emissiveName)) return null;
-            List<ModuleControllableEmissive> emissives = new List<ModuleControllableEmissive>();
-            for (int i = 0; i < part.Modules.Count; ++i)
-            {
-                ModuleControllableEmissive candidate = part.Modules[i] as ModuleControllableEmissive;
-                if (candidate == null) continue;
-                if (emissiveName.Equals(candidate.emissiveName))
-                {
-                    // got a match!
-                    emissives.Add(candidate);
-                }
-            }
-            if (emissives.Count > 0) return emissives;
-            Logging.Warn("No controllable emissive '" + emissiveName + "' found for " + part.GetTitle());
-            return null;
-        }
-
-        /// <summary>
         /// Searches the part for all emissive materials that match the specified target for this module.
         /// Special case is when the target ends with a colon and a number, in which case it only tries
         /// to get the Nth such instance.
@@ -91,23 +66,23 @@ namespace IndicatorLights
         {
             if (part == null) return NO_MATERIALS;
             if (part.transform == null) return NO_MATERIALS;
-            if (target == null)
+            if (string.IsNullOrEmpty(target))
             {
                 Logging.Warn("No emissive target identified for " + part.GetTitle());
                 return null;
             }
             MeshRenderer[] renderers = part.transform.GetComponentsInChildren<MeshRenderer>();
-            if (renderers == null) return null;
+            if (renderers == null) return NO_MATERIALS;
 
-            // Special case: if target ends with a colon and an integer, only get the Nth emissive material
-            // of that name.
+            // If they've ended with a colon and a list of indices, use that.
             Match match = TARGET_PATTERN.Match(target);
-            int targetIndex = -1;
+            HashSet<int> targetIndices = null;
             if (match.Success)
             {
                 target = match.Groups[1].Value;
-                targetIndex = int.Parse(match.Groups[2].Value);
+                targetIndices = ParseIndices(match.Groups[2].Value);
             }
+            if (targetIndices == null) targetIndices = new HashSet<int>();
 
             int count = 0;
 
@@ -134,30 +109,58 @@ namespace IndicatorLights
                 }
                 return NO_MATERIALS;
             }
-            if (targetIndex >= count) targetIndex = -1;
-            Material[] emissiveMaterials = (targetIndex < 0) ? new Material[count] : new Material[1];
-            count = 0;
+            PruneIndices(targetIndices, count);
+            if (targetIndices.Count == 0)
+            {
+                // just include them all
+                for (int i = 0; i < count; ++i) targetIndices.Add(i);
+            }
+            Material[] emissiveMaterials = new Material[targetIndices.Count];
+            int matchingRendererIndex = 0;
+            int emissiveMaterialIndex = 0;
             for (int rendererIndex = 0; rendererIndex < renderers.Length; ++rendererIndex)
             {
                 Renderer renderer = renderers[rendererIndex];
                 if (renderer == null) continue;
                 if (!target.Equals(renderer.name) && !cloneTarget.Equals(renderer.name)) continue;
-                if (targetIndex < 0)
+                if (targetIndices.Contains(matchingRendererIndex))
                 {
-                    emissiveMaterials[count] = renderer.material;
+                    emissiveMaterials[emissiveMaterialIndex++] = renderer.material;
                 }
-                else
-                {
-                    if (count == targetIndex)
-                    {
-                        emissiveMaterials[0] = renderer.material;
-                        break;
-                    }
-                }
-                ++count;
+                ++matchingRendererIndex;
             }
 
             return emissiveMaterials;
+        }
+
+        private static HashSet<int> ParseIndices(string listText)
+        {
+            string[] tokens = listText.Split(',');
+            HashSet<int> indices = new HashSet<int>();
+            for (int i = 0; i < tokens.Length; ++i)
+            {
+                try {
+                    indices.Add(int.Parse(tokens[i]));
+                }
+                catch
+                {
+                    // skip it
+                }
+            }
+            return indices;
+        }
+
+        private static void PruneIndices(HashSet<int> indices, int limit)
+        {
+            List<int> overflows = new List<int>();
+            foreach (int index in indices)
+            {
+                if (index >= limit) overflows.Add(index);
+            }
+            foreach (int overflow in overflows)
+            {
+                indices.Remove(overflow);
+            }
         }
 
         private Material[] Materials
@@ -169,6 +172,14 @@ namespace IndicatorLights
                     materials = GetEmissiveMaterials();
                 }
                 return materials;
+            }
+        }
+
+        public string Identifier
+        {
+            get
+            {
+                return emissiveName;
             }
         }
     }

@@ -68,12 +68,6 @@ namespace IndicatorLights
         ReactionWheelSASOnly,
 
         /// <summary>
-        /// The color used to indicate that a resource converter is currently running.
-        /// Defaults to bright green.
-        /// </summary>
-        ResourceConverterActive,
-
-        /// <summary>
         /// The color used to indicate that a docking port has crossfeed enabled.
         /// Defaults to green.
         /// </summary>
@@ -107,7 +101,32 @@ namespace IndicatorLights
         /// The color used to indicate that a crewable slot contains a tourist.
         /// Defaults to white.
         /// </summary>
-        CrewTourist
+        CrewTourist,
+
+        /// <summary>
+        /// The color associated with liquid fuel + oxidizer resources.
+        /// Defaults to cyan.
+        /// </summary>
+        ResourceLFO,
+
+        /// <summary>
+        /// The color associated with liquid fuel resources.
+        /// Defaults to green.
+        /// </summary>
+        ResourceLiquidFuel,
+
+        /// <summary>
+        /// The color associated with oxidizer resources.
+        /// Defaults to blue.
+        /// </summary>
+        ResourceOxidizer,
+
+        /// <summary>
+        /// The color associated with monopropellant resources.
+        /// Defaults to yellow.
+        /// </summary>
+        ResourceMonopropellant,
+
     }
 
     public static class DefaultColorExtensions
@@ -149,8 +168,6 @@ namespace IndicatorLights
                     return Color.blue;
                 case DefaultColor.ReactionWheelSASOnly:
                     return Color.yellow * 0.7f;
-                case DefaultColor.ResourceConverterActive:
-                    return Color.green;
                 case DefaultColor.DockingCrossfeedOn:
                     return Color.green * 0.7f;
                 case DefaultColor.DockingCrossfeedOff:
@@ -163,6 +180,14 @@ namespace IndicatorLights
                     return Color.Lerp(Color.blue, Color.gray, 0.1f);
                 case DefaultColor.CrewTourist:
                     return Color.gray;
+                case DefaultColor.ResourceLFO:
+                    return Color.Lerp(DefaultColor.ResourceLiquidFuel.DefaultValue(), DefaultColor.ResourceOxidizer.DefaultValue(), 0.5f);
+                case DefaultColor.ResourceLiquidFuel:
+                    return Color.green;
+                case DefaultColor.ResourceOxidizer:
+                    return new Color(0.1f, 0.4f, 1, 1);
+                case DefaultColor.ResourceMonopropellant:
+                    return 0.9f * new Color(0.9f, 0.76f, 0, 1);
                 default:
                     // this should only happen if there's a bug... pick an odd color to make it obvious
                     return Color.magenta;
@@ -196,8 +221,6 @@ namespace IndicatorLights
                     return Configuration.reactionWheelPilotOnlyColor;
                 case DefaultColor.ReactionWheelSASOnly:
                     return Configuration.reactionWheelSasOnlyColor;
-                case DefaultColor.ResourceConverterActive:
-                    return Configuration.resourceConverterActiveColor;
                 case DefaultColor.DockingCrossfeedOn:
                     return Configuration.dockingCrossfeedOnColor;
                 case DefaultColor.DockingCrossfeedOff:
@@ -210,6 +233,14 @@ namespace IndicatorLights
                     return Configuration.crewScientistColor;
                 case DefaultColor.CrewTourist:
                     return Configuration.crewTouristColor;
+                case DefaultColor.ResourceLFO:
+                    return Configuration.lfoColor;
+                case DefaultColor.ResourceLiquidFuel:
+                    return Configuration.liquidFuelColor;
+                case DefaultColor.ResourceOxidizer:
+                    return Configuration.oxidizerColor;
+                case DefaultColor.ResourceMonopropellant:
+                    return Configuration.monopropellantColor;
                 default:
                     return defaultColor.DefaultValue();
             }

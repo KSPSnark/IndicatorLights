@@ -15,9 +15,9 @@ namespace IndicatorLights
     /// </summary>
     class ModuleConverterIndicator : ModuleBiStateIndicator
     {
-        private static readonly Color INACTIVE_COLOR = Color.black;
+        private static readonly Color INACTIVE_COLOR = DefaultColor.Off.DefaultValue();
 
-        private Color activeColor = Configuration.resourceConverterActiveColor;
+        private Color active;
         private BaseConverter converter = null;
 
         /// <summary>
@@ -27,23 +27,8 @@ namespace IndicatorLights
         [KSPField]
         public string converterName = null;
 
-        /// <summary>
-        /// The red component of the "lit" color.
-        /// </summary>
         [KSPField]
-        public float red = Configuration.resourceConverterActiveColor.r;
-
-        /// <summary>
-        /// The green component of the "lit" color.
-        /// </summary>
-        [KSPField]
-        public float green = Configuration.resourceConverterActiveColor.g;
-
-        /// <summary>
-        /// The blue component of the "lit" color.
-        /// </summary>
-        [KSPField]
-        public float blue = Configuration.resourceConverterActiveColor.b;
+        public string activeColor = Colors.ToString(DefaultColor.ToggleLED);
 
         /// <summary>
         /// Called when the module is starting up.
@@ -53,7 +38,7 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
-            activeColor = new Color(red, green, blue, 1);
+            active = Colors.Parse(activeColor, DefaultColor.ToggleLED.DefaultValue());
 
             converter = FindConverter();
             if (converter == null)
@@ -91,7 +76,7 @@ namespace IndicatorLights
 
         protected override Color ActiveColor
         {
-            get { return activeColor; }
+            get { return active; }
         }
 
         protected override Color InactiveColor
