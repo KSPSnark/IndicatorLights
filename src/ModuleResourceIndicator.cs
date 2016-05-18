@@ -1,22 +1,10 @@
-﻿using UnityEngine;
-
-namespace IndicatorLights
+﻿namespace IndicatorLights
 {
     /// <summary>
-    /// A controller that sets the display based on the empty/full percentage of a
-    /// particular resource.
+    /// Base class for modules that work with resources.
     /// </summary>
-    class ModuleResourceIndicator : ModuleEmissiveController
+    abstract class ModuleResourceIndicator : ModuleEmissiveController
     {
-        private static readonly ColorGradient HIGH_COLOR = new ColorGradient(Color.black, Configuration.highResourceColor);
-        private static readonly ColorGradient MEDIUM_COLOR = new ColorGradient(Color.black,Configuration.mediumResourceColor);
-        private static readonly ColorGradient LOW_COLOR = new ColorGradient(Color.black, Configuration.lowResourceColor);
-        private static readonly AnimateGradient CRITICAL_FADE = AnimateGradient.Fade(LOW_COLOR, 1200, 0.5);
-        private static readonly AnimateGradient HIGH_BLINK = AnimateGradient.Blink(HIGH_COLOR, 900, 300);
-        private static readonly AnimateGradient MEDIUM_BLINK = AnimateGradient.Blink(MEDIUM_COLOR, 900, 300);
-        private static readonly AnimateGradient LOW_BLINK = AnimateGradient.Blink(LOW_COLOR, 900, 300);
-        private static readonly Color EMPTY_COLOR = Color.black;
-
         private PartResource resource = null;
 
         /// <summary>
@@ -25,25 +13,6 @@ namespace IndicatorLights
         /// </summary>
         [KSPField]
         public string resourceName = null;
-
-        /// <summary>
-        /// If resource content is above this fraction, display using the "high" color.
-        /// </summary>
-        [KSPField]
-        public double highThreshold = 0.7;
-
-        /// <summary>
-        /// If resource content is below this fraction, display using the "low" color.
-        /// </summary>
-        [KSPField]
-        public double lowThreshold = 0.3;
-
-        /// <summary>
-        /// If resource content is below this faction, use a pulsating animation for
-        /// the light's brightness.
-        /// </summary>
-        [KSPField]
-        public double criticalThreshold = 0.03;
 
         /// <summary>
         /// Called when the module is starting up.
@@ -57,6 +26,7 @@ namespace IndicatorLights
             if (resource == null)
             {
                 Logging.Warn("ModuleResourceIndicator is inactive");
+                return;
             }
         }
 
@@ -65,19 +35,9 @@ namespace IndicatorLights
             get { return resource != null; }
         }
 
-        public override Color OutputColor
+        protected PartResource Resource
         {
-            get
-            {
-                if (resource.amount == 0) return Color.black;
-                double fraction = resource.amount / resource.maxAmount;
-                if (!resource.flowState)
-                {
-                    return ((fraction > highThreshold) ? HIGH_BLINK : ((fraction > lowThreshold) ? MEDIUM_BLINK : LOW_BLINK)).Color;
-                }
-                if (fraction < criticalThreshold) return CRITICAL_FADE.Color;
-                return ((fraction > highThreshold) ? HIGH_COLOR : ((fraction > lowThreshold) ? MEDIUM_COLOR : LOW_COLOR)).To;
-            }
+            get { return resource; }
         }
 
         /// <summary>
@@ -108,8 +68,8 @@ namespace IndicatorLights
                     return resource;
                 }
             }
-            Logging.Warn("No resource '" + resourceName + "' found in " + part.GetTitle() + ", defaulting to " + part.Resources[0].resourceName);
-            return part.Resources[0];
+            Logging.Warn("No resource '" + resourceName + "' found in " + part.GetTitle() + ", can't track");
+            return null;
         }
     }
 }

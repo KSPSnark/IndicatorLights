@@ -1,0 +1,14 @@
+echo Creating pre-release file structure for $1
+mkdir -p $1/GameData/IndicatorLights
+cp ../files/ModuleManager.*.dll $1/GameData
+cp ../files/ModuleManagerLicense.md $1/GameData
+cp ../files/changelog.txt $1/GameData/IndicatorLights
+cp ../src/bin/Release/IndicatorLights.dll $1/GameData/IndicatorLights
+cp ../LICENSE $1/GameData/IndicatorLights
+cp ../README.md $1/GameData/IndicatorLights
+cp -R ../files/Agencies $1/GameData/IndicatorLights
+cp -R ../files/Flags $1/GameData/IndicatorLights
+cp -R ../files/Meshes $1/GameData/IndicatorLights
+cp -R ../files/Parts $1/GameData/IndicatorLights
+cp -r ../files/Patches $1/GameData/IndicatorLights
+echo Done.

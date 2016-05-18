@@ -23,14 +23,14 @@ namespace IndicatorLights
         /// color string, or it might be the controllerName of another controller on the part.
         /// </summary>
         [KSPField]
-        public string activeColor = null;
+        public string activeColor = Colors.ToString(DefaultColor.ToggleLED);
 
         /// <summary>
         /// This specifies the color of the toggle when it's in the "off" state. This might be a literal
         /// color string, or it might be the controllerName of another controller on the part.
         /// </summary>
         [KSPField]
-        public string inactiveColor = null;
+        public string inactiveColor = Colors.ToString(DefaultColor.Off);
 
         private IColorSource inputActive = null;
         private IColorSource inputInactive = null;

@@ -25,8 +25,8 @@ namespace IndicatorLights
         {
             base.OnStart(state);
             ready = ColorSources.Find(part, readyColor);
-            acquire = ColorSources.TryFind(part, acquireColor);
-            disengage = ColorSources.TryFind(part, disengageColor);
+            acquire = ColorSources.Find(part, acquireColor);
+            disengage = ColorSources.Find(part, disengageColor);
         }
 
         public override Color OutputColor
@@ -34,8 +34,8 @@ namespace IndicatorLights
             get
             {
                 if (string.IsNullOrEmpty(SourceModule.state)) return ready.OutputColor;
-                if (SourceModule.state.StartsWith("Acquire")) return (acquire == null) ? ready.OutputColor : acquire.OutputColor;
-                if (SourceModule.state.StartsWith("Disengage")) return (disengage == null) ? ready.OutputColor : disengage.OutputColor;
+                if (SourceModule.state.StartsWith("Acquire")) return acquire.OutputColor;
+                if (SourceModule.state.StartsWith("Disengage")) return disengage.OutputColor;
                 return ready.OutputColor;
             }
         }

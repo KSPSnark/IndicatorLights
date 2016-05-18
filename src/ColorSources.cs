@@ -7,9 +7,12 @@ namespace IndicatorLights
     {
         public static readonly IColorSource BLACK = Constant(Color.black);
 
+        public static readonly IColorSource ERROR = new ErrorColorSource();
+
         /// <summary>
         /// Signature for a function that knows how to parse an IColorSource from a part and
-        /// a ParsedParams. Returns null if it can't parse.
+        /// a ParsedParams. Returns null if it it's not recognized. Throws ColorSourceException
+        /// if it's recognized, but invalid syntax.
         /// </summary>
         /// <param name="part"></param>
         /// <param name="parsedParams"></param>
@@ -21,7 +24,9 @@ namespace IndicatorLights
         /// </summary>
         private static readonly TryParseSource[] PARSEABLE_SOURCES =
         {
-            BlinkColorSource.TryParse
+            BlinkColorSource.TryParse,
+            PulsateColorSource.TryParse,
+            DimColorSource.TryParse
         };
 
         /// <summary>
@@ -30,6 +35,16 @@ namespace IndicatorLights
         /// <param name="color"></param>
         /// <returns></returns>
         public static IColorSource Constant(Color color)
+        {
+            return new ConstantColorSource(color);
+        }
+
+        /// <summary>
+        /// Gets a constant-color source.
+        /// </summary>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        public static IColorSource Constant(DefaultColor color)
         {
             return new ConstantColorSource(color);
         }
@@ -49,63 +64,100 @@ namespace IndicatorLights
 
 
         /// <summary>
-        /// Given a color source ID (which might be a literal color, or might be the ID
-        /// of a controller), try to find the appropriate source. If there's no match,
-        /// returns a constant black source.
+        /// Gets a source that applies a pulsating brightness filter to another source.
         /// </summary>
-        /// <param name="sourceID"></param>
+        /// <param name="origin"></param>
+        /// <param name="cycleMillis"></param>
+        /// <param name="multiplier"></param>
         /// <returns></returns>
+        public static IColorSource Pulsate(IColorSource origin, long cycleMillis, float multiplier)
+        {
+            return new PulsateColorSource(origin, cycleMillis, multiplier);
+        }
+
+
+        /// <summary>
+        /// Gets a source that applies a constant brightness multiplier to another source.
+        /// </summary>
+        /// <param name="origin"></param>
+        /// <param name="multiplier"></param>
+        /// <returns></returns>
+        public static IColorSource Dim(IColorSource origin, float multiplier)
+        {
+            return new DimColorSource(origin, multiplier);
+        }
+
+
+        /// <summary>
+        /// Given a color source ID (which might be a literal color, the ID of a controller,
+        /// or a parameterized source), try to find the appropriate source. If it can't
+        /// be parsed or found, logs an error and returns an "error" source for debugging purposes.
+        /// </summary>
         public static IColorSource Find(Part part, string sourceID)
         {
-            return TryFind(part, sourceID) ?? BLACK;
+            try
+            {
+                return FindPrivate(part, sourceID);
+            }
+            catch (ColorSourceException e)
+            {
+                String message = "Invalid color source '" + sourceID + "' specified for " + part.GetTitle() + ": " + e.Message;
+                for (Exception cause = e.InnerException; cause != null; cause = cause.InnerException)
+                {
+                    message += " -> " + cause.Message;
+                }
+                Logging.Warn(message);
+                return ERROR;
+            }
         }
 
         /// <summary>
-        /// Given a color source ID (which might be a literal color, or might be the ID
-        /// of a controller), try to find the appropriate source. If there's no match,
-        /// returns null.
-        /// </summary>
-        /// <param name="sourceID"></param>
-        /// <returns></returns>
-        public static IColorSource TryFind(Part part, string sourceID)
+        /// Given a color source ID (which might be a literal color, the ID of a controller,
+        /// or a parameterized source), try to find the appropriate source. If it can't
+        /// be parsed or found, throws a ColorSourceException.
+        private static IColorSource FindPrivate(Part part, string sourceID)
         {
-            if (!string.IsNullOrEmpty(sourceID))
+            if (string.IsNullOrEmpty(sourceID))
             {
-                // Maybe it's a color string.
-                if (Colors.IsColorString(sourceID))
-                {
-                    return Constant(Colors.Parse(sourceID, Color.black));
-                }
+                throw new ColorSourceException(part, "Null or empty color source");
+            }
 
-                // Is it a parameterized source?
-                ParsedParameters parsedParams = ParsedParameters.TryParse(sourceID);
-                if (parsedParams != null)
-                {
-                    for (int i = 0; i < PARSEABLE_SOURCES.Length; ++i)
-                    {
-                        IColorSource candidate = PARSEABLE_SOURCES[i](part, parsedParams);
-                        if (candidate != null) return candidate;
-                    }
-                    return null; // no match
-                }
+            // Maybe it's a color string.
+            if (Colors.IsColorString(sourceID))
+            {
+                return Constant(Colors.Parse(sourceID, Color.black));
+            }
 
-                // Maybe it's a module on the part?
-                for (int i = 0; i < part.Modules.Count; ++i)
+            // Is it a parameterized source?
+            ParsedParameters parsedParams = ParsedParameters.TryParse(sourceID);
+            if (parsedParams != null)
+            {
+                // It has the right syntax for a parameterizeed source. Do we recognize it?
+                for (int i = 0; i < PARSEABLE_SOURCES.Length; ++i)
                 {
-                    IColorSource candidate = part.Modules[i] as IColorSource;
-                    if (candidate == null) continue;
-                    if (sourceID.Equals(candidate.ColorSourceID))
-                    {
-                        return candidate;
-                    }
+                    IColorSource candidate = PARSEABLE_SOURCES[i](part, parsedParams);
+                    if (candidate != null) return candidate;
+                }
+                throw new ColorSourceException(part, "Unknown function type '" + parsedParams.Identifier + "'");
+            }
+
+            // Maybe it's a module on the part?
+            for (int i = 0; i < part.Modules.Count; ++i)
+            {
+                IColorSource candidate = part.Modules[i] as IColorSource;
+                if (candidate == null) continue;
+                if (sourceID.Equals(candidate.ColorSourceID))
+                {
+                    return candidate;
                 }
             }
 
             // not found
-            Logging.Warn("Can't find a color source named '" + sourceID + "' on " + part.GetTitle());
-            return null;
+            throw new ColorSourceException(part, "Can't find a color source named '" + sourceID + "'");
         }
 
+
+        #region ConstantColorSource
         /// <summary>
         /// Puts an IColorSource wrapper around a constant color.
         /// </summary>
@@ -117,6 +169,12 @@ namespace IndicatorLights
             public ConstantColorSource(Color color)
             {
                 this.color = color;
+                this.id = Colors.ToString(color);
+            }
+
+            public ConstantColorSource(DefaultColor color)
+            {
+                this.color = color.Value();
                 this.id = Colors.ToString(color);
             }
 
@@ -134,9 +192,94 @@ namespace IndicatorLights
             {
                 get { return id; }
             }
-
         }
+        #endregion
 
+
+        #region DimColorSource
+        /// <summary>
+        /// A color source that applies a constant dimming filter to another source.
+        /// </summary>
+        private class DimColorSource : IColorSource
+        {
+            private static readonly string TYPE_NAME = "dim";
+            private readonly IColorSource origin;
+            private readonly float multiplier;
+            private readonly string id;
+
+            public DimColorSource(IColorSource origin, float multiplier)
+            {
+                this.origin = origin;
+                this.multiplier = multiplier;
+                this.id = string.Format("{0}({1},{2})", TYPE_NAME, origin.ColorSourceID, multiplier);
+            }
+
+            /// <summary>
+            /// Try to get a dim color source from a ParsedParameters. The expected format is:
+            ///
+            /// dim(origin, multiplier)
+            /// </summary>
+            /// <param name="part"></param>
+            /// <param name="parsedParams"></param>
+            /// <returns></returns>
+            public static IColorSource TryParse(Part part, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
+                if (parsedParams.Count != 2)
+                {
+                    throw new ColorSourceException(
+                        part,
+                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (2 required)");
+                }
+
+                IColorSource origin;
+                try
+                {
+                    origin = FindPrivate(part, parsedParams[0]);
+                }
+                catch (ColorSourceException e)
+                {
+                    throw new ColorSourceException(part, TYPE_NAME + "() source has invalid origin", e);
+                }
+
+                float multiplier;
+                try
+                {
+                    multiplier = float.Parse(parsedParams[1]);
+                }
+                catch (FormatException e)
+                {
+                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[1] + "' (must be a float)", e);
+                }
+                if ((multiplier < 0) || (multiplier > 1))
+                {
+                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[1] + "' (must be in range 0 - 1)");
+                }
+                if (multiplier >= 1) return origin;
+
+                return new DimColorSource(origin, multiplier);
+            }
+
+            public string ColorSourceID
+            {
+                get { return id; }
+            }
+
+            public bool HasColor
+            {
+                get { return origin.HasColor; }
+            }
+
+            public Color OutputColor
+            {
+                get { return origin.OutputColor * multiplier; }
+            }
+        }
+        #endregion
+
+
+        #region BlinkColorSource
         /// <summary>
         /// A color source that blinks between two other sources.
         /// </summary>
@@ -170,17 +313,27 @@ namespace IndicatorLights
             /// <param name="part"></param>
             /// <param name="parsedParams"></param>
             /// <returns></returns>
-            public static BlinkColorSource TryParse(Part part, ParsedParameters parsedParams)
+            public static IColorSource TryParse(Part part, ParsedParameters parsedParams)
             {
                 if (parsedParams == null) return null;
-                for (int i = 0; i < parsedParams.Count; ++i)
-                {
-                }
-                if (parsedParams.Count != 4) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
+                if (parsedParams.Count != 4)
+                {
+                    throw new ColorSourceException(
+                        part,
+                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (4 required)");
+                }
 
-                IColorSource onSource = TryFind(part, parsedParams[0]);
-                if (onSource == null) return null;
+                IColorSource onSource;
+                try
+                {
+                    onSource = FindPrivate(part, parsedParams[0]);
+                }
+                catch (ColorSourceException e)
+                {
+                    throw new ColorSourceException(part, TYPE_NAME + "() source has invalid 'on' parameter", e);
+                }
+                
 
                 long onMillis;
                 try
@@ -189,12 +342,22 @@ namespace IndicatorLights
                 }
                 catch (FormatException e)
                 {
-                    Logging.Warn("Invalid 'on' milliseconds value '" + parsedParams[1] + "': " + e.Message);
-                    return null;
+                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid 'on' milliseconds value '" + parsedParams[1] + "' (must be an integer)", e);
+                }
+                if (onMillis < 1)
+                {
+                    throw new ColorSourceException(part, TYPE_NAME + "(): 'on' milliseconds must be positive");
                 }
 
-                IColorSource offSource = TryFind(part, parsedParams[2]);
-                if (offSource == null) return null;
+                IColorSource offSource;
+                try
+                {
+                    offSource = FindPrivate(part, parsedParams[2]);
+                }
+                catch (ColorSourceException e)
+                {
+                    throw new ColorSourceException(part, TYPE_NAME + "() source has invalid 'off' parameter", e);
+                }
 
                 long offMillis;
                 try
@@ -203,8 +366,11 @@ namespace IndicatorLights
                 }
                 catch (FormatException e)
                 {
-                    Logging.Warn("Invalid 'off' milliseconds value '" + parsedParams[3] + "': " + e.Message);
-                    return null;
+                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid 'off' milliseconds value '" + parsedParams[1] + "' (must be an integer)", e);
+                }
+                if (offMillis < 1)
+                {
+                    throw new ColorSourceException(part, TYPE_NAME + "(): 'off' milliseconds must be positive");
                 }
 
                 return new BlinkColorSource(onSource, onMillis, offSource, offMillis);
@@ -234,6 +400,213 @@ namespace IndicatorLights
                 {
                     return blink.State ? onSource : offSource;
                 }
+            }
+        }
+        #endregion
+
+
+        #region PulsateColorSource
+        /// <summary>
+        /// Applies a pulsating brightness filter to another color source.
+        /// </summary>
+        private class PulsateColorSource : IColorSource
+        {
+            private static readonly string TYPE_NAME = "pulsate";
+            private readonly Animations.TriangleWave wave;
+            private readonly IColorSource origin;
+            private readonly string id;
+
+            /// <summary>
+            /// Constructor.
+            /// </summary>
+            /// <param name="origin">The ColorSource to which to apply a pulsating brightness filter.</param>
+            /// <param name="cycleMillis">The duration of a pulsate cycle, in milliseconds.</param>
+            /// <param name="multiplier">The brightness factor to apply at the bottom of a cycle. 0 = pulsates down to black (strongest effect).  1 = no pulsation, acts like constant.</param>
+            public PulsateColorSource(IColorSource origin, long cycleMillis, float multiplier) : this(origin, cycleMillis, 1, multiplier)
+            {
+            }
+
+            /// <summary>
+            /// Constructor.
+            /// </summary>
+            /// <param name="origin">The ColorSource to which to apply a pulsating brightness filter.</param>
+            /// <param name="cycleMillis">The duration of a pulsate cycle, in milliseconds.</param>
+            /// <param name="multiplier1">The brightness factor to apply at one end of a cycle. 0 = pulsates down to black (strongest effect), 1 = no dimming.</param>
+            /// <param name="multiplier2">The brightness factor to apply at the other end of a cycle. 0 = pulsates down to black (strongest effect), 1 = no dimming.</param>
+            public PulsateColorSource(IColorSource origin, long cycleMillis, float multiplier1, float multiplier2)
+            {
+                this.origin = origin;
+                this.wave = Animations.TriangleWave.of(cycleMillis, multiplier1, multiplier2);
+                this.id = string.Format(
+                    "{0}({1},{2},{3},{4})",
+                    TYPE_NAME,
+                    origin.ColorSourceID,
+                    cycleMillis,
+                    multiplier1,
+                    multiplier2);
+            }
+
+            /// <summary>
+            /// Try to get a pulsate color source from a ParsedParameters. The expected format is:
+            /// 
+            /// pulsate(origin, cycleMillis, multiplier)
+            /// 
+            /// ...where multiplier is a float in the range 0 - 1.
+            /// </summary>
+            /// <param name="part"></param>
+            /// <param name="parsedParams"></param>
+            /// <returns></returns>
+            public static IColorSource TryParse(Part part, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
+                if ((parsedParams.Count < 3) || (parsedParams.Count > 4))
+                {
+                    throw new ColorSourceException(
+                        part,
+                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (3-4 required)");
+                }
+
+                IColorSource origin;
+                try
+                {
+                    origin = FindPrivate(part, parsedParams[0]);
+                }
+                catch (ColorSourceException e)
+                {
+                    throw new ColorSourceException(part, TYPE_NAME + "() source has invalid origin", e);
+                }
+
+                long cycleMillis;
+                try
+                {
+                    cycleMillis = long.Parse(parsedParams[1]);
+                }
+                catch (FormatException e)
+                {
+                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid cycle milliseconds value '" + parsedParams[1] + "'", e);
+                }
+                if (cycleMillis < 1)
+                {
+                    throw new ColorSourceException(part, TYPE_NAME + "(): cycle milliseconds must be positive");
+                }
+
+                float multiplier2;
+                try
+                {
+                    multiplier2 = float.Parse(parsedParams[2]);
+                }
+                catch (FormatException e)
+                {
+                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[2] + "' (must be a float)", e);
+                }
+                if ((multiplier2 < 0) || (multiplier2 > 1))
+                {
+                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[2] + "' (must be in range 0 - 1)");
+                }
+
+                float multiplier1 = 1;
+                if (parsedParams.Count > 3)
+                {
+                    try
+                    {
+                        multiplier1 = float.Parse(parsedParams[3]);
+                    }
+                    catch (FormatException e)
+                    {
+                        throw new ColorSourceException(part, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[3] + "' (must be a float)", e);
+                    }
+                    if ((multiplier1 < 0) || (multiplier1 > 1))
+                    {
+                        throw new ColorSourceException(part, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[3] + "' (must be in range 0 - 1)");
+                    }
+                }
+
+                if ((multiplier1 >= 1) && (multiplier2 >= 1)) return origin;
+
+                return new PulsateColorSource(origin, cycleMillis, multiplier1, multiplier2);
+            }
+
+            public bool HasColor
+            {
+                get { return origin.HasColor; }
+            }
+
+            public Color OutputColor
+            {
+                get { return wave.Value * origin.OutputColor; }
+            }
+
+            public string ColorSourceID
+            {
+                get { return id; }
+            }
+        }
+        #endregion
+
+
+        #region ErrorColorSource
+        /// <summary>
+        /// A repeating "red-green-blue-pause, red-green-blue-pause" flasher, used to
+        /// indicate error conditions to assist mod authors in debugging config problems.
+        /// </summary>
+        private class ErrorColorSource : IColorSource
+        {
+            public string ColorSourceID
+            {
+                get { return "ERROR"; }
+            }
+
+            public bool HasColor
+            {
+                get { return true; }
+            }
+
+            public Color OutputColor
+            {
+                get
+                {
+                    long phase = (Animations.CurrentMillis % 1200L) / 100;
+                    switch (phase)
+                    {
+                        case 0:
+                        case 1:
+                            return Color.red;
+                        case 3:
+                        case 4:
+                            return Color.green;
+                        case 6:
+                        case 7:
+                            return Color.blue;
+                        default:
+                            return Color.black;
+                    }
+                }
+            }
+        }
+        #endregion
+
+
+        /// <summary>
+        /// Thrown when there's an error trying to parse a color source string.
+        /// </summary>
+        private class ColorSourceException : Exception
+        {
+            private readonly Part part;
+
+            public ColorSourceException(Part part, string message) : base(message)
+            {
+                this.part = part;
+            }
+
+            public ColorSourceException(Part part, string message, Exception cause) : base(message, cause)
+            {
+                this.part = part;
+            }
+
+            public Part Part
+            {
+                get { return part; }
             }
         }
     }

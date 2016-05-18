@@ -44,7 +44,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnimateGradient.cs" />
     <Compile Include="Animations.cs" />
     <Compile Include="ColorSources.cs" />
     <Compile Include="DefaultColor.cs" />
@@ -58,9 +57,11 @@
     <Compile Include="ModuleDockingCrossfeedIndicator.cs" />
     <Compile Include="ModuleDockingStateIndicator.cs" />
     <Compile Include="ModuleIndicatorToggle.cs" />
+    <Compile Include="ModuleResourceEnabledIndicator.cs" />
+    <Compile Include="ModuleResourceIndicator.cs" />
+    <Compile Include="ModuleScienceExperimentIndicator.cs" />
     <Compile Include="ModuleSourceIndicator.cs" />
     <Compile Include="ModuleBiStateIndicator.cs" />
-    <Compile Include="ColorGradient.cs" />
     <Compile Include="Colors.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Logging.cs" />
@@ -68,7 +69,7 @@
     <Compile Include="ModuleConverterIndicator.cs" />
     <Compile Include="ModuleEmissiveController.cs" />
     <Compile Include="ModuleReactionWheelIndicator.cs" />
-    <Compile Include="ModuleResourceIndicator.cs" />
+    <Compile Include="ModuleResourceLevelIndicator.cs" />
     <Compile Include="ModuleToggleLED.cs" />
     <Compile Include="ParsedParameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

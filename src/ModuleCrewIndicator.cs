@@ -9,11 +9,32 @@ namespace IndicatorLights
     {
         private static readonly int NO_SLOT = -1;
 
+        private IColorSource emptySource = null;
+        private IColorSource pilotSource = null;
+        private IColorSource engineerSource = null;
+        private IColorSource scientistSource = null;
+        private IColorSource touristSource = null;
+
         [KSPField(isPersistant = true)]
         public int slot = NO_SLOT;
 
         [KSPField(isPersistant = true)]
         public string toggleName = null;
+
+        [KSPField]
+        public string emptyColor = Colors.ToString(DefaultColor.Off);
+
+        [KSPField]
+        public string pilotColor = Colors.ToString(DefaultColor.CrewPilot);
+
+        [KSPField]
+        public string engineerColor = Colors.ToString(DefaultColor.CrewEngineer);
+
+        [KSPField]
+        public string scientistColor = Colors.ToString(DefaultColor.CrewScientist);
+
+        [KSPField]
+        public string touristColor = Colors.ToString(DefaultColor.CrewTourist);
 
         private IToggle toggle = null;
 
@@ -26,6 +47,12 @@ namespace IndicatorLights
             base.OnStart(state);
 
             toggle = Identifiers.FindFirst<IToggle>(part, toggleName);
+
+            emptySource = ColorSources.Find(part, emptyColor);
+            pilotSource = ColorSources.Find(part, pilotColor);
+            engineerSource = ColorSources.Find(part, engineerColor);
+            scientistSource = ColorSources.Find(part, scientistColor);
+            touristSource = ColorSources.Find(part, touristColor);
 
             // The default value for slot is NO_SLOT. When we start up, we scan for all ModuleCrewIndicators
             // on the part, and assign them sequentially to slots, if available.
@@ -67,7 +94,7 @@ namespace IndicatorLights
         {
             get
             {
-                return (slot >= 0) && (part != null) && (slot < part.CrewCapacity);
+                return (slot >= 0) && (part != null) && (slot < part.CrewCapacity) && CurrentSource.HasColor;
             }
         }
 
@@ -76,26 +103,7 @@ namespace IndicatorLights
             get
             {
                 if ((toggle != null) && (!toggle.ToggleStatus)) return DefaultColor.Off.Value();
-
-                ProtoCrewMember crew = Crew;
-                if (crew == null) return DefaultColor.Off.Value();
-                if ((crew.type == ProtoCrewMember.KerbalType.Tourist)
-                    || (crew.experienceTrait == null)) {
-                    return DefaultColor.CrewTourist.Value();
-                }
-                string title = crew.experienceTrait.Title;
-                switch (title)
-                {
-                    case "Pilot":
-                        return DefaultColor.CrewPilot.Value();
-                    case "Engineer":
-                        return DefaultColor.CrewEngineer.Value();
-                    case "Scientist":
-                        return DefaultColor.CrewScientist.Value();
-                    default:
-                        // Should never happen, but put this as a placeholder so we'll know if it does.
-                        return Color.magenta;
-                }
+                return CurrentSource.OutputColor;
             }
         }
 
@@ -116,6 +124,33 @@ namespace IndicatorLights
                 else
                 {
                     return part.protoModuleCrew[slot];
+                }
+            }
+        }
+
+        private IColorSource CurrentSource
+        {
+            get
+            {
+                ProtoCrewMember crew = Crew;
+                if (crew == null) return emptySource;
+                if ((crew.type == ProtoCrewMember.KerbalType.Tourist)
+                    || (crew.experienceTrait == null))
+                {
+                    return touristSource;
+                }
+                string title = crew.experienceTrait.Title;
+                switch (title)
+                {
+                    case "Pilot":
+                        return pilotSource;
+                    case "Engineer":
+                        return engineerSource;
+                    case "Scientist":
+                        return scientistSource;
+                    default:
+                        // Should never happen, but put this as a placeholder so we'll know if it does.
+                        return ColorSources.ERROR;
                 }
             }
         }

@@ -23,7 +23,7 @@
             }
         }
 
-        public sealed override bool HasColor
+        public override bool HasColor
         {
             get { return sourceModule != null; }
         }

@@ -7,44 +7,61 @@ namespace IndicatorLights
     /// </summary>
     class ModuleReactionWheelIndicator : ModuleSourceIndicator<ModuleReactionWheel>
     {
-        private static readonly Color OFF_COLOR = Color.black;
-        private static readonly ColorGradient PROBLEM_GRADIENT = new ColorGradient(Color.black, Configuration.reactionWheelProblemColor);
-        private static readonly ColorGradient NORMAL_GRADIENT = new ColorGradient(Color.black, Configuration.reactionWheelNormalColor);
-        private static readonly ColorGradient PILOT_ONLY_GRADIENT = new ColorGradient(Color.black, Configuration.reactionWheelPilotOnlyColor);
-        private static readonly ColorGradient SAS_ONLY_GRADIENT = new ColorGradient(Color.black, Configuration.reactionWheelSasOnlyColor);
-
-        private static readonly int STARVED_BLINK_MILLIS = 250;
-        private static readonly AnimateGradient BROKEN_ANIMATION = AnimateGradient.Blink(PROBLEM_GRADIENT, 100, 1100);
-        private static readonly AnimateGradient NORMAL_STARVED = AnimateGradient.Blink(NORMAL_GRADIENT, STARVED_BLINK_MILLIS, STARVED_BLINK_MILLIS);
-        private static readonly AnimateGradient PILOT_ONLY_STARVED = AnimateGradient.Blink(PILOT_ONLY_GRADIENT, STARVED_BLINK_MILLIS, STARVED_BLINK_MILLIS);
-        private static readonly AnimateGradient SAS_ONLY_STARVED = AnimateGradient.Blink(SAS_ONLY_GRADIENT, STARVED_BLINK_MILLIS, STARVED_BLINK_MILLIS);
+        private static readonly Animations.Blink BLINK = Animations.Blink.of(250, 250);
 
         private StartState startState = StartState.None;
+        private IColorSource problemSource = null;
+        private IColorSource normalSource = null;
+        private IColorSource pilotOnlySource = null;
+        private IColorSource sasOnlySource = null;
+
+        /// <summary>
+        /// The color to display when the reaction wheel has a problem.
+        /// </summary>
+        [KSPField]
+        public string problemColor = Colors.ToString(DefaultColor.ReactionWheelProblem);
+
+        /// <summary>
+        /// The color to display when the reaction wheel is operating in "normal" mode.
+        /// </summary>
+        [KSPField]
+        public string normalColor = Colors.ToString(DefaultColor.ReactionWheelNormal);
+
+        /// <summary>
+        /// The color to display when the reaction wheel is operating in "pilot only" mode.
+        /// </summary>
+        [KSPField]
+        public string pilotOnlyColor = Colors.ToString(DefaultColor.ReactionWheelPilotOnly);
+
+        /// <summary>
+        /// The color to display when the reaction wheel is operating in "SAS only" mode.
+        /// </summary>
+        [KSPField]
+        public string sasOnlyColor = Colors.ToString(DefaultColor.ReactionWheelSASOnly);
+
 
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
             this.startState = state;
+            this.problemSource = ColorSources.Find(part, problemColor);
+            this.normalSource = ColorSources.Find(part, normalColor);
+            this.pilotOnlySource = ColorSources.Find(part, pilotOnlyColor);
+            this.sasOnlySource = ColorSources.Find(part, sasOnlyColor);
+        }
+
+        public override bool HasColor
+        {
+            get { return base.HasColor && CurrentSource.HasColor; }
         }
 
         public override Color OutputColor
         {
             get
             {
-                switch (SourceModule.State)
-                {
-                    case ModuleReactionWheel.WheelState.Disabled:
-                        return OFF_COLOR;
-                    case ModuleReactionWheel.WheelState.Broken:
-                        return BROKEN_ANIMATION.Color;
-                    default:
-                        break;
-                }
-                AnimateGradient animation = CurrentAnimation; // this is the "deprived" animation
-                if (IsDeprived) return animation.Color; // use the animated color, because we're deprived
-                // Not deprived, so either pick the "full on" color or the "halfway on" color, depending
-                // on whether autopilot is active or not.
-                return IsAutopilotActive ? animation.Gradient.To : animation.Gradient[0.5f];
+                Color baseColor = CurrentSource.OutputColor;
+                if (IsDeprived) return BLINK.State ? baseColor : DefaultColor.Off.Value();
+                return (IsAutopilotActive) ? baseColor : (0.5f * baseColor);
             }
         }
 
@@ -79,19 +96,27 @@ namespace IndicatorLights
             }
         }
 
-        private AnimateGradient CurrentAnimation
+        private IColorSource CurrentSource
         {
             get
             {
-                if (SourceModule == null) return NORMAL_STARVED;
+                switch (SourceModule.State)
+                {
+                    case ModuleReactionWheel.WheelState.Disabled:
+                        return ColorSources.BLACK;
+                    case ModuleReactionWheel.WheelState.Broken:
+                        return problemSource;
+                    default:
+                        break;
+                }
                 switch ((VesselActuatorMode)SourceModule.actuatorModeCycle)
                 {
                     case VesselActuatorMode.Pilot:
-                        return PILOT_ONLY_STARVED;
+                        return pilotOnlySource;
                     case VesselActuatorMode.SAS:
-                        return SAS_ONLY_STARVED;
+                        return sasOnlySource;
                     default:
-                        return NORMAL_STARVED;
+                        return normalSource;
                 }
             }
         }

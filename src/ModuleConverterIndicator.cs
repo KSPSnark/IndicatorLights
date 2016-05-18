@@ -13,12 +13,11 @@ namespace IndicatorLights
     /// However, the "lit" color can be customized via part config. The default if not
     /// specified is bright green, but any arbitrary color can be configured.
     /// </summary>
-    class ModuleConverterIndicator : ModuleBiStateIndicator
+    class ModuleConverterIndicator : ModuleEmissiveController
     {
-        private static readonly Color INACTIVE_COLOR = DefaultColor.Off.DefaultValue();
-
-        private Color active;
         private BaseConverter converter = null;
+        private IColorSource activeSource;
+        private IColorSource inactiveSource;
 
         /// <summary>
         /// The name of the converter to which this controller is bound. This
@@ -27,8 +26,17 @@ namespace IndicatorLights
         [KSPField]
         public string converterName = null;
 
+        /// <summary>
+        /// The color to use when the converter is active.
+        /// </summary>
         [KSPField]
         public string activeColor = Colors.ToString(DefaultColor.ToggleLED);
+
+        /// <summary>
+        /// The color to use when the converter is inactive.
+        /// </summary>
+        [KSPField]
+        public string inactiveColor = Colors.ToString(DefaultColor.Off);
 
         /// <summary>
         /// Called when the module is starting up.
@@ -38,7 +46,8 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
-            active = Colors.Parse(activeColor, DefaultColor.ToggleLED.DefaultValue());
+            activeSource = ColorSources.Find(part, activeColor);
+            inactiveSource = ColorSources.Find(part, inactiveColor);
 
             converter = FindConverter();
             if (converter == null)
@@ -71,25 +80,17 @@ namespace IndicatorLights
 
         public override bool HasColor
         {
-            get { return converter != null; }
+            get { return (converter != null) && CurrentSource.HasColor; }
         }
 
-        protected override Color ActiveColor
+        public override Color OutputColor
         {
-            get { return active; }
+            get { return CurrentSource.OutputColor; }
         }
 
-        protected override Color InactiveColor
+        private IColorSource CurrentSource
         {
-            get { return INACTIVE_COLOR; }
-        }
-
-        /// <summary>
-        /// Gets whether the converter is currently active.
-        /// </summary>
-        protected override bool State
-        {
-            get { return (converter != null) && converter.IsActivated; }
+            get { return IsConverterActivated ? activeSource : inactiveSource; }
         }
     }
 }
