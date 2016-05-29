@@ -43,7 +43,7 @@ namespace IndicatorLights
         [KSPAction("Toggle Light")]
         public void ToggleAction(KSPActionParam actionParam)
         {
-            status = !status;
+            status = actionParam.type != KSPActionType.Deactivate;
         }
 
         /// <summary>

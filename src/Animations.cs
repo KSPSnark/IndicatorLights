@@ -12,9 +12,33 @@ namespace IndicatorLights
         /// </summary>
         public static long CurrentMillis
         {
-            get { return DateTime.Now.Ticks / 10000L; }
+            get
+            {
+                if ((HighLogic.LoadedScene == GameScenes.EDITOR) || IsTimeWarp)
+                {
+                    // When we're time-warping (i.e. not physics warp), we're at very high speed, so just
+                    // use real-world time instead of kerbal-world time.  Otherwise the animations would
+                    // get freaky fast.
+                    return DateTime.Now.Ticks / 10000L;
+                }
+                else
+                {
+                    // Otherwise, use game-world time.  This means that when you turn on physics
+                    // warp, animations will get faster, too.
+                    return (long) (1000.0 * Planetarium.GetUniversalTime());
+                }
+            }
         }
 
+        private static bool IsTimeWarp
+        {
+            get
+            {
+                return (TimeWarp.WarpMode == TimeWarp.Modes.HIGH) && (TimeWarp.CurrentRate > 1.0);
+            }
+        }
+
+        #region Blink
         /// <summary>
         /// An animation that repeatedly toggles between two states.
         /// </summary>
@@ -63,7 +87,10 @@ namespace IndicatorLights
                 }
             }
         }
+        #endregion
 
+
+        #region TriangleWave
         /// <summary>
         /// An animation that repeatedly ramps back and forth between two values.
         /// </summary>
@@ -113,5 +140,6 @@ namespace IndicatorLights
                 }
             }
         }
+        #endregion
     }
 }

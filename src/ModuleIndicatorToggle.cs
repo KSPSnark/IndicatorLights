@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace IndicatorLights
+﻿namespace IndicatorLights
 {
     /// <summary>
     /// A simple module that doesn't actually do anything, other than "own" a particular toggle state.
@@ -45,7 +43,7 @@ namespace IndicatorLights
         [KSPAction("Toggle")]
         public void OnToggleAction(KSPActionParam actionParam)
         {
-            status = !status;
+            status = actionParam.type != KSPActionType.Deactivate;
         }
         private BaseAction ToggleAction {  get { return Actions["OnToggleAction"]; } }
 

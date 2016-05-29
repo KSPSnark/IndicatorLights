@@ -21,7 +21,7 @@ namespace IndicatorLights
         [KSPAction("Toggle Crew LEDs")]
         public void OnToggleAction(KSPActionParam actionParam)
         {
-            status = !status;
+            status = actionParam.type != KSPActionType.Deactivate;
         }
         private BaseAction ToggleAction { get { return Actions["OnToggleAction"]; } }
 

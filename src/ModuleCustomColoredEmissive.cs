@@ -44,9 +44,9 @@ namespace IndicatorLights
             if (!string.IsNullOrEmpty(color))
             {
                 currentColor = Colors.Parse(color, DEFAULT_COLOR);
-                red = currentColor.r;
-                green = currentColor.g;
-                blue = currentColor.b;
+                red = roundHundredths(currentColor.r);
+                green = roundHundredths(currentColor.g);
+                blue = roundHundredths(currentColor.b);
             }
 
             RedField.uiControlEditor.onFieldChanged = OnColorSliderChanged;
@@ -109,6 +109,11 @@ namespace IndicatorLights
             currentColor.g = green;
             currentColor.b = blue;
             color = Colors.ToString(currentColor);
+        }
+
+        private static float roundHundredths(float value)
+        {
+            return Mathf.Floor(value * 100f + 0.5f) * 0.01f;
         }
     }
 }

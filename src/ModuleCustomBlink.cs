@@ -41,7 +41,7 @@ namespace IndicatorLights
         [KSPAction("Toggle Blinking")]
         public void ToggleAction(KSPActionParam actionParam)
         {
-            blinkEnabled = !blinkEnabled;
+            blinkEnabled = actionParam.type != KSPActionType.Deactivate;
         }
 
         /// <summary>

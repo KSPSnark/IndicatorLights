@@ -1,19 +1,31 @@
+Pre-release v0.9.1, a.k.a. "The Kerbart Edition"
+* Fixed all "toggle" actions so that they follow action group status. In other words, when you turn on "Lights" group, everything you've added to that group will turn on, regardless of whether it was on already.
+* Tweaked animation logic so that blink speed will follow game-time rather than real-world time when in physics warp (i.e. blinks faster when time passes faster).
+* Fixed a bug in which saving and then re-loading a custom-colored light (e.g. the BL-01) results in color-slider values with long, ugly decimals.
+* Thanks to Kerbart in the KSP forums for calling out all of the above!
+* ...Oh, and updated ModuleManager to latest version.
+
+
 Pre-release v0.9
 * Refactor resource indicators for greater configurability.
 * Add crew indicators to science lab, with custom animations.
 * Add crew indicator to Mk1 cockpit.
 * Add science data animation to Science Jr. materials bay.
+* Provide an "error" animation color to help modders debug config problems.
 * Breaking change for players: Save games will run just fine, but indicators on batteries for ships in flight or previously saved in the editor won't work right.
 * Breaking change for modders: if you've patched your parts to show resource level (e.g. for batteries), you'll need to update your config.
+
 
 Pre-release v0.8
 * Add indicators to the large and small ISRU units.
 * Add crew indicators to the Mk2 cockpit and Mk2 crew cabin.
 * Made the default on/off status of crew indicator lights configurable.
 
+
 Pre-release v0.7.1
 * Fix bug introduced in 0.7 that broke lots of indicators.
 * Add crew indicator to cupola.
+
 
 Pre-release v0.7
 * Add crew occupancy indicators to various crewed modules.
