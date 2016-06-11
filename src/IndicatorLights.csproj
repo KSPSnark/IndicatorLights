@@ -59,7 +59,8 @@
     <Compile Include="ModuleIndicatorToggle.cs" />
     <Compile Include="ModuleResourceEnabledIndicator.cs" />
     <Compile Include="ModuleResourceIndicator.cs" />
-    <Compile Include="ModuleScienceExperimentIndicator.cs" />
+    <Compile Include="ModuleScienceAvailabilityIndicator.cs" />
+    <Compile Include="ModuleScienceDataIndicator.cs" />
     <Compile Include="ModuleSourceIndicator.cs" />
     <Compile Include="ModuleBiStateIndicator.cs" />
     <Compile Include="Colors.cs" />
@@ -73,7 +74,11 @@
     <Compile Include="ModuleToggleLED.cs" />
     <Compile Include="ParsedParameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScienceValue.cs" />
     <Compile Include="SplashScreen.cs" />
+    <Compile Include="VesselRegistrar.cs" />
+    <Compile Include="VesselScienceContents.cs" />
+    <Compile Include="VesselScienceTracker.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

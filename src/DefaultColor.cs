@@ -127,6 +127,23 @@ namespace IndicatorLights
         /// </summary>
         ResourceMonopropellant,
 
+        /// <summary>
+        /// The color displayed on science instruments with "high-value" results in them.
+        /// Defaults to bright green.
+        /// </summary>
+        HighScience,
+
+        /// <summary>
+        /// The color displayed on science instruments with "partial value" results in them.
+        /// Defaults to medium yellow.
+        /// </summary>
+        MediumScience,
+
+        /// <summary>
+        /// The color displayed on science instruments with "very low value" results in them.
+        /// Defaults to dim red.
+        /// </summary>
+        LowScience,
     }
 
     public static class DefaultColorExtensions
@@ -188,6 +205,12 @@ namespace IndicatorLights
                     return new Color(0.1f, 0.4f, 1, 1);
                 case DefaultColor.ResourceMonopropellant:
                     return 0.9f * new Color(0.9f, 0.76f, 0, 1);
+                case DefaultColor.HighScience:
+                    return new Color(0f, 0.85f, 0.15f);
+                case DefaultColor.MediumScience:
+                    return Color.yellow * 0.6f;
+                case DefaultColor.LowScience:
+                    return Color.red * 0.45f;
                 default:
                     // this should only happen if there's a bug... pick an odd color to make it obvious
                     return Color.magenta;
@@ -241,6 +264,12 @@ namespace IndicatorLights
                     return Configuration.oxidizerColor;
                 case DefaultColor.ResourceMonopropellant:
                     return Configuration.monopropellantColor;
+                case DefaultColor.HighScience:
+                    return Configuration.highScienceColor;
+                case DefaultColor.MediumScience:
+                    return Configuration.mediumScienceColor;
+                case DefaultColor.LowScience:
+                    return Configuration.lowScienceColor;
                 default:
                     return defaultColor.DefaultValue();
             }

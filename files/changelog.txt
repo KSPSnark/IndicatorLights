@@ -1,3 +1,8 @@
+Pre-release v0.10, a.k.a. "The Science Edition"
+* Added indicators to all science instruments.
+* Added some TextureReplacer config to avoid an exception in the log. Thanks to Gaiiden in the KSP forums for tracking down both the problem and the solution!
+
+
 Pre-release v0.9.1, a.k.a. "The Kerbart Edition"
 * Fixed all "toggle" actions so that they follow action group status. In other words, when you turn on "Lights" group, everything you've added to that group will turn on, regardless of whether it was on already.
 * Tweaked animation logic so that blink speed will follow game-time rather than real-world time when in physics warp (i.e. blinks faster when time passes faster).
@@ -16,7 +21,7 @@ Pre-release v0.9
 * Breaking change for modders: if you've patched your parts to show resource level (e.g. for batteries), you'll need to update your config.
 
 
-Pre-release v0.8
+Pre-release v0.8, a.k.a. "The ISRU Edition"
 * Add indicators to the large and small ISRU units.
 * Add crew indicators to the Mk2 cockpit and Mk2 crew cabin.
 * Made the default on/off status of crew indicator lights configurable.
@@ -27,7 +32,7 @@ Pre-release v0.7.1
 * Add crew indicator to cupola.
 
 
-Pre-release v0.7
+Pre-release v0.7, a.k.a. "The Crew Edition"
 * Add crew occupancy indicators to various crewed modules.
 * BROKEN!  Do not use this version.
 
@@ -39,22 +44,22 @@ Pre-release v0.6
 * Likely breaking change for players: Doesn't break save games. However, any prior BL-01 lights or docking port indicators (either in flight, or in saved ships) won't work right
 
 
-Pre-release v0.5
+Pre-release v0.5, a.k.a. "The Docking Port Edition"
 * Added status indicators to small, medium, and large docking ports, with a PartModule that works for any docking port.
 * Slightly adjusted the position of the indicator on the Z400 battery.
 * Significant re-architecture of internal controller logic. No effect on players, but a potential breaking change to any modders working with ModuleToggleLED.
 
 
-Pre-release v0.4
+Pre-release v0.4, a.k.a. "The Reaction Wheel Edition"
 * Added status indicators for reaction wheels.
 * Made the default colors of all indicators user-configurable
 
 
-Pre-release v0.3
+Pre-release v0.3, a.k.a. "The Battery Edition"
 * Add charge indicator lights to batteries, with a PartModule that works for any resource container
 
 
-Pre-release v0.2
+Pre-release v0.2, a.k.a. "The Fuel Cell Edition"
 * Breaking change for the v0.1 blinkenlight
 * Add on/off indicator lights to fuel cells, with a PartModule that works for any resource converter
 

@@ -107,6 +107,10 @@ namespace IndicatorLights
                     message += " -> " + cause.Message;
                 }
                 Logging.Warn(message);
+                if (Configuration.isVerbose)
+                {
+                    Logging.Exception(e);
+                }
                 return ERROR;
             }
         }

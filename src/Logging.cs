@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace IndicatorLights
 {
+    /// <summary>
+    /// Utility wrapper for logging messages.
+    /// </summary>
     static class Logging
     {
         public static void Log(object message)
@@ -33,6 +36,39 @@ namespace IndicatorLights
         public static string GetTitle(this Part part)
         {
             return (part == null) ? "<null part>" : ((part.partInfo == null) ? part.partName : part.partInfo.title);
+        }
+
+        /// <summary>
+        /// Useful for debugging per-update-frame events without spamming the log to uselessness.
+        /// </summary>
+        public class Throttled
+        {
+            private readonly string label;
+            private readonly TimeSpan cooldown;
+            private DateTime nextLog;
+
+            public Throttled(string label, long milliseconds)
+            {
+                this.label = label;
+                this.cooldown = TimeSpan.FromMilliseconds(milliseconds);
+                nextLog = DateTime.MinValue;
+            }
+
+            public bool Log(object message)
+            {
+                DateTime now = DateTime.Now;
+                if (now < nextLog) return false;
+                nextLog = now + cooldown;
+                if (string.IsNullOrEmpty(label))
+                {
+                    Logging.Log(message);
+                }
+                else
+                {
+                    Logging.Log(label + ": " + message);
+                }
+                return true;
+            }
         }
     }
 }

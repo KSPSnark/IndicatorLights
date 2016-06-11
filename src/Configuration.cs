@@ -5,6 +5,10 @@ namespace IndicatorLights
 {
     internal static class Configuration
     {
+        // "Stealth" settings that aren't written to the config file when missing;
+        // they have to be manually added by the user.
+        public static readonly bool isVerbose;
+
         // For manually toggled LEDs
         public static readonly Color toggleLEDColor;
 
@@ -18,8 +22,6 @@ namespace IndicatorLights
         public static readonly Color reactionWheelNormalColor;
         public static readonly Color reactionWheelPilotOnlyColor;
         public static readonly Color reactionWheelSasOnlyColor;
-
-        // For resource converters
 
         // For docking ports
         public static readonly Color dockingCrossfeedOnColor;
@@ -38,10 +40,17 @@ namespace IndicatorLights
         public static readonly Color oxidizerColor;
         public static readonly Color monopropellantColor;
 
+        // For science instruments
+        public static readonly Color highScienceColor;
+        public static readonly Color mediumScienceColor;
+        public static readonly Color lowScienceColor;
+
         static Configuration()
         {
             PluginConfiguration config = PluginConfiguration.CreateForType<ModuleControllableEmissive>();
             config.load();
+
+            isVerbose = config.GetValue<bool>("VerboseLogging");
 
             toggleLEDColor = ParseColor(config, DefaultColor.ToggleLED);
 
@@ -67,6 +76,10 @@ namespace IndicatorLights
             oxidizerColor = ParseColor(config, DefaultColor.ResourceOxidizer);
             lfoColor = Color.Lerp(liquidFuelColor, oxidizerColor, 0.5f);
             monopropellantColor = ParseColor(config, DefaultColor.ResourceMonopropellant);
+
+            highScienceColor = ParseColor(config, DefaultColor.HighScience);
+            mediumScienceColor = ParseColor(config, DefaultColor.MediumScience);
+            lowScienceColor = ParseColor(config, DefaultColor.LowScience);
 
             config.save();
         }

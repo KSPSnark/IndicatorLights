@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -20,6 +21,7 @@ namespace IndicatorLights
 
         private Material[] materials;
         private Color cachedColor = new Color(0, 0, 0, 0);
+        private Guid lastActiveVessel = Guid.Empty;
 
         /// <summary>
         /// This identifies the target renderer within the part whose material's emissive color
@@ -45,7 +47,7 @@ namespace IndicatorLights
             }
             set
             {
-                if (!cachedColor.Equals(value))
+                if (ActiveVesselChanged || !cachedColor.Equals(value))
                 {
                     cachedColor = value;
                     for (int i = 0; i < Materials.Length; ++i)
@@ -180,6 +182,18 @@ namespace IndicatorLights
             get
             {
                 return emissiveName;
+            }
+        }
+
+        private bool ActiveVesselChanged
+        {
+            get
+            {
+                Vessel activeVessel = FlightGlobals.ActiveVessel;
+                if (activeVessel == null) return true;
+                if (activeVessel.id == lastActiveVessel) return false;
+                lastActiveVessel = activeVessel.id;
+                return true;
             }
         }
     }
