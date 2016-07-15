@@ -24,8 +24,8 @@ namespace IndicatorLights
             High
         }
 
-        private static readonly float LOW_SCIENCE_THRESHOLD = 0.15f;
-        private static readonly float HIGH_SCIENCE_THRESHOLD = 0.7f;
+        public static readonly float DEFAULT_LOW_SCIENCE_THRESHOLD = 0.15f;
+        public static readonly float DEFAULT_HIGH_SCIENCE_THRESHOLD = 0.7f;
 
         // Subjects that we've asked ResearchAndDevelopment for, and received null,
         // meaning that they're not available. We have to keep track of these because
@@ -40,8 +40,10 @@ namespace IndicatorLights
         /// Gets the subject with the specified ID, or null if none is available.
         /// </summary>
         /// <param name="subjectID"></param>
+        /// <param name="lowThreshold"></param>
+        /// <param name="highThreshold"></param>
         /// <returns></returns>
-        public static Fraction Get(string subjectID)
+        public static Fraction Get(string subjectID, float lowThreshold, float highThreshold)
         {
             if ((instance == null) || (ResearchAndDevelopment.Instance == null)) return Fraction.High;
             if (instance.missingSubjects.Contains(subjectID))
@@ -65,7 +67,7 @@ namespace IndicatorLights
             // Okay, science for this subject was previously reported.  Return
             // the appropriate fraction.
             float value = ResearchAndDevelopment.GetSubjectValue(subject.science, subject);
-            return FractionOf(value);
+            return FractionOf(value, lowThreshold, highThreshold);
         }
 
         public void Awake()
@@ -95,10 +97,10 @@ namespace IndicatorLights
             missingSubjects.Remove(subject.id);
         }
 
-        private static Fraction FractionOf(float fraction)
+        private static Fraction FractionOf(float fraction, float lowThreshold, float highThreshold)
         {
-            if (fraction >= HIGH_SCIENCE_THRESHOLD) return Fraction.High;
-            if (fraction < LOW_SCIENCE_THRESHOLD) return Fraction.Low;
+            if (fraction >= highThreshold) return Fraction.High;
+            if (fraction < lowThreshold) return Fraction.Low;
             return Fraction.Medium;
         }
     }

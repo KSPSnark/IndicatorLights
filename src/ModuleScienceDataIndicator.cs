@@ -19,6 +19,18 @@ namespace IndicatorLights
         private string _subjectId;
 
         /// <summary>
+        /// Science value (as a fraction from 0 to 1) below which it should be treated as "low value".
+        /// </summary>
+        [KSPField]
+        public float lowScienceThreshold = ScienceValue.DEFAULT_LOW_SCIENCE_THRESHOLD;
+
+        /// <summary>
+        /// Science value (as a fraction from 0 to 1) above which it should be treated as "high value".
+        /// </summary>
+        [KSPField]
+        public float highScienceThreshold = ScienceValue.DEFAULT_HIGH_SCIENCE_THRESHOLD;
+
+        /// <summary>
         /// The color to use when science data is available.
         /// </summary>
         [KSPField]
@@ -74,7 +86,7 @@ namespace IndicatorLights
                 if ((partialDataSource == null) || (lowDataSource == null)) return dataSource;
                 string subjectId = SubjectId;
                 if (subjectId == null) return dataSource;
-                ScienceValue.Fraction fraction = ScienceValue.Get(subjectId);
+                ScienceValue.Fraction fraction = ScienceValue.Get(subjectId, lowScienceThreshold, highScienceThreshold);
                 switch (fraction)
                 {
                     case ScienceValue.Fraction.Low:

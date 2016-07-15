@@ -71,7 +71,7 @@ namespace IndicatorLights
             if (string.IsNullOrEmpty(target))
             {
                 Logging.Warn("No emissive target identified for " + part.GetTitle());
-                return null;
+                return NO_MATERIALS;
             }
             MeshRenderer[] renderers = part.transform.GetComponentsInChildren<MeshRenderer>();
             if (renderers == null) return NO_MATERIALS;

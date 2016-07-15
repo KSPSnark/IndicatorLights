@@ -1,3 +1,7 @@
+Pre-release v0.10.1
+* Minor bugfix for science display on goo canister and Science Jr.
+* Fix a potential NRE bug in ModuleControllableEmissive.
+
 Pre-release v0.10, a.k.a. "The Science Edition"
 * Added indicators to all science instruments.
 * Added some TextureReplacer config to avoid an exception in the log. Thanks to Gaiiden in the KSP forums for tracking down both the problem and the solution!

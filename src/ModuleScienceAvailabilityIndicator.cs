@@ -17,6 +17,18 @@ namespace IndicatorLights
         private IColorSource highValueSource;
 
         /// <summary>
+        /// Science value (as a fraction from 0 to 1) below which it should be treated as "low value".
+        /// </summary>
+        [KSPField]
+        public float lowScienceThreshold = ScienceValue.DEFAULT_LOW_SCIENCE_THRESHOLD;
+
+        /// <summary>
+        /// Science value (as a fraction from 0 to 1) above which it should be treated as "high value".
+        /// </summary>
+        [KSPField]
+        public float highScienceThreshold = ScienceValue.DEFAULT_HIGH_SCIENCE_THRESHOLD;
+
+        /// <summary>
         /// The color to use for science that's partially valuable (e.g. that we've
         /// transmitted but not physically recovered).
         /// </summary>
@@ -70,7 +82,7 @@ namespace IndicatorLights
                 if ((science != null) && science[subjectId]) return ColorSources.BLACK;
 
                 // Okay, how valuable is it?
-                ScienceValue.Fraction fraction = ScienceValue.Get(subjectId);
+                ScienceValue.Fraction fraction = ScienceValue.Get(subjectId, lowScienceThreshold, highScienceThreshold);
                 switch (fraction)
                 {
                     case ScienceValue.Fraction.High:
