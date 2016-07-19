@@ -33,6 +33,7 @@ namespace IndicatorLights
         /// transmitted but not physically recovered).
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string mediumValueColor = string.Empty;
 
         /// <summary>
@@ -40,14 +41,15 @@ namespace IndicatorLights
         /// recovered it before).
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string highValueColor = string.Empty;
 
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
 
-            mediumValueSource = ColorSources.Find(part, mediumValueColor);
-            highValueSource = ColorSources.Find(part, highValueColor);
+            mediumValueSource = FindColorSource(mediumValueColor);
+            highValueSource = FindColorSource(highValueColor);
             nextSituationUpdate = DateTime.MinValue;
         }
 

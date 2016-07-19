@@ -7,14 +7,17 @@ namespace IndicatorLights
     /// </summary>
     class ModuleDockingStateIndicator : ModuleSourceIndicator<ModuleDockingNode>
     {
-        [KSPField(isPersistant = true)]
-        public string readyColor = null;
+        [KSPField]
+        [ColorSourceIDField]
+        public string readyColor = string.Empty;
 
-        [KSPField(isPersistant = true)]
-        public string acquireColor = null;
+        [KSPField]
+        [ColorSourceIDField]
+        public string acquireColor = string.Empty;
 
-        [KSPField(isPersistant = true)]
-        public string disengageColor = null;
+        [KSPField]
+        [ColorSourceIDField]
+        public string disengageColor = string.Empty;
 
         private IColorSource ready = null;
         private IColorSource acquire = null;
@@ -24,9 +27,9 @@ namespace IndicatorLights
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            ready = ColorSources.Find(part, readyColor);
-            acquire = ColorSources.Find(part, acquireColor);
-            disengage = ColorSources.Find(part, disengageColor);
+            ready = FindColorSource(readyColor);
+            acquire = FindColorSource(acquireColor);
+            disengage = FindColorSource(disengageColor);
         }
 
         public override Color OutputColor

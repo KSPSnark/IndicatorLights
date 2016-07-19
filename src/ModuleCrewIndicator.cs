@@ -7,7 +7,7 @@ namespace IndicatorLights
     /// </summary>
     class ModuleCrewIndicator : ModuleEmissiveController
     {
-        private static readonly int NO_SLOT = -1;
+        private const int NO_SLOT = -1;
 
         private IColorSource emptySource = null;
         private IColorSource pilotSource = null;
@@ -22,18 +22,23 @@ namespace IndicatorLights
         public string toggleName = null;
 
         [KSPField]
+        [ColorSourceIDField]
         public string emptyColor = Colors.ToString(DefaultColor.Off);
 
         [KSPField]
+        [ColorSourceIDField]
         public string pilotColor = Colors.ToString(DefaultColor.CrewPilot);
 
         [KSPField]
+        [ColorSourceIDField]
         public string engineerColor = Colors.ToString(DefaultColor.CrewEngineer);
 
         [KSPField]
+        [ColorSourceIDField]
         public string scientistColor = Colors.ToString(DefaultColor.CrewScientist);
 
         [KSPField]
+        [ColorSourceIDField]
         public string touristColor = Colors.ToString(DefaultColor.CrewTourist);
 
         private IToggle toggle = null;
@@ -48,11 +53,11 @@ namespace IndicatorLights
 
             toggle = Identifiers.FindFirst<IToggle>(part, toggleName);
 
-            emptySource = ColorSources.Find(part, emptyColor);
-            pilotSource = ColorSources.Find(part, pilotColor);
-            engineerSource = ColorSources.Find(part, engineerColor);
-            scientistSource = ColorSources.Find(part, scientistColor);
-            touristSource = ColorSources.Find(part, touristColor);
+            emptySource = FindColorSource(emptyColor);
+            pilotSource = FindColorSource(pilotColor);
+            engineerSource = FindColorSource(engineerColor);
+            scientistSource = FindColorSource(scientistColor);
+            touristSource = FindColorSource(touristColor);
 
             // The default value for slot is NO_SLOT. When we start up, we scan for all ModuleCrewIndicators
             // on the part, and assign them sequentially to slots, if available.

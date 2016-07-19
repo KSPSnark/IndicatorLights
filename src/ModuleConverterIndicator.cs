@@ -30,12 +30,14 @@ namespace IndicatorLights
         /// The color to use when the converter is active.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string activeColor = Colors.ToString(DefaultColor.ToggleLED);
 
         /// <summary>
         /// The color to use when the converter is inactive.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string inactiveColor = Colors.ToString(DefaultColor.Off);
 
         /// <summary>
@@ -46,8 +48,8 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
-            activeSource = ColorSources.Find(part, activeColor);
-            inactiveSource = ColorSources.Find(part, inactiveColor);
+            activeSource = FindColorSource(activeColor);
+            inactiveSource = FindColorSource(inactiveColor);
 
             converter = FindConverter();
             if (converter == null)

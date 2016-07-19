@@ -132,6 +132,11 @@ namespace IndicatorLights
             return null;
         }
 
+        protected IColorSource FindColorSource(string sourceID)
+        {
+            return ColorSources.Find(this, sourceID);
+        }
+
         private bool HasEmissive
         {
             get { return !string.IsNullOrEmpty(emissiveName); }

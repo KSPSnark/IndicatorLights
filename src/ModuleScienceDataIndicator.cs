@@ -34,6 +34,7 @@ namespace IndicatorLights
         /// The color to use when science data is available.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string dataColor = Colors.ToString(DefaultColor.CrewScientist);
 
         /// <summary>
@@ -41,6 +42,7 @@ namespace IndicatorLights
         /// (e.g. if we've previously transmitted it). If left blank, defers to dataColor.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string partialDataColor = string.Empty;
 
         /// <summary>
@@ -48,22 +50,24 @@ namespace IndicatorLights
         /// (e.g. because we've recovered it previously). If left blank, defers to dataColor.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string lowDataColor = string.Empty;
 
         /// <summary>
         /// The color to use when no data is available.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string emptyColor = Colors.ToString(DefaultColor.Off);
 
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
 
-            dataSource = ColorSources.Find(part, dataColor);
-            partialDataSource = string.IsNullOrEmpty(partialDataColor) ? null : ColorSources.Find(part, partialDataColor);
-            lowDataSource = string.IsNullOrEmpty(lowDataColor) ? null : ColorSources.Find(part, lowDataColor);
-            emptySource = ColorSources.Find(part, emptyColor);
+            dataSource = FindColorSource(dataColor);
+            partialDataSource = string.IsNullOrEmpty(partialDataColor) ? null : FindColorSource(partialDataColor);
+            lowDataSource = string.IsNullOrEmpty(lowDataColor) ? null : FindColorSource(lowDataColor);
+            emptySource = FindColorSource(emptyColor);
             nextUpdate = DateTime.MinValue;
             _subjectId = GetData();
         }

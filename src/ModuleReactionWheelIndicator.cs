@@ -19,24 +19,28 @@ namespace IndicatorLights
         /// The color to display when the reaction wheel has a problem.
         /// </summary>
         [KSPField]
-        public string problemColor = Colors.ToString(DefaultColor.ReactionWheelProblem);
+        [ColorSourceIDField]
+        public string problemColor = Colors.ToString(DefaultColor.Warning);
 
         /// <summary>
         /// The color to display when the reaction wheel is operating in "normal" mode.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string normalColor = Colors.ToString(DefaultColor.ReactionWheelNormal);
 
         /// <summary>
         /// The color to display when the reaction wheel is operating in "pilot only" mode.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string pilotOnlyColor = Colors.ToString(DefaultColor.ReactionWheelPilotOnly);
 
         /// <summary>
         /// The color to display when the reaction wheel is operating in "SAS only" mode.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string sasOnlyColor = Colors.ToString(DefaultColor.ReactionWheelSASOnly);
 
 
@@ -44,10 +48,10 @@ namespace IndicatorLights
         {
             base.OnStart(state);
             this.startState = state;
-            this.problemSource = ColorSources.Find(part, problemColor);
-            this.normalSource = ColorSources.Find(part, normalColor);
-            this.pilotOnlySource = ColorSources.Find(part, pilotOnlyColor);
-            this.sasOnlySource = ColorSources.Find(part, sasOnlyColor);
+            this.problemSource = FindColorSource(problemColor);
+            this.normalSource = FindColorSource(normalColor);
+            this.pilotOnlySource = FindColorSource(pilotOnlyColor);
+            this.sasOnlySource = FindColorSource(sasOnlyColor);
         }
 
         public override bool HasColor

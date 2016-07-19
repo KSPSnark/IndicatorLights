@@ -23,6 +23,7 @@ namespace IndicatorLights
         /// color string, or it might be the controllerName of another controller on the part.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string activeColor = Colors.ToString(DefaultColor.ToggleLED);
 
         /// <summary>
@@ -30,6 +31,7 @@ namespace IndicatorLights
         /// color string, or it might be the controllerName of another controller on the part.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string inactiveColor = Colors.ToString(DefaultColor.Off);
 
         private IColorSource inputActive = null;
@@ -72,8 +74,8 @@ namespace IndicatorLights
 
             StatusField.uiControlEditor.onFieldChanged = OnEditorToggleChanged;
 
-            inputActive = ColorSources.Find(part, activeColor);
-            inputInactive = ColorSources.Find(part, inactiveColor);
+            inputActive = FindColorSource(activeColor);
+            inputInactive = FindColorSource(inactiveColor);
 
             SetInputUIState();
         }

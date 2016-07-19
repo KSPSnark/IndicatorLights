@@ -44,12 +44,6 @@ namespace IndicatorLights
         LowResource,
 
         /// <summary>
-        /// The color used to indicate that a reaction wheel is having a problem and can't function properly.
-        /// Defaults to red.
-        /// </summary>
-        ReactionWheelProblem,
-
-        /// <summary>
         /// The color used to indicate that a reaction wheel is set to "normal" mode (pilot + SAS).
         /// Defaults to green.
         /// </summary>
@@ -144,6 +138,11 @@ namespace IndicatorLights
         /// Defaults to dim red.
         /// </summary>
         LowScience,
+
+        /// <summary>
+        /// Color displayed to indicate a problem.
+        /// </summary>
+        Warning,
     }
 
     public static class DefaultColorExtensions
@@ -177,8 +176,6 @@ namespace IndicatorLights
                     return Color.yellow * 0.7f;
                 case DefaultColor.LowResource:
                     return Color.red * 0.5f;
-                case DefaultColor.ReactionWheelProblem:
-                    return Color.red;
                 case DefaultColor.ReactionWheelNormal:
                     return Color.green;
                 case DefaultColor.ReactionWheelPilotOnly:
@@ -211,6 +208,8 @@ namespace IndicatorLights
                     return Color.yellow * 0.6f;
                 case DefaultColor.LowScience:
                     return Color.red * 0.45f;
+                case DefaultColor.Warning:
+                    return Color.red;
                 default:
                     // this should only happen if there's a bug... pick an odd color to make it obvious
                     return Color.magenta;
@@ -236,8 +235,6 @@ namespace IndicatorLights
                     return Configuration.mediumResourceColor;
                 case DefaultColor.LowResource:
                     return Configuration.lowResourceColor;
-                case DefaultColor.ReactionWheelProblem:
-                    return Configuration.reactionWheelProblemColor;
                 case DefaultColor.ReactionWheelNormal:
                     return Configuration.reactionWheelNormalColor;
                 case DefaultColor.ReactionWheelPilotOnly:
@@ -270,6 +267,8 @@ namespace IndicatorLights
                     return Configuration.mediumScienceColor;
                 case DefaultColor.LowScience:
                     return Configuration.lowScienceColor;
+                case DefaultColor.Warning:
+                    return Configuration.warningColor;
                 default:
                     return defaultColor.DefaultValue();
             }

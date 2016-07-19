@@ -8,7 +8,7 @@ namespace IndicatorLights
     /// </summary>
     internal static class Colors
     {
-        private static readonly string HEX_DIGITS = "0123456789ABCDEF";
+        private const string HEX_DIGITS = "0123456789ABCDEF";
         private static readonly string[] DEFAULT_COLOR_NAMES = GetDefaultColorNames();
 
         /// <summary>

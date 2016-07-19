@@ -18,6 +18,7 @@ namespace IndicatorLights
         /// The color to display when the resource is full or nearly full.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string highColor = Colors.ToString(DefaultColor.HighResource);
 
         /// <summary>
@@ -25,24 +26,28 @@ namespace IndicatorLights
         /// outlook on life, partially empty.)
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string mediumColor = Colors.ToString(DefaultColor.MediumResource);
 
         /// <summary>
         /// The color to display when the resource is mostly empty.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string lowColor = Colors.ToString(DefaultColor.LowResource);
 
         /// <summary>
         /// The color to display when the resource is almost completely empty.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string criticalColor = ColorSources.Pulsate(ColorSources.Constant(DefaultColor.LowResource), 1200, 0.6f).ColorSourceID;
 
         /// <summary>
         /// The color to display when the resource is completely empty.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string emptyColor = Colors.ToString(DefaultColor.Off);
 
         /// <summary>
@@ -72,11 +77,11 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
-            highSource = ColorSources.Find(part, highColor);
-            mediumSource = ColorSources.Find(part, mediumColor);
-            lowSource = ColorSources.Find(part, lowColor);
-            criticalSource = ColorSources.Find(part, criticalColor);
-            emptySource = ColorSources.Find(part, emptyColor);
+            highSource = FindColorSource(highColor);
+            mediumSource = FindColorSource(mediumColor);
+            lowSource = FindColorSource(lowColor);
+            criticalSource = FindColorSource(criticalColor);
+            emptySource = FindColorSource(emptyColor);
         }
 
         public override bool HasColor

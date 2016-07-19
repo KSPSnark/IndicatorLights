@@ -1,6 +1,13 @@
+Pre-release v0.11, a.k.a. "The Prospector's Edition"
+* Add an indicator light to the orbital survey scanner.
+* Add an indicator to the surface scanner.
+* (Moddability) Extend ColorSource syntax to allow field references within a module.
+
+
 Pre-release v0.10.1
 * Minor bugfix for science display on goo canister and Science Jr.
 * Fix a potential NRE bug in ModuleControllableEmissive.
+
 
 Pre-release v0.10, a.k.a. "The Science Edition"
 * Added indicators to all science instruments.

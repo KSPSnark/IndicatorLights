@@ -14,12 +14,14 @@ namespace IndicatorLights
         /// The color to display when the resource is enabled.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string enabledColor = Colors.ToString(DefaultColor.ToggleLED.Value());
 
         /// <summary>
         /// The color to display when the resource is disabled.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string disabledColor = ColorSources.Blink(
             ColorSources.Constant(DefaultColor.ToggleLED),
             900,
@@ -30,8 +32,8 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
-            enabledSource = ColorSources.Find(part, enabledColor);
-            disabledSource = ColorSources.Find(part, disabledColor);
+            enabledSource = FindColorSource(enabledColor);
+            disabledSource = FindColorSource(disabledColor);
         }
 
         public override bool HasColor

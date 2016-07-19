@@ -24,8 +24,8 @@ namespace IndicatorLights
             High
         }
 
-        public static readonly float DEFAULT_LOW_SCIENCE_THRESHOLD = 0.15f;
-        public static readonly float DEFAULT_HIGH_SCIENCE_THRESHOLD = 0.7f;
+        public const float DEFAULT_LOW_SCIENCE_THRESHOLD = 0.15f;
+        public const float DEFAULT_HIGH_SCIENCE_THRESHOLD = 0.7f;
 
         // Subjects that we've asked ResearchAndDevelopment for, and received null,
         // meaning that they're not available. We have to keep track of these because

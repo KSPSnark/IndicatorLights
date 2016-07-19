@@ -7,10 +7,12 @@ namespace IndicatorLights
     /// </summary>
     public class ModuleDockingCrossfeedIndicator : ModuleSourceIndicator<ModuleDockingNode>
     {
-        [KSPField(isPersistant = true)]
+        [KSPField]
+        [ColorSourceIDField]
         public string crossfeedOnSource = Colors.ToString(DefaultColor.DockingCrossfeedOn);
 
-        [KSPField(isPersistant = true)]
+        [KSPField]
+        [ColorSourceIDField]
         public string crossfeedOffSource = Colors.ToString(DefaultColor.DockingCrossfeedOff);
 
         private IColorSource onSource = null;
@@ -19,8 +21,8 @@ namespace IndicatorLights
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            onSource = ColorSources.Find(part, crossfeedOnSource);
-            offSource = ColorSources.Find(part, crossfeedOffSource);
+            onSource = FindColorSource(crossfeedOnSource);
+            offSource = FindColorSource(crossfeedOffSource);
         }
 
         public override Color OutputColor

@@ -18,7 +18,6 @@ namespace IndicatorLights
         public static readonly Color lowResourceColor;
 
         // For reaction wheels
-        public static readonly Color reactionWheelProblemColor;
         public static readonly Color reactionWheelNormalColor;
         public static readonly Color reactionWheelPilotOnlyColor;
         public static readonly Color reactionWheelSasOnlyColor;
@@ -45,6 +44,9 @@ namespace IndicatorLights
         public static readonly Color mediumScienceColor;
         public static readonly Color lowScienceColor;
 
+        // General warning status
+        public static readonly Color warningColor;
+
         static Configuration()
         {
             PluginConfiguration config = PluginConfiguration.CreateForType<ModuleControllableEmissive>();
@@ -58,7 +60,6 @@ namespace IndicatorLights
             mediumResourceColor = ParseColor(config, DefaultColor.MediumResource);
             lowResourceColor = ParseColor(config, DefaultColor.LowResource);
 
-            reactionWheelProblemColor = ParseColor(config, DefaultColor.ReactionWheelProblem);
             reactionWheelNormalColor = ParseColor(config, DefaultColor.ReactionWheelNormal);
             reactionWheelPilotOnlyColor = ParseColor(config, DefaultColor.ReactionWheelPilotOnly);
             reactionWheelSasOnlyColor = ParseColor(config, DefaultColor.ReactionWheelSASOnly);
@@ -80,6 +81,8 @@ namespace IndicatorLights
             highScienceColor = ParseColor(config, DefaultColor.HighScience);
             mediumScienceColor = ParseColor(config, DefaultColor.MediumScience);
             lowScienceColor = ParseColor(config, DefaultColor.LowScience);
+
+            warningColor = ParseColor(config, DefaultColor.Warning);
 
             config.save();
         }

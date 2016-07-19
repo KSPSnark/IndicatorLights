@@ -14,10 +14,7 @@ namespace IndicatorLights
         /// a ParsedParams. Returns null if it it's not recognized. Throws ColorSourceException
         /// if it's recognized, but invalid syntax.
         /// </summary>
-        /// <param name="part"></param>
-        /// <param name="parsedParams"></param>
-        /// <returns></returns>
-        private delegate IColorSource TryParseSource(Part part, ParsedParameters parsedParams);
+        private delegate IColorSource TryParseSource(PartModule module, ParsedParameters parsedParams);
 
         /// <summary>
         /// This is the list of all parseable types that we can handle.
@@ -93,15 +90,15 @@ namespace IndicatorLights
         /// or a parameterized source), try to find the appropriate source. If it can't
         /// be parsed or found, logs an error and returns an "error" source for debugging purposes.
         /// </summary>
-        public static IColorSource Find(Part part, string sourceID)
+        public static IColorSource Find(PartModule module, string sourceID)
         {
             try
             {
-                return FindPrivate(part, sourceID);
+                return FindPrivate(module, sourceID);
             }
             catch (ColorSourceException e)
             {
-                String message = "Invalid color source '" + sourceID + "' specified for " + part.GetTitle() + ": " + e.Message;
+                String message = "Invalid color source '" + sourceID + "' specified for " + module.ClassName + " on " + module.part.GetTitle() + ": " + e.Message;
                 for (Exception cause = e.InnerException; cause != null; cause = cause.InnerException)
                 {
                     message += " -> " + cause.Message;
@@ -119,11 +116,11 @@ namespace IndicatorLights
         /// Given a color source ID (which might be a literal color, the ID of a controller,
         /// or a parameterized source), try to find the appropriate source. If it can't
         /// be parsed or found, throws a ColorSourceException.
-        private static IColorSource FindPrivate(Part part, string sourceID)
+        private static IColorSource FindPrivate(PartModule module, string sourceID)
         {
             if (string.IsNullOrEmpty(sourceID))
             {
-                throw new ColorSourceException(part, "Null or empty color source");
+                throw new ColorSourceException(module, "Null or empty color source");
             }
 
             // Maybe it's a color string.
@@ -139,16 +136,30 @@ namespace IndicatorLights
                 // It has the right syntax for a parameterizeed source. Do we recognize it?
                 for (int i = 0; i < PARSEABLE_SOURCES.Length; ++i)
                 {
-                    IColorSource candidate = PARSEABLE_SOURCES[i](part, parsedParams);
+                    IColorSource candidate = PARSEABLE_SOURCES[i](module, parsedParams);
                     if (candidate != null) return candidate;
                 }
-                throw new ColorSourceException(part, "Unknown function type '" + parsedParams.Identifier + "'");
+                throw new ColorSourceException(module, "Unknown function type '" + parsedParams.Identifier + "'");
+            }
+
+            // Maybe it's another field on the module?
+            for (int i = 0; i < module.Fields.Count; ++i)
+            {
+                BaseField field = module.Fields[i];
+                if (!sourceID.Equals(field.name)) continue;
+                if (!ColorSourceIDField.Is(field))
+                {
+                    throw new ColorSourceException(
+                        module, sourceID + " field on " + module.ClassName + " of "
+                        + module.part.GetTitle() + " is not a color source ID field");
+                }
+                return Find(module, field.GetValue<string>(module));
             }
 
             // Maybe it's a module on the part?
-            for (int i = 0; i < part.Modules.Count; ++i)
+            for (int i = 0; i < module.part.Modules.Count; ++i)
             {
-                IColorSource candidate = part.Modules[i] as IColorSource;
+                IColorSource candidate = module.part.Modules[i] as IColorSource;
                 if (candidate == null) continue;
                 if (sourceID.Equals(candidate.ColorSourceID))
                 {
@@ -157,7 +168,7 @@ namespace IndicatorLights
             }
 
             // not found
-            throw new ColorSourceException(part, "Can't find a color source named '" + sourceID + "'");
+            throw new ColorSourceException(module, "Can't find a color source named '" + sourceID + "'");
         }
 
 
@@ -223,28 +234,25 @@ namespace IndicatorLights
             ///
             /// dim(origin, multiplier)
             /// </summary>
-            /// <param name="part"></param>
-            /// <param name="parsedParams"></param>
-            /// <returns></returns>
-            public static IColorSource TryParse(Part part, ParsedParameters parsedParams)
+            public static IColorSource TryParse(PartModule module, ParsedParameters parsedParams)
             {
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
                 if (parsedParams.Count != 2)
                 {
                     throw new ColorSourceException(
-                        part,
+                        module,
                         TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (2 required)");
                 }
 
                 IColorSource origin;
                 try
                 {
-                    origin = FindPrivate(part, parsedParams[0]);
+                    origin = FindPrivate(module, parsedParams[0]);
                 }
                 catch (ColorSourceException e)
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "() source has invalid origin", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "() source has invalid origin", e);
                 }
 
                 float multiplier;
@@ -254,11 +262,11 @@ namespace IndicatorLights
                 }
                 catch (FormatException e)
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[1] + "' (must be a float)", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[1] + "' (must be a float)", e);
                 }
                 if ((multiplier < 0) || (multiplier > 1))
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[1] + "' (must be in range 0 - 1)");
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[1] + "' (must be in range 0 - 1)");
                 }
                 if (multiplier >= 1) return origin;
 
@@ -314,28 +322,25 @@ namespace IndicatorLights
             /// 
             /// blink(onSource, onMillis, offSource, offMillis)
             /// </summary>
-            /// <param name="part"></param>
-            /// <param name="parsedParams"></param>
-            /// <returns></returns>
-            public static IColorSource TryParse(Part part, ParsedParameters parsedParams)
+            public static IColorSource TryParse(PartModule module, ParsedParameters parsedParams)
             {
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
                 if (parsedParams.Count != 4)
                 {
                     throw new ColorSourceException(
-                        part,
+                        module,
                         TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (4 required)");
                 }
 
                 IColorSource onSource;
                 try
                 {
-                    onSource = FindPrivate(part, parsedParams[0]);
+                    onSource = FindPrivate(module, parsedParams[0]);
                 }
                 catch (ColorSourceException e)
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "() source has invalid 'on' parameter", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "() source has invalid 'on' parameter", e);
                 }
                 
 
@@ -346,21 +351,21 @@ namespace IndicatorLights
                 }
                 catch (FormatException e)
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid 'on' milliseconds value '" + parsedParams[1] + "' (must be an integer)", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid 'on' milliseconds value '" + parsedParams[1] + "' (must be an integer)", e);
                 }
                 if (onMillis < 1)
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "(): 'on' milliseconds must be positive");
+                    throw new ColorSourceException(module, TYPE_NAME + "(): 'on' milliseconds must be positive");
                 }
 
                 IColorSource offSource;
                 try
                 {
-                    offSource = FindPrivate(part, parsedParams[2]);
+                    offSource = FindPrivate(module, parsedParams[2]);
                 }
                 catch (ColorSourceException e)
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "() source has invalid 'off' parameter", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "() source has invalid 'off' parameter", e);
                 }
 
                 long offMillis;
@@ -370,11 +375,11 @@ namespace IndicatorLights
                 }
                 catch (FormatException e)
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid 'off' milliseconds value '" + parsedParams[1] + "' (must be an integer)", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid 'off' milliseconds value '" + parsedParams[1] + "' (must be an integer)", e);
                 }
                 if (offMillis < 1)
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "(): 'off' milliseconds must be positive");
+                    throw new ColorSourceException(module, TYPE_NAME + "(): 'off' milliseconds must be positive");
                 }
 
                 return new BlinkColorSource(onSource, onMillis, offSource, offMillis);
@@ -457,28 +462,25 @@ namespace IndicatorLights
             /// 
             /// ...where multiplier is a float in the range 0 - 1.
             /// </summary>
-            /// <param name="part"></param>
-            /// <param name="parsedParams"></param>
-            /// <returns></returns>
-            public static IColorSource TryParse(Part part, ParsedParameters parsedParams)
+            public static IColorSource TryParse(PartModule module, ParsedParameters parsedParams)
             {
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
                 if ((parsedParams.Count < 3) || (parsedParams.Count > 4))
                 {
                     throw new ColorSourceException(
-                        part,
+                        module,
                         TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (3-4 required)");
                 }
 
                 IColorSource origin;
                 try
                 {
-                    origin = FindPrivate(part, parsedParams[0]);
+                    origin = FindPrivate(module, parsedParams[0]);
                 }
                 catch (ColorSourceException e)
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "() source has invalid origin", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "() source has invalid origin", e);
                 }
 
                 long cycleMillis;
@@ -488,11 +490,11 @@ namespace IndicatorLights
                 }
                 catch (FormatException e)
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid cycle milliseconds value '" + parsedParams[1] + "'", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid cycle milliseconds value '" + parsedParams[1] + "'", e);
                 }
                 if (cycleMillis < 1)
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "(): cycle milliseconds must be positive");
+                    throw new ColorSourceException(module, TYPE_NAME + "(): cycle milliseconds must be positive");
                 }
 
                 float multiplier2;
@@ -502,11 +504,11 @@ namespace IndicatorLights
                 }
                 catch (FormatException e)
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[2] + "' (must be a float)", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[2] + "' (must be a float)", e);
                 }
                 if ((multiplier2 < 0) || (multiplier2 > 1))
                 {
-                    throw new ColorSourceException(part, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[2] + "' (must be in range 0 - 1)");
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[2] + "' (must be in range 0 - 1)");
                 }
 
                 float multiplier1 = 1;
@@ -518,11 +520,11 @@ namespace IndicatorLights
                     }
                     catch (FormatException e)
                     {
-                        throw new ColorSourceException(part, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[3] + "' (must be a float)", e);
+                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[3] + "' (must be a float)", e);
                     }
                     if ((multiplier1 < 0) || (multiplier1 > 1))
                     {
-                        throw new ColorSourceException(part, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[3] + "' (must be in range 0 - 1)");
+                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[3] + "' (must be in range 0 - 1)");
                     }
                 }
 
@@ -596,21 +598,21 @@ namespace IndicatorLights
         /// </summary>
         private class ColorSourceException : Exception
         {
-            private readonly Part part;
+            private readonly PartModule module;
 
-            public ColorSourceException(Part part, string message) : base(message)
+            public ColorSourceException(PartModule module, string message) : base(message)
             {
-                this.part = part;
+                this.module = module;
             }
 
-            public ColorSourceException(Part part, string message, Exception cause) : base(message, cause)
+            public ColorSourceException(PartModule module, string message, Exception cause) : base(message, cause)
             {
-                this.part = part;
+                this.module = module;
             }
 
-            public Part Part
+            public PartModule Module
             {
-                get { return part; }
+                get { return module; }
             }
         }
     }

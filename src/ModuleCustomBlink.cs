@@ -68,8 +68,8 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
-            sourceOn = ColorSources.Find(part, onColor);
-            sourceOff = ColorSources.Find(part, offColor);
+            sourceOn = FindColorSource(onColor);
+            sourceOff = FindColorSource(offColor);
             blink = Animations.Blink.of((long)onMillis, (long)offMillis);
 
             BlinkEnabledField.uiControlEditor.onFieldChanged = OnBlinkEnabledChanged;
