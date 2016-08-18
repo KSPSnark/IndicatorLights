@@ -46,34 +46,45 @@ namespace IndicatorLights
         {
             private long onMillis;
             private long offMillis;
+            private float phase;
+            private long phaseMillis;
 
-            private Blink(long onMillis, long offMillis)
+            private Blink(long onMillis, long offMillis, float phase)
             {
                 this.onMillis = onMillis;
                 this.offMillis = offMillis;
+                this.phase = phase;
+                UpdatePhaseMillis();
             }
 
             /// <summary>
             /// Get a blink animation with the specified period.
             /// </summary>
-            /// <param name="onMillis"></param>
-            /// <param name="offMillis"></param>
+            /// <param name="onMillis">Milliseconds spent in the "on" part of the blink cycle.</param>
+            /// <param name="offMillis">Milliseconds spent in the "off" part of the blink cycle.</param>
+            /// <param name="phase">Blink phase, in the range 0 to 1.</param>
             /// <returns></returns>
-            public static Blink of(long onMillis, long offMillis)
+            public static Blink of(long onMillis, long offMillis, float phase)
             {
-                return new Blink(onMillis, offMillis);
+                return new Blink(onMillis, offMillis, phase);
             }
 
             public long OnMillis
             {
                 get { return onMillis; }
-                set { onMillis = value; }
+                set { onMillis = value; UpdatePhaseMillis(); }
             }
 
             public long OffMillis
             {
                 get { return offMillis; }
-                set { offMillis = value; }
+                set { offMillis = value; UpdatePhaseMillis(); }
+            }
+
+            public float Phase
+            {
+                get { return phase; }
+                set { phase = value; UpdatePhaseMillis(); }
             }
 
             /// <summary>
@@ -83,8 +94,13 @@ namespace IndicatorLights
             {
                 get
                 {
-                    return (CurrentMillis % (onMillis + offMillis)) < onMillis;
+                    return ((CurrentMillis + phaseMillis) % (onMillis + offMillis)) < onMillis;
                 }
+            }
+
+            private void UpdatePhaseMillis()
+            {
+                phaseMillis = (long)((float)(onMillis + offMillis) * phase);
             }
         }
         #endregion
@@ -97,14 +113,16 @@ namespace IndicatorLights
         public class TriangleWave
         {
             private readonly long cycleMillis;
+            private readonly long phaseMillis;
             private readonly float level1;
             private readonly float level2;
 
-            private TriangleWave(long cycleMillis, float level1, float level2)
+            private TriangleWave(long cycleMillis, float level1, float level2, float phase)
             {
                 this.cycleMillis = cycleMillis;
                 this.level1 = level1;
                 this.level2 = level2;
+                phaseMillis = (long)((float)cycleMillis * phase);
             }
 
             /// <summary>
@@ -113,10 +131,11 @@ namespace IndicatorLights
             /// <param name="cycleMillis">Length of the cycle, in milliseconds.</param>
             /// <param name="level1">Value at one end of the cycle.</param>
             /// <param name="level2">Value at the other end of the cycle.</param>
+            /// <param name="phase">Animation phase, in the range 0 to 1.</param>
             /// <returns></returns>
-            public static TriangleWave of(long cycleMillis, float level1, float level2)
+            public static TriangleWave of(long cycleMillis, float level1, float level2, float phase)
             {
-                return new TriangleWave(cycleMillis, level1, level2);
+                return new TriangleWave(cycleMillis, level1, level2, phase);
             }
 
             /// <summary>
@@ -126,7 +145,7 @@ namespace IndicatorLights
             {
                 get
                 {
-                    float phase = 2.0f * (float)(CurrentMillis % cycleMillis) / (float)(cycleMillis);
+                    float phase = 2.0f * (float)((CurrentMillis + phaseMillis) % cycleMillis) / (float)(cycleMillis);
                     if (phase < 1)
                     {
                         // ramp from level1 to level2

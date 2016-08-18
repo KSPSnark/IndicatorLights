@@ -5,7 +5,7 @@ namespace IndicatorLights
     /// <summary>
     /// Controls color based on the occupancy of a seat in a crewable part.
     /// </summary>
-    class ModuleCrewIndicator : ModuleEmissiveController
+    class ModuleCrewIndicator : ModuleEmissiveController, IToggle
     {
         private const int NO_SLOT = -1;
 
@@ -18,7 +18,7 @@ namespace IndicatorLights
         [KSPField(isPersistant = true)]
         public int slot = NO_SLOT;
 
-        [KSPField(isPersistant = true)]
+        [KSPField]
         public string toggleName = null;
 
         [KSPField]
@@ -157,6 +157,18 @@ namespace IndicatorLights
                         // Should never happen, but put this as a placeholder so we'll know if it does.
                         return ColorSources.ERROR;
                 }
+            }
+        }
+
+        /// <summary>
+        /// IToggle implementation.
+        /// </summary>
+        public bool ToggleStatus
+        {
+            get
+            {
+                if ((toggle != null) && (!toggle.ToggleStatus)) return false;
+                return Crew != null;
             }
         }
     }

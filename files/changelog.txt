@@ -1,3 +1,8 @@
+Release v1.0, a.k.a. "Why Wait Any Longer Edition"
+* Add phase control to blinking lights.
+* Implemented ModuleIndirectToggleIndicator (not yet used for anything).
+* Decided to stop pretending this is a "pre-release".  :-)
+
 Pre-release v0.11, a.k.a. "The Prospector's Edition"
 * Add an indicator light to the orbital survey scanner.
 * Add an indicator to the surface scanner.

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -6,7 +7,7 @@ namespace IndicatorLights
     /// A controller that sets the display based on the empty/full percentage of a
     /// particular resource.
     /// </summary>
-    class ModuleResourceLevelIndicator : ModuleResourceIndicator
+    class ModuleResourceLevelIndicator : ModuleResourceIndicator, IToggle
     {
         private IColorSource highSource = null;
         private IColorSource mediumSource = null;
@@ -107,6 +108,17 @@ namespace IndicatorLights
                 if (fraction < criticalThreshold) return criticalSource;
                 if (fraction < lowThreshold) return lowSource;
                 return mediumSource;
+            }
+        }
+
+        /// <summary>
+        /// IToggle implementation.
+        /// </summary>
+        public bool ToggleStatus
+        {
+            get
+            {
+                return Resource.amount > 0.0;
             }
         }
     }

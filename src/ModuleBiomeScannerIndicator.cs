@@ -5,7 +5,7 @@ namespace IndicatorLights
     /// <summary>
     /// Indicates whether the current biome can be surface-scanned or not.
     /// </summary>
-    class ModuleBiomeScannerIndicator : ModuleSourceIndicator<ModuleBiomeScanner>
+    class ModuleBiomeScannerIndicator : ModuleSourceIndicator<ModuleBiomeScanner>, IToggle
     {
         private IColorSource readySource;
         private IColorSource inactiveSource;
@@ -53,15 +53,26 @@ namespace IndicatorLights
         {
             get
             {
+                return ToggleStatus ? readySource : inactiveSource;
+            }
+        }
+
+        /// <summary>
+        /// IToggle implementation.
+        /// </summary>
+        public bool ToggleStatus
+        {
+            get
+            {
                 // If we're in the editor, or not landed, then it's inactive.
                 if (!HighLogic.LoadedSceneIsFlight
                     || (vessel == null)
-                    || !vessel.LandedOrSplashed) return inactiveSource;
+                    || !vessel.LandedOrSplashed)
+                    return false;
 
                 // Figure out what biome we're in
                 string biomeName = vessel.GetCurrentBiome() ?? vessel.situation.ToString();
-                bool unlocked = ResourceMap.Instance.IsBiomeUnlocked(vessel.mainBody.flightGlobalsIndex, biomeName);
-                return unlocked ? inactiveSource : readySource;
+                return !ResourceMap.Instance.IsBiomeUnlocked(vessel.mainBody.flightGlobalsIndex, biomeName);
             }
         }
     }

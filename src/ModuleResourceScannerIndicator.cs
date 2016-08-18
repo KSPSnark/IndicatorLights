@@ -2,9 +2,9 @@
 
 namespace IndicatorLights
 {
-    class ModuleResourceScannerIndicator : ModuleSourceIndicator<ModuleResourceScanner>
+    class ModuleResourceScannerIndicator : ModuleSourceIndicator<ModuleResourceScanner>, IToggle
     {
-        private static readonly Animations.Blink LOCKED_BLINK = Animations.Blink.of(300, 900);
+        private static readonly Animations.Blink LOCKED_BLINK = Animations.Blink.of(300, 900, 0);
 
         private IColorSource inactiveSource;
         private IColorSource unavailableSource;
@@ -167,6 +167,47 @@ namespace IndicatorLights
                 return isUnlocked ? abundanceSource : (LOCKED_BLINK.State ? abundanceSource : ColorSources.BLACK);
             }
         }
+
+        /// <summary>
+        /// IToggle implementation.
+        /// </summary>
+        public bool ToggleStatus
+        {
+            get
+            {
+                // Toggle status is considered "active" if it can scan and there's anything available.
+                if (!HighLogic.LoadedSceneIsFlight) return false;
+                HarvestTypes scannerType = (HarvestTypes)SourceModule.ScannerType;
+                bool canScan = false;
+                switch (scannerType)
+                {
+                    case HarvestTypes.Planetary:
+                        canScan = vessel.Landed || (ResourceUtilities.GetAltitude(vessel) <= SourceModule.MaxAbundanceAltitude);
+                        break;
+
+                    case HarvestTypes.Oceanic:
+                        canScan = vessel.Splashed;
+                        break;
+
+                    case HarvestTypes.Atmospheric:
+                        canScan = vessel.mainBody.atmosphere;
+                        break;
+
+                    case HarvestTypes.Exospheric:
+                        canScan = true;
+                        break;
+
+                    default:
+                        // Unknown scanner type! This should never happen; basically the only way is
+                        // if Squad has updated the HarvestTypes enum since this code was written,
+                        // to include new scanner types (in which case this code needs to be updated
+                        // to take the new types into account).
+                        return false;
+                }
+                return canScan && (tracker.Abundance >= unavailableResourceThreshold);
+            }
+        }
+
 
         #region class ResourceAbundanceTracker
         /// <summary>

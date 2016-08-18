@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace IndicatorLights
+﻿namespace IndicatorLights
 {
     /// <summary>
     /// A specialized toggle for turning crew indicators on/off.

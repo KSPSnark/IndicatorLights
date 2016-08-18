@@ -7,7 +7,7 @@ namespace IndicatorLights
     /// </summary>
     class ModuleReactionWheelIndicator : ModuleSourceIndicator<ModuleReactionWheel>
     {
-        private static readonly Animations.Blink BLINK = Animations.Blink.of(250, 250);
+        private static readonly Animations.Blink BLINK = Animations.Blink.of(250, 250, 0);
 
         private StartState startState = StartState.None;
         private IColorSource problemSource = null;

@@ -13,7 +13,7 @@ namespace IndicatorLights
     /// However, the "lit" color can be customized via part config. The default if not
     /// specified is bright green, but any arbitrary color can be configured.
     /// </summary>
-    class ModuleConverterIndicator : ModuleEmissiveController
+    class ModuleConverterIndicator : ModuleEmissiveController, IToggle
     {
         private BaseConverter converter = null;
         private IColorSource activeSource;
@@ -75,7 +75,10 @@ namespace IndicatorLights
             return null; // not found!
         }
 
-        private bool IsConverterActivated
+        /// <summary>
+        /// IToggle implementation.
+        /// </summary>
+        public bool ToggleStatus
         {
             get { return (converter != null) && converter.IsActivated; }
         }
@@ -92,7 +95,7 @@ namespace IndicatorLights
 
         private IColorSource CurrentSource
         {
-            get { return IsConverterActivated ? activeSource : inactiveSource; }
+            get { return ToggleStatus ? activeSource : inactiveSource; }
         }
     }
 }

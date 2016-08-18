@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace IndicatorLights
 {
     /// <summary>
     /// A controller that sets the display based on whether a resource is enabled/disabled.
     /// </summary>
-    class ModuleResourceEnabledIndicator : ModuleResourceIndicator
+    class ModuleResourceEnabledIndicator : ModuleResourceIndicator, IToggle
     {
         private IColorSource enabledSource = null;
         private IColorSource disabledSource = null;
@@ -52,6 +53,14 @@ namespace IndicatorLights
         private IColorSource CurrentSource
         {
             get { return Resource.flowState ? enabledSource : disabledSource; }
+        }
+
+        /// <summary>
+        /// IToggle implementation.
+        /// </summary>
+        public bool ToggleStatus
+        {
+            get { return Resource.flowState; }
         }
     }
 }

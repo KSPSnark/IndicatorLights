@@ -63,6 +63,7 @@
     <Compile Include="ModuleDockingCrossfeedIndicator.cs" />
     <Compile Include="ModuleDockingStateIndicator.cs" />
     <Compile Include="ModuleIndicatorToggle.cs" />
+    <Compile Include="ModuleIndirectToggleIndicator.cs" />
     <Compile Include="ModuleOrbitalSurveyorIndicator.cs" />
     <Compile Include="ModuleResourceEnabledIndicator.cs" />
     <Compile Include="ModuleResourceIndicator.cs" />
@@ -70,7 +71,6 @@
     <Compile Include="ModuleScienceAvailabilityIndicator.cs" />
     <Compile Include="ModuleScienceDataIndicator.cs" />
     <Compile Include="ModuleSourceIndicator.cs" />
-    <Compile Include="ModuleBiStateIndicator.cs" />
     <Compile Include="Colors.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Logging.cs" />

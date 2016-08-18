@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace IndicatorLights
 {
-    class ModuleCustomBlink : ModuleEmissiveController
+    class ModuleCustomBlink : ModuleEmissiveController, IToggle
     {
         [KSPField(guiName = "Mode", isPersistant = true, guiActive = true, guiActiveEditor = true), UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "Blinking", disabledText = "Continuous")]
         public bool blinkEnabled = false;
@@ -15,6 +16,10 @@ namespace IndicatorLights
         [KSPField(guiName = "Milliseconds Off", isPersistant = true), UI_FloatRange(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, minValue = 50, maxValue = 1000, stepIncrement = 50)]
         public float offMillis = 500;
         private BaseField OffMillisField { get { return Fields["offMillis"]; } }
+
+        [KSPField(guiName = "Phase", isPersistant = true), UI_FloatRange(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, minValue = 0, maxValue = 1, stepIncrement = 0.01F)]
+        public float phase = 0;
+        private BaseField PhaseField {  get { return Fields["phase"]; } }
 
         /// <summary>
         /// This specifies the color of the toggle when it's in the "on" state. This might be a literal
@@ -70,11 +75,12 @@ namespace IndicatorLights
 
             sourceOn = FindColorSource(onColor);
             sourceOff = FindColorSource(offColor);
-            blink = Animations.Blink.of((long)onMillis, (long)offMillis);
+            blink = Animations.Blink.of((long)onMillis, (long)offMillis, phase);
 
             BlinkEnabledField.uiControlEditor.onFieldChanged = OnBlinkEnabledChanged;
             OnMillisField.uiControlEditor.onFieldChanged = OnMillisChanged;
             OffMillisField.uiControlEditor.onFieldChanged = OnMillisChanged;
+            PhaseField.uiControlEditor.onFieldChanged = OnMillisChanged;
 
             SetUiState();
         }
@@ -102,6 +108,7 @@ namespace IndicatorLights
             BlinkEnabledField.guiActiveEditor = enabled;
             OnMillisField.guiActiveEditor = enabled && blinkEnabled;
             OffMillisField.guiActiveEditor = enabled && blinkEnabled;
+            PhaseField.guiActiveEditor = enabled && blinkEnabled;
 
             ModuleEmissiveController onController = sourceOn as ModuleEmissiveController;
             if (onController != null) onController.SetUiEnabled(enabled);
@@ -115,6 +122,17 @@ namespace IndicatorLights
             get
             {
                 return (!blinkEnabled || blink.State) ? sourceOn : sourceOff;
+            }
+        }
+
+        /// <summary>
+        /// IToggle implementation.
+        /// </summary>
+        public bool ToggleStatus
+        {
+            get
+            {
+                return blinkEnabled;
             }
         }
 
@@ -158,12 +176,14 @@ namespace IndicatorLights
         {
             OnMillisField.guiActiveEditor = isUiEnabled && blinkEnabled;
             OffMillisField.guiActiveEditor = isUiEnabled && blinkEnabled;
+            PhaseField.guiActiveEditor = isUiEnabled && blinkEnabled;
         }
 
         private void UpdateBlinkPeriods()
         {
             blink.OnMillis = (long)onMillis;
             blink.OffMillis = (long)offMillis;
+            blink.Phase = phase;
         }
     }
 }

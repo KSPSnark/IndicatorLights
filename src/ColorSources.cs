@@ -53,10 +53,11 @@ namespace IndicatorLights
         /// <param name="onMillis"></param>
         /// <param name="offSource"></param>
         /// <param name="offMillis"></param>
+        /// <param name="phase"></param>
         /// <returns></returns>
-        public static IColorSource Blink(IColorSource onSource, long onMillis, IColorSource offSource, long offMillis)
+        public static IColorSource Blink(IColorSource onSource, long onMillis, IColorSource offSource, long offMillis, float phase = 0F)
         {
-            return new BlinkColorSource(onSource, onMillis, offSource, offMillis);
+            return new BlinkColorSource(onSource, onMillis, offSource, offMillis, phase);
         }
 
 
@@ -303,18 +304,32 @@ namespace IndicatorLights
             private readonly IColorSource offSource;
             private readonly string id;
 
-            public BlinkColorSource(IColorSource onSource, long onMillis, IColorSource offSource, long offMillis)
+            public BlinkColorSource(IColorSource onSource, long onMillis, IColorSource offSource, long offMillis, float phase)
             {
-                this.blink = Animations.Blink.of(onMillis, offMillis);
+                this.blink = Animations.Blink.of(onMillis, offMillis, phase);
                 this.onSource = onSource;
                 this.offSource = offSource;
-                this.id = string.Format(
-                    "{0}({1},{2},{3},{4})",
-                    TYPE_NAME,
-                    onSource.ColorSourceID,
-                    onMillis,
-                    offSource.ColorSourceID,
-                    offMillis);
+                if (phase == 0F)
+                {
+                    this.id = string.Format(
+                        "{0}({1},{2},{3},{4})",
+                        TYPE_NAME,
+                        onSource.ColorSourceID,
+                        onMillis,
+                        offSource.ColorSourceID,
+                        offMillis);
+                }
+                else
+                {
+                    this.id = string.Format(
+                        "{0}({1},{2},{3},{4},{5})",
+                        TYPE_NAME,
+                        onSource.ColorSourceID,
+                        onMillis,
+                        offSource.ColorSourceID,
+                        offMillis,
+                        phase);
+                }
             }
 
             /// <summary>
@@ -326,11 +341,11 @@ namespace IndicatorLights
             {
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
-                if (parsedParams.Count != 4)
+                if ((parsedParams.Count < 4) || (parsedParams.Count > 5))
                 {
                     throw new ColorSourceException(
                         module,
-                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (4 required)");
+                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (4-5 required)");
                 }
 
                 IColorSource onSource;
@@ -375,14 +390,27 @@ namespace IndicatorLights
                 }
                 catch (FormatException e)
                 {
-                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid 'off' milliseconds value '" + parsedParams[1] + "' (must be an integer)", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid 'off' milliseconds value '" + parsedParams[3] + "' (must be an integer)", e);
                 }
                 if (offMillis < 1)
                 {
                     throw new ColorSourceException(module, TYPE_NAME + "(): 'off' milliseconds must be positive");
                 }
 
-                return new BlinkColorSource(onSource, onMillis, offSource, offMillis);
+                float phase = 0F;
+                if (parsedParams.Count > 4)
+                {
+                    try
+                    {
+                        phase = float.Parse(parsedParams[4]);
+                    }
+                    catch (FormatException e)
+                    {
+                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid phase value '" + parsedParams[4] + "' (must be a float)", e);
+                    }
+                }
+
+                return new BlinkColorSource(onSource, onMillis, offSource, offMillis, phase);
             }
 
             public string ColorSourceID
@@ -445,7 +473,7 @@ namespace IndicatorLights
             public PulsateColorSource(IColorSource origin, long cycleMillis, float multiplier1, float multiplier2)
             {
                 this.origin = origin;
-                this.wave = Animations.TriangleWave.of(cycleMillis, multiplier1, multiplier2);
+                this.wave = Animations.TriangleWave.of(cycleMillis, multiplier1, multiplier2, 0F);
                 this.id = string.Format(
                     "{0}({1},{2},{3},{4})",
                     TYPE_NAME,

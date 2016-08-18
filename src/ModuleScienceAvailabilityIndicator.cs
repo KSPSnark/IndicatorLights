@@ -6,9 +6,10 @@ namespace IndicatorLights
     /// <summary>
     /// Indicates whether science is available to be gathered in the current location.
     /// </summary>
-    class ModuleScienceAvailabilityIndicator : ModuleSourceIndicator<ModuleScienceExperiment>
+    class ModuleScienceAvailabilityIndicator : ModuleSourceIndicator<ModuleScienceExperiment>, IToggle
     {
         private static readonly TimeSpan UPDATE_INTERVAL = TimeSpan.FromMilliseconds(300);
+        private static readonly IColorSource NO_SCIENCE_SOURCE = ColorSources.BLACK;
 
         private string _subjectIdForCurrentSituation = null;
         private DateTime nextSituationUpdate = DateTime.MinValue;
@@ -74,14 +75,14 @@ namespace IndicatorLights
             get
             {
                 // Is it actually *possible* to get science here? If not, no light.
-                if (!IsScienceAvailable) return ColorSources.BLACK;
+                if (!IsScienceAvailable) return NO_SCIENCE_SOURCE;
 
                 // What's the science here?
                 string subjectId = SituationSubjectId;
 
                 // Do we already have it on board somewhere? If so, shut up about it.
                 VesselScienceContents science = VesselScienceTracker.Get(vessel);
-                if ((science != null) && science[subjectId]) return ColorSources.BLACK;
+                if ((science != null) && science[subjectId]) return NO_SCIENCE_SOURCE;
 
                 // Okay, how valuable is it?
                 ScienceValue.Fraction fraction = ScienceValue.Get(subjectId, lowScienceThreshold, highScienceThreshold);
@@ -92,7 +93,7 @@ namespace IndicatorLights
                     case ScienceValue.Fraction.Medium:
                         return mediumValueSource;
                     default:
-                        return ColorSources.BLACK;
+                        return NO_SCIENCE_SOURCE;
                 }
             }
         }
@@ -123,6 +124,17 @@ namespace IndicatorLights
                     _subjectIdForCurrentSituation = GetSubjectId(SourceModule.experiment, vessel);
                 }
                 return _subjectIdForCurrentSituation;
+            }
+        }
+
+        /// <summary>
+        /// IToggle implementation
+        /// </summary>
+        public bool ToggleStatus
+        {
+            get
+            {
+                return ReferenceEquals(CurrentSource, NO_SCIENCE_SOURCE);
             }
         }
 

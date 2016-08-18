@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -12,7 +13,7 @@ namespace IndicatorLights
     /// By default, it's lit bright green when "on", totally extinguished when "off". Both the
     /// "on" and the "off" colors can be arbitrarily adjusted via sliders in the editor.
     /// </summary>
-    public class ModuleToggleLED : ModuleEmissiveController
+    public class ModuleToggleLED : ModuleEmissiveController, IToggle
     {
         [KSPField(guiName = "LED Status", isPersistant = true, guiActive = true, guiActiveEditor = true), UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "On", disabledText = "Off")]
         public bool status = false;
@@ -88,6 +89,14 @@ namespace IndicatorLights
                 IColorSource source = status ? inputActive : inputInactive;
                 return source.HasColor ? source.OutputColor : Color.black;
             }
+        }
+
+        /// <summary>
+        /// IToggle implementation.
+        /// </summary>
+        public bool ToggleStatus
+        {
+            get { return status; }
         }
 
         /// <summary>
