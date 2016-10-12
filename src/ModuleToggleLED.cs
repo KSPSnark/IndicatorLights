@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -43,7 +42,7 @@ namespace IndicatorLights
         /// Action-group method for toggling blinkenlight.
         /// </summary>
         /// <param name="actionParam"></param>
-        [KSPAction("Toggle Light")]
+        [KSPAction("Toggle Light", KSPActionGroup.REPLACEWITHDEFAULT)]
         public void ToggleAction(KSPActionParam actionParam)
         {
             status = actionParam.type != KSPActionType.Deactivate;
@@ -67,6 +66,23 @@ namespace IndicatorLights
         public void DeactivateAction(KSPActionParam actionParam)
         {
             status = false;
+        }
+
+        [KSPField]
+        public KSPActionGroup defaultActionGroup;
+
+        public override void OnAwake()
+        {
+            base.OnAwake();
+            BaseAction toggleAction = base.Actions["ToggleAction"];
+            if (toggleAction.actionGroup == KSPActionGroup.REPLACEWITHDEFAULT)
+            {
+                toggleAction.actionGroup = this.defaultActionGroup;
+            }
+            if (toggleAction.defaultActionGroup == KSPActionGroup.REPLACEWITHDEFAULT)
+            {
+                toggleAction.defaultActionGroup = this.defaultActionGroup;
+            }
         }
 
         public override void OnStart(StartState state)

@@ -112,6 +112,21 @@ namespace IndicatorLights
             }
         }
 
+        public override string DebugDescription
+        {
+            get
+            {
+                ProtoCrewMember occupant = Crew;
+                if (occupant == null) return string.Format("slot {0} = empty", slot);
+                return string.Format(
+                    "slot {0} = {1} ({2}, {3})",
+                    slot,
+                    occupant.name,
+                    occupant.type,
+                    (occupant.experienceTrait == null) ? "NULL" : occupant.experienceTrait.Title);
+            }
+        }
+
         /// <summary>
         /// Gets the crew member currently driving this indicator (null if the seat is empty).
         /// </summary>

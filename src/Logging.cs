@@ -38,6 +38,12 @@ namespace IndicatorLights
             return (part == null) ? "<null part>" : ((part.partInfo == null) ? part.partName : part.partInfo.title);
         }
 
+        public static string GetIdentifier(object obj)
+        {
+            Identifiers.IIdentifiable identifiable = obj as Identifiers.IIdentifiable;
+            return (identifiable == null) ? obj.GetType().Name : identifiable.Identifier;
+        }
+
         /// <summary>
         /// Useful for debugging per-update-frame events without spamming the log to uselessness.
         /// </summary>

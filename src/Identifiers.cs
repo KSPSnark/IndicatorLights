@@ -65,7 +65,14 @@ namespace IndicatorLights
                 }
             }
             if (items.Count > 0) return items;
-            Logging.Warn("No " + typeof(T).Name + " named '" + identifier + "' found for " + part.GetTitle());
+            if (findAll)
+            {
+                Logging.Warn("No " + typeof(T).Name + " found for " + part.GetTitle());
+            }
+            else
+            {
+                Logging.Warn("No " + typeof(T).Name + " named '" + identifier + "' found for " + part.GetTitle());
+            }
             return null;
         }
     }

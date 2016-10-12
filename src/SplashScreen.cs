@@ -6,15 +6,38 @@ namespace IndicatorLights
     [KSPAddon(KSPAddon.Startup.Instantly, false)]
     class SplashScreen : MonoBehaviour
     {
+        private static float MAX_TIP_TIME = 4; // seconds
+
         private static readonly string[] NEW_TIPS =
         {
-            "Checking Indicator Lights..."
+            "Checking Indicator Lights...",
+            "Gazing At Blinkenlights..."
+        };
+
+        /// <summary>
+        /// Snark's sneaky little way of thanking various users of this mod for helpful contributions.
+        /// </summary>
+        private static readonly string[] THANK_USERS =
+        {
+            "Beetlecat",       // for suggesting random-blinking lights
+            "Fwiffo",          // LOTS of helpful moddability suggestions and detailed feedback
+            "Jiraiyah",        // Impossible Innovations support
+            "Kerbart",         // lots of helpful suggestions, especially in v0.9.1
+            "Kerbas_ad_astra", // putting in lots of work for providing Ven's Stock Revamp support
+            "NathanKell",      // just 'coz he's awesome :-)
+            "NecroBones",      // lots and lots of patient hand-holding, teaching me how to model
+            "Sharpy",          // help with TweakScale support
+            "VintageXP"        // lots of patient help with Unity and Blender
         };
 
         internal void Awake()
         {
             LoadingScreen.LoadingScreenState state = FindLoadingScreenState();
-            if (state != null) InsertTips(state);
+            if (state != null)
+            {
+                InsertTips(state);
+                if (state.tipTime > MAX_TIP_TIME) state.tipTime = MAX_TIP_TIME;
+            }
         }
 
         /// <summary>
@@ -41,16 +64,16 @@ namespace IndicatorLights
         /// <param name="state"></param>
         private static void InsertTips(LoadingScreen.LoadingScreenState state)
         {
-            string[] newTips = new string[state.tips.Length + NEW_TIPS.Length];
-            for (int i = 0; i < state.tips.Length; ++i)
+            List<string> tipsList = new List<string>();
+            tipsList.AddRange(state.tips);
+            tipsList.AddRange(NEW_TIPS);
+            int numThanks = 1 + (int)Mathf.Sqrt(THANK_USERS.Length);
+            System.Random random = new System.Random(System.DateTime.UtcNow.Second);
+            for (int i = 0; i < numThanks; ++i)
             {
-                newTips[i] = state.tips[i];
+                tipsList.Add(string.Format("Thanking {0}...", THANK_USERS[random.Next(THANK_USERS.Length)]));
             }
-            for (int i = 0; i < NEW_TIPS.Length; ++i)
-            {
-                newTips[state.tips.Length + i] = NEW_TIPS[i];
-            }
-            state.tips = newTips;
+            state.tips = tipsList.ToArray();
         }
     }
 }

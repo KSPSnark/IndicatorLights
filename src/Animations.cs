@@ -160,5 +160,72 @@ namespace IndicatorLights
             }
         }
         #endregion
+
+
+        #region RandomBlink
+        public class RandomBlink
+        {
+            private static readonly double[] noise = generateNoise(256);
+            private readonly long periodMillis;
+            private readonly double bias;
+            private readonly bool invert;
+            private readonly long offset;
+
+            /// <summary>
+            /// Get a random-blink animation with the specified period.
+            /// </summary>
+            /// <param name="periodMillis">Average time for a state change, in milliseconds.</param>
+            /// <param name="bias">Affects on-versus-off.  At 0, the animation is 50% on/off.  At +1, it's on 100%. At -1, it's off 100%.</param>
+            /// <param name="seed">Random seed.</param>
+            /// <returns></returns>
+            public static RandomBlink of(long periodMillis, double bias, int seed)
+            {
+                return new RandomBlink(periodMillis, bias, seed);
+            }
+
+            /// <summary>
+            /// Get the blink state (true = on, false = off).
+            /// </summary>
+            public bool State
+            {
+                get
+                {
+                    long now = CurrentMillis;
+                    long intervals = now / periodMillis;
+                    double value1 = valueAt(intervals);
+                    double value2 = valueAt(intervals + 1);
+                    double fraction = (double)(now % periodMillis) / (double)periodMillis;
+                    double lerp = value1 + fraction * (value2 - value1);
+                    return lerp < bias;
+                }
+            }
+
+            private RandomBlink(long periodMillis, double bias, int seed)
+            {
+                this.periodMillis = periodMillis;
+                this.bias = bias;
+                Random random = new Random(seed);
+                this.invert = random.Next() % 2 == 0;
+                this.offset = random.Next(noise.Length);
+            }
+
+            private static double[] generateNoise(int count)
+            {
+                double[] values = new double[count];
+                Random random = new Random();
+                for (int i = 0; i < count; ++i)
+                {
+                    values[i] = 2.0 * random.NextDouble() - 1.0;
+                }
+                return values;
+            }
+
+            private double valueAt(long x)
+            {
+                double noiseValue = noise[(x + offset) % noise.Length];
+                return invert ? -noiseValue : noiseValue;
+            }
+        }
+        #endregion
     }
 }

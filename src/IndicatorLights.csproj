@@ -37,9 +37,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
-    <Reference Include="KSPUtil">
-      <HintPath>..\..\..\Managed\KSPUtil.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
@@ -51,9 +48,14 @@
     <Compile Include="Animations.cs" />
     <Compile Include="ColorSourceIDField.cs" />
     <Compile Include="ColorSources.cs" />
+    <Compile Include="Console\DebugConsole.cs" />
+    <Compile Include="Console\HelpCommand.cs" />
+    <Compile Include="Console\PartCommand.cs" />
+    <Compile Include="Console\PartsCommand.cs" />
     <Compile Include="DefaultColor.cs" />
     <Compile Include="IColorSource.cs" />
     <Compile Include="Identifiers.cs" />
+    <Compile Include="IScalar.cs" />
     <Compile Include="IToggle.cs" />
     <Compile Include="ModuleBiomeScannerIndicator.cs" />
     <Compile Include="ModuleCrewIndicator.cs" />
@@ -63,13 +65,16 @@
     <Compile Include="ModuleDockingCrossfeedIndicator.cs" />
     <Compile Include="ModuleDockingStateIndicator.cs" />
     <Compile Include="ModuleIndicatorToggle.cs" />
-    <Compile Include="ModuleIndirectToggleIndicator.cs" />
+    <Compile Include="ModuleBooleanIndicator.cs" />
     <Compile Include="ModuleOrbitalSurveyorIndicator.cs" />
     <Compile Include="ModuleResourceEnabledIndicator.cs" />
     <Compile Include="ModuleResourceIndicator.cs" />
     <Compile Include="ModuleResourceScannerIndicator.cs" />
+    <Compile Include="ModuleScalarIndicator.cs" />
     <Compile Include="ModuleScienceAvailabilityIndicator.cs" />
+    <Compile Include="ModuleScienceContainerIndicator.cs" />
     <Compile Include="ModuleScienceDataIndicator.cs" />
+    <Compile Include="ModuleScienceDataIndicatorBase.cs" />
     <Compile Include="ModuleSourceIndicator.cs" />
     <Compile Include="Colors.cs" />
     <Compile Include="Configuration.cs" />

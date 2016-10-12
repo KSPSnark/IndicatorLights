@@ -1,7 +1,32 @@
+Release v1.1, a.k.a. "The Community Edition"
+* Changed to CC-BY-NC-SA license (was previously MIT).
+* KSP 1.2 compatibility.
+* Repackaged with ModuleManager v2.7.1 (for KSP 1.2).
+* Add "/il" console debugging command. Try "/il help" for details!
+* ModuleToggleLED parts (e.g. BL-01 light, docking ports) are in Light action group by default, without requiring DefaultActionGroups.
+* ModuleControllableEmissive implementation reworked for stability & performance.
+* Fix a bug in which multiple parts would change indicator color when one part changes status.
+* Add new ModuleScienceContainerIndicator.
+* Add indicators to the new KSP 1.2 "science box" part.
+* Add new IScalar interface; many existing modules now implement.
+* Add new ModuleScalarIndicator.
+* Add new ModuleBooleanIndicator (replaces old ModuleIndirectToggleIndicator)
+* Add new "examples" folder in github.
+* Add an example showing how to have one indicator that tracks multiple resources. (Thanks to Fwiffo for suggesting.)
+* Fix indicator positioning on mini ISRU. (Thanks to Fwiffo for pointing out!)
+* ModuleScienceDataIndicator on multi-experiment parts can now specify which one. (Thanks to Fwiffo for suggesting.)
+* Modify the dim() syntax to allow brightening. (Thanks to Fwiffo for suggesting).
+* Fix incompatibility with Texture Replacer. (Thanks to Fwiffo for tracking this down.)
+* Add compatibility with TweakScale. (Thanks to Sharpy for requesting, and explaining how.)
+* Add random() color source type, along with an example. (Thanks to Beetlecat for suggesting.)
+* Not included here, but: A shout-out to Kerbas_ad_astra and Jiraiyah for supplying mod-compatibility patches, which were spun out to their own mod, "IndicatorLights Community Extensions".
+
+
 Release v1.0, a.k.a. "Why Wait Any Longer Edition"
 * Add phase control to blinking lights.
 * Implemented ModuleIndirectToggleIndicator (not yet used for anything).
 * Decided to stop pretending this is a "pre-release".  :-)
+
 
 Pre-release v0.11, a.k.a. "The Prospector's Edition"
 * Add an indicator light to the orbital survey scanner.

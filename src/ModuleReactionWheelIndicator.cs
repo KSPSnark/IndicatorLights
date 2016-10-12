@@ -89,10 +89,10 @@ namespace IndicatorLights
             get
             {
                 if (startState == StartState.Editor) return false;
-                if ((SourceModule == null) || (SourceModule.inputResources == null)) return false;
-                for (int i = 0; i < SourceModule.inputResources.Count; ++i)
+                if ((SourceModule == null) || (SourceModule.resHandler == null) || (SourceModule.resHandler.inputResources == null)) return false;
+                for (int i = 0; i < SourceModule.resHandler.inputResources.Count; ++i)
                 {
-                    ModuleResource resource = SourceModule.inputResources[i];
+                    ModuleResource resource = SourceModule.resHandler.inputResources[i];
                     // I'm using !available rather than isDeprived, because as far as I can tell, isDeprived is always false
                     if (!resource.available) return true;
                 }

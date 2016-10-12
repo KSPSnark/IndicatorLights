@@ -52,6 +52,25 @@ namespace IndicatorLights
             return new ParsedParameters(identifier, parameters);
         }
 
+        /// <summary>
+        /// Split the input text into a set of zero or more tokens, delimited by commas. The
+        /// returned tokens will have any leading/trailing whitespace removed.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="delimiter"></param>
+        /// <returns></returns>
+        public static string[] Tokenize(string text, char delimiter)
+        {
+            text = text.Trim();
+            if (string.IsNullOrEmpty(text)) return new string[0];
+            string[] tokens = text.Split(delimiter);
+            for (int i = 0; i < tokens.Length; ++i)
+            {
+                tokens[i] = tokens[i].Trim();
+            }
+            return tokens;
+        }
+
         private static string[] TryParseParameters(string text)
         {
             List<string> parameters = new List<string>();

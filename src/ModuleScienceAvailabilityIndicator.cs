@@ -6,7 +6,7 @@ namespace IndicatorLights
     /// <summary>
     /// Indicates whether science is available to be gathered in the current location.
     /// </summary>
-    class ModuleScienceAvailabilityIndicator : ModuleSourceIndicator<ModuleScienceExperiment>, IToggle
+    class ModuleScienceAvailabilityIndicator : ModuleSourceIndicator<ModuleScienceExperiment>, IToggle, IScalar
     {
         private static readonly TimeSpan UPDATE_INTERVAL = TimeSpan.FromMilliseconds(300);
         private static readonly IColorSource NO_SCIENCE_SOURCE = ColorSources.BLACK;
@@ -81,8 +81,7 @@ namespace IndicatorLights
                 string subjectId = SituationSubjectId;
 
                 // Do we already have it on board somewhere? If so, shut up about it.
-                VesselScienceContents science = VesselScienceTracker.Get(vessel);
-                if ((science != null) && science[subjectId]) return NO_SCIENCE_SOURCE;
+                if (AlreadyHasAboard(subjectId)) return NO_SCIENCE_SOURCE;
 
                 // Okay, how valuable is it?
                 ScienceValue.Fraction fraction = ScienceValue.Get(subjectId, lowScienceThreshold, highScienceThreshold);
@@ -136,6 +135,25 @@ namespace IndicatorLights
             {
                 return ReferenceEquals(CurrentSource, NO_SCIENCE_SOURCE);
             }
+        }
+
+        /// <summary>
+        /// IScalar implementation.
+        /// </summary>
+        public double ScalarValue
+        {
+            get
+            {
+                if (!IsScienceAvailable) return 0;
+                string subjectId = SituationSubjectId;
+                return AlreadyHasAboard(subjectId) ? 0 : ScienceValue.Get(subjectId);
+            }
+        }
+
+        private bool AlreadyHasAboard(string subjectId)
+        {
+            VesselScienceContents science = VesselScienceTracker.Get(vessel);
+            return (science != null) && science[subjectId];
         }
 
         /// <summary>

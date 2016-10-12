@@ -23,7 +23,8 @@ namespace IndicatorLights
         {
             BlinkColorSource.TryParse,
             PulsateColorSource.TryParse,
-            DimColorSource.TryParse
+            DimColorSource.TryParse,
+            RandomColorSource.TryParse
         };
 
         /// <summary>
@@ -218,16 +219,20 @@ namespace IndicatorLights
         /// </summary>
         private class DimColorSource : IColorSource
         {
-            private static readonly string TYPE_NAME = "dim";
+            private static readonly string[] TYPE_NAMES = { "dim", "brightness" };
             private readonly IColorSource origin;
             private readonly float multiplier;
             private readonly string id;
 
-            public DimColorSource(IColorSource origin, float multiplier)
+            public DimColorSource(IColorSource origin, float multiplier) : this(TYPE_NAMES[0], origin, multiplier)
+            {
+            }
+
+            private DimColorSource(string tag, IColorSource origin, float multiplier)
             {
                 this.origin = origin;
                 this.multiplier = multiplier;
-                this.id = string.Format("{0}({1},{2})", TYPE_NAME, origin.ColorSourceID, multiplier);
+                this.id = string.Format("{0}({1},{2})", tag, origin.ColorSourceID, multiplier);
             }
 
             /// <summary>
@@ -238,12 +243,14 @@ namespace IndicatorLights
             public static IColorSource TryParse(PartModule module, ParsedParameters parsedParams)
             {
                 if (parsedParams == null) return null;
-                if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
+
+                string tag = FindTag(parsedParams.Identifier);
+                if (tag == null) return null;
                 if (parsedParams.Count != 2)
                 {
                     throw new ColorSourceException(
                         module,
-                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (2 required)");
+                        tag + "() source specified " + parsedParams.Count + " parameters (2 required)");
                 }
 
                 IColorSource origin;
@@ -253,7 +260,7 @@ namespace IndicatorLights
                 }
                 catch (ColorSourceException e)
                 {
-                    throw new ColorSourceException(module, TYPE_NAME + "() source has invalid origin", e);
+                    throw new ColorSourceException(module, tag + "() source has invalid origin", e);
                 }
 
                 float multiplier;
@@ -263,15 +270,15 @@ namespace IndicatorLights
                 }
                 catch (FormatException e)
                 {
-                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[1] + "' (must be a float)", e);
+                    throw new ColorSourceException(module, tag + "(): Invalid multiplier value '" + parsedParams[1] + "' (must be a float)", e);
                 }
-                if ((multiplier < 0) || (multiplier > 1))
+                if (multiplier < 0)
                 {
-                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[1] + "' (must be in range 0 - 1)");
+                    throw new ColorSourceException(module, tag + "(): Invalid multiplier value '" + parsedParams[1] + "' (can't be negative)");
                 }
-                if (multiplier >= 1) return origin;
+                if (multiplier == 1) return origin;
 
-                return new DimColorSource(origin, multiplier);
+                return new DimColorSource(tag, origin, multiplier);
             }
 
             public string ColorSourceID
@@ -287,6 +294,18 @@ namespace IndicatorLights
             public Color OutputColor
             {
                 get { return origin.OutputColor * multiplier; }
+            }
+
+            private static string FindTag(string identifier)
+            {
+                for (int i = 0; i < TYPE_NAMES.Length; ++i)
+                {
+                    if (TYPE_NAMES[i].Equals(identifier))
+                    {
+                        return TYPE_NAMES[i];
+                    }
+                }
+                return null;
             }
         }
         #endregion
@@ -574,6 +593,188 @@ namespace IndicatorLights
             public string ColorSourceID
             {
                 get { return id; }
+            }
+        }
+        #endregion
+
+
+        #region RandomColorSource
+        /// <summary>
+        /// A color source that irregularly blinks between two other sources.
+        /// </summary>
+        private class RandomColorSource : IColorSource
+        {
+            private static readonly string TYPE_NAME = "random";
+            private readonly Animations.RandomBlink blink;
+            private readonly IColorSource onSource;
+            private readonly IColorSource offSource;
+            private readonly string id;
+
+            public RandomColorSource(IColorSource onSource, IColorSource offSource, long periodMillis, double bias, int seed)
+            {
+                this.blink = Animations.RandomBlink.of(periodMillis, bias, seed);
+                this.onSource = onSource;
+                this.offSource = offSource;
+                if (seed == 0)
+                {
+                    if (bias == 0.0)
+                    {
+                        this.id = string.Format(
+                            "{0}({1},{2},{3})",
+                            TYPE_NAME,
+                            onSource.ColorSourceID,
+                            offSource.ColorSourceID,
+                            periodMillis);
+                    }
+                    else
+                    {
+                        this.id = string.Format(
+                            "{0}({1},{2},{3},{4})",
+                            TYPE_NAME,
+                            onSource.ColorSourceID,
+                            offSource.ColorSourceID,
+                            periodMillis,
+                            bias);
+                    }
+                }
+                else
+                {
+                    this.id = string.Format(
+                        "{0}({1},{2},{3},{4},{5})",
+                        TYPE_NAME,
+                        onSource.ColorSourceID,
+                        offSource.ColorSourceID,
+                        periodMillis,
+                        bias,
+                        seed);
+                }
+            }
+
+            /// <summary>
+            /// Try to get a random color source from a ParsedParameters. The expected format is:
+            ///
+            /// random(onSource, offSource, periodMillis, bias, seed)
+            /// random(onSource, offSource, periodMillis, bias)
+            /// random(onSource, offSource, periodMillis)
+            /// </summary>
+            public static IColorSource TryParse(PartModule module, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
+                if ((parsedParams.Count < 3) || (parsedParams.Count > 5))
+                {
+                    throw new ColorSourceException(
+                        module,
+                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (4-5 required)");
+                }
+
+                IColorSource onSource;
+                try
+                {
+                    onSource = FindPrivate(module, parsedParams[0]);
+                }
+                catch (ColorSourceException e)
+                {
+                    throw new ColorSourceException(module, TYPE_NAME + "() source has invalid 'on' parameter", e);
+                }
+
+
+                IColorSource offSource;
+                try
+                {
+                    offSource = FindPrivate(module, parsedParams[1]);
+                }
+                catch (ColorSourceException e)
+                {
+                    throw new ColorSourceException(module, TYPE_NAME + "() source has invalid 'off' parameter", e);
+                }
+
+                long periodMillis;
+                try
+                {
+                    periodMillis = long.Parse(parsedParams[2]);
+                }
+                catch (FormatException e)
+                {
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid 'period' milliseconds value '" + parsedParams[2] + "' (must be an integer)", e);
+                }
+                if (periodMillis < 1)
+                {
+                    throw new ColorSourceException(module, TYPE_NAME + "(): 'period' milliseconds must be positive");
+                }
+
+                double bias = 0;
+                if (parsedParams.Count > 3)
+                {
+                    try
+                    {
+                        bias = double.Parse(parsedParams[3]);
+                    }
+                    catch (FormatException e)
+                    {
+                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid bias value '" + parsedParams[3] + "' (must be a double)", e);
+                    }
+                    if ((bias < -1) || (bias > 1))
+                    {
+                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid bias value '" + parsedParams[3] + "' (must be between -1 and 1)");
+                    }
+                }
+
+                int seed = 0;
+                if (parsedParams.Count > 4)
+                {
+                    try
+                    {
+                        seed = int.Parse(parsedParams[4]);
+                    }
+                    catch (FormatException e)
+                    {
+                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid seed value '" + parsedParams[4] + "' (must be an integer)", e);
+                    }
+                }
+                if (module.vessel != null) seed ^= module.vessel.id.GetHashCode();
+                if (module.part != null)
+                {
+                    seed ^= module.part.flightID.GetHashCode();
+                    seed ^= IndexOf(module).GetHashCode();
+                }
+
+                return new RandomColorSource(onSource, offSource, periodMillis, bias, seed);
+            }
+
+            public string ColorSourceID
+            {
+                get { return id; }
+            }
+
+            public bool HasColor
+            {
+                get { return CurrentSource.HasColor; }
+            }
+
+            public Color OutputColor
+            {
+                get { return CurrentSource.OutputColor; }
+            }
+
+            /// <summary>
+            /// Gets whether the blinker is in the "on" (true) or "off" (false) state.
+            /// </summary>
+            private IColorSource CurrentSource
+            {
+                get
+                {
+                    return blink.State ? onSource : offSource;
+                }
+            }
+
+            private static int IndexOf(PartModule module)
+            {
+                for (int i = 0; i < module.part.Modules.Count; ++i)
+                {
+                    if (object.ReferenceEquals(module.part.Modules[i], module)) return i;
+                }
+                return -1; // should never happen
             }
         }
         #endregion

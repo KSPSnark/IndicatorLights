@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace IndicatorLights
@@ -8,7 +9,7 @@ namespace IndicatorLights
     /// 
     /// Note that there may be multiple controllers targeting the same emissive.
     /// </summary>
-    public abstract class ModuleEmissiveController : PartModule, IColorSource
+    public abstract class ModuleEmissiveController : PartModule, IColorSource, Identifiers.IIdentifiable
     {
         private List<ModuleControllableEmissive> controlledEmissives = null;
 
@@ -35,7 +36,7 @@ namespace IndicatorLights
         /// <summary>
         /// Indicates whether the module's UI (if any) is enabled on the part. This base
         /// class has no UI, but subclasses might.  If they do, they should override
-        /// the OnUiEnabled property.
+        /// the OnUiEnabled method.
         /// </summary>
         [KSPField(isPersistant = true)]
         public bool isUiEnabled = true;
@@ -97,6 +98,17 @@ namespace IndicatorLights
         }
 
         /// <summary>
+        /// Get a description of the controller's state, suitable for display in
+        /// the debug console. Default behavior is to return null, meaning no
+        /// special information present.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string DebugDescription
+        {
+            get { return null; }
+        }
+
+        /// <summary>
         /// Subclasses should call this to enable or disable UI.
         /// </summary>
         /// <param name="enabled"></param>
@@ -140,6 +152,14 @@ namespace IndicatorLights
         private bool HasEmissive
         {
             get { return !string.IsNullOrEmpty(emissiveName); }
+        }
+
+        public string Identifier
+        {
+            get
+            {
+                return string.IsNullOrEmpty(controllerName) ? GetType().Name : controllerName;
+            }
         }
     }
 }

@@ -2,7 +2,11 @@
 
 namespace IndicatorLights
 {
-    class ModuleResourceScannerIndicator : ModuleSourceIndicator<ModuleResourceScanner>, IToggle
+    /// <summary>
+    /// Indicates the relative degree of resource concentration found by the scanner:
+    /// none, low, medium, high.
+    /// </summary>
+    class ModuleResourceScannerIndicator : ModuleSourceIndicator<ModuleResourceScanner>, IToggle, IScalar
     {
         private static readonly Animations.Blink LOCKED_BLINK = Animations.Blink.of(300, 900, 0);
 
@@ -11,7 +15,6 @@ namespace IndicatorLights
         private IColorSource lowSource;
         private IColorSource mediumSource;
         private IColorSource highSource;
-        private ResourceAbundanceTracker tracker;
 
         /// <summary>
         /// The color to display when the scanner is inactive (i.e. can't scan right now).
@@ -31,18 +34,21 @@ namespace IndicatorLights
         /// The color to display when the resource content is "low".
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string lowResourceColor = Colors.ToString(DefaultColor.LowResource);
 
         /// <summary>
         /// The color to display when the resource content is "medium".
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string mediumResourceColor = Colors.ToString(DefaultColor.MediumResource);
 
         /// <summary>
         /// The color to display when the resource content is "high".
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string highResourceColor = Colors.ToString(DefaultColor.HighResource);
 
         /// <summary>
@@ -73,14 +79,6 @@ namespace IndicatorLights
             lowSource = FindColorSource(lowResourceColor);
             mediumSource = FindColorSource(mediumResourceColor);
             highSource = FindColorSource(highResourceColor);
-
-            tracker = new ResourceAbundanceTracker(SourceModule);
-        }
-
-        public override void OnFixedUpdate()
-        {
-            base.OnFixedUpdate();
-            tracker.OnFixedUpdate(vessel);
         }
 
         public override bool HasColor
@@ -147,15 +145,15 @@ namespace IndicatorLights
 
                 // Now pick a source based on resource abundance.
                 IColorSource abundanceSource;
-                if (tracker.Abundance < unavailableResourceThreshold)
+                if (Abundance < unavailableResourceThreshold)
                 {
                     abundanceSource = unavailableSource;
                 }
-                else if (tracker.Abundance < lowResourceThreshold)
+                else if (Abundance < lowResourceThreshold)
                 {
                     abundanceSource = lowSource;
                 }
-                else if (tracker.Abundance < highResourceThreshold)
+                else if (Abundance < highResourceThreshold)
                 {
                     abundanceSource = mediumSource;
                 }
@@ -204,52 +202,21 @@ namespace IndicatorLights
                         // to take the new types into account).
                         return false;
                 }
-                return canScan && (tracker.Abundance >= unavailableResourceThreshold);
+                return canScan && (Abundance >= unavailableResourceThreshold);
             }
         }
 
-
-        #region class ResourceAbundanceTracker
-        /// <summary>
-        /// Utility class for tracking resource abundance; unfortunately necessary because the
-        /// ModuleResourceScanner doesn't publicly expose its abundanceValue member.
-        /// </summary>
-        private class ResourceAbundanceTracker
+        private double Abundance
         {
-            private AbundanceRequest request;
-            private double abundance;
+            get { return SourceModule.abundance; }
+        }
 
-            public ResourceAbundanceTracker(ModuleResourceScanner scanner)
+        public double ScalarValue
+        {
+            get
             {
-                request = new AbundanceRequest();
-                request.CheckForLock = scanner.RequiresUnlock;
-                request.ResourceType = (HarvestTypes)scanner.ScannerType;
-                request.ResourceName = scanner.ResourceName;
-
-                abundance = 0;
-            }
-
-            public double Abundance
-            {
-                get { return abundance; }
-            }
-
-            public void OnFixedUpdate(Vessel vessel)
-            {
-                if (HighLogic.LoadedSceneIsFlight)
-                {
-                    request.Altitude = vessel.altitude;
-                    request.BodyId = vessel.mainBody.flightGlobalsIndex;
-                    request.Latitude = vessel.latitude;
-                    request.Longitude = vessel.longitude;
-                    abundance = ResourceMap.Instance.GetAbundance(request);
-                }
-                else
-                {
-                    abundance = 0;
-                }
+                return ToggleStatus ? Abundance : 0;
             }
         }
-        #endregion // ResourceAbundanceTracker
     }
 }

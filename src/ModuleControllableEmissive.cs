@@ -15,12 +15,14 @@ namespace IndicatorLights
     /// </summary>
     public class ModuleControllableEmissive : PartModule, Identifiers.IIdentifiable
     {
+        internal const string CLONE_TAG = "(Clone)";
         private static readonly Regex TARGET_PATTERN = new Regex("^(.+):([\\d,]+)$");
-        private static readonly int emissiveColorId = Shader.PropertyToID("_EmissiveColor");
-        private static readonly Material[] NO_MATERIALS = new Material[0];
+        private static readonly int EMISSIVE_COLOR_ID = Shader.PropertyToID("_EmissiveColor");
+        private static readonly MeshRenderer[] NO_RENDERERS = new MeshRenderer[0];
 
-        private Material[] materials;
-        private Color cachedColor = new Color(0, 0, 0, 0);
+        private bool isValid = false;
+        private MaterialPropertyBlock materialPropertyBlock;
+        private MeshRenderer[] renderers;
         private Guid lastActiveVessel = Guid.Empty;
 
         /// <summary>
@@ -37,44 +39,47 @@ namespace IndicatorLights
         public string emissiveName = null;
 
         /// <summary>
-        /// Gets or sets the emissive color of the module.
+        /// Sets the emissive color of the module.
         /// </summary>
         public Color Color
         {
-            get
-            {
-                return (Materials.Length > 0) ? Materials[0].GetColor(emissiveColorId) : Color.black;
-            }
             set
             {
-                if (ActiveVesselChanged || !cachedColor.Equals(value))
+                if (isValid)
                 {
-                    cachedColor = value;
-                    for (int i = 0; i < Materials.Length; ++i)
+                    materialPropertyBlock.SetColor(EMISSIVE_COLOR_ID, value);
+                    for (int i = 0; i < renderers.Length; ++i)
                     {
-                        Materials[i].SetColor(emissiveColorId, value);
+                        renderers[i].SetPropertyBlock(materialPropertyBlock);
                     }
                 }
             }
         }
 
+        public void Start()
+        {
+            materialPropertyBlock = new MaterialPropertyBlock();
+            renderers = GetControlledRenderers();
+            isValid = renderers.Length > 0;
+        }
+
         /// <summary>
         /// Searches the part for all emissive materials that match the specified target for this module.
-        /// Special case is when the target ends with a colon and a number, in which case it only tries
-        /// to get the Nth such instance.
+        /// Special case is when the target ends with a colon and a number (or set of comma-delimited
+        /// numbers), in which case it only tries to get the instance(s) matching the indices.
         /// </summary>
         /// <returns></returns>
-        private Material[] GetEmissiveMaterials()
+        private MeshRenderer[] GetControlledRenderers()
         {
-            if (part == null) return NO_MATERIALS;
-            if (part.transform == null) return NO_MATERIALS;
+            if (part == null) return NO_RENDERERS;
+            if (part.transform == null) return NO_RENDERERS;
             if (string.IsNullOrEmpty(target))
             {
                 Logging.Warn("No emissive target identified for " + part.GetTitle());
-                return NO_MATERIALS;
+                return NO_RENDERERS;
             }
-            MeshRenderer[] renderers = part.transform.GetComponentsInChildren<MeshRenderer>();
-            if (renderers == null) return NO_MATERIALS;
+            MeshRenderer[] allRenderers = GetMeshes(part);
+            if (allRenderers == null) return NO_RENDERERS;
 
             // If they've ended with a colon and a list of indices, use that.
             Match match = TARGET_PATTERN.Match(target);
@@ -90,12 +95,11 @@ namespace IndicatorLights
 
             // If a model is added via ModuleManager config, it looks like it gets "(Clone)" added
             // to the end of the renderer name.
-            string CLONE_TAG = "(Clone)";
             string cloneTarget = target + CLONE_TAG;
 
-            for (int rendererIndex = 0; rendererIndex < renderers.Length; ++rendererIndex)
+            for (int rendererIndex = 0; rendererIndex < allRenderers.Length; ++rendererIndex)
             {
-                Renderer renderer = renderers[rendererIndex];
+                Renderer renderer = allRenderers[rendererIndex];
                 if (renderer == null) continue;
                 if (!target.Equals(renderer.name) && !cloneTarget.Equals(renderer.name)) continue;
                 ++count;
@@ -103,13 +107,13 @@ namespace IndicatorLights
             if (count < 1)
             {
                 Logging.Warn("No emissive materials named '" + target + "' could be identified for " + part.GetTitle());
-                for (int rendererIndex = 0; rendererIndex < renderers.Length; ++rendererIndex)
+                for (int rendererIndex = 0; rendererIndex < allRenderers.Length; ++rendererIndex)
                 {
-                    string rendererName = renderers[rendererIndex].name;
+                    string rendererName = allRenderers[rendererIndex].name;
                     if (rendererName.EndsWith(CLONE_TAG)) rendererName = rendererName.Substring(rendererName.Length - CLONE_TAG.Length);
                     Logging.Warn("Did you mean this?  " + rendererName);
                 }
-                return NO_MATERIALS;
+                return NO_RENDERERS;
             }
             PruneIndices(targetIndices, count);
             if (targetIndices.Count == 0)
@@ -117,27 +121,32 @@ namespace IndicatorLights
                 // just include them all
                 for (int i = 0; i < count; ++i) targetIndices.Add(i);
             }
-            Material[] emissiveMaterials = new Material[targetIndices.Count];
+            MeshRenderer[] controlledRenderers = new MeshRenderer[targetIndices.Count];
             int matchingRendererIndex = 0;
             int emissiveMaterialIndex = 0;
-            for (int rendererIndex = 0; rendererIndex < renderers.Length; ++rendererIndex)
+            for (int rendererIndex = 0; rendererIndex < allRenderers.Length; ++rendererIndex)
             {
-                Renderer renderer = renderers[rendererIndex];
+                MeshRenderer renderer = allRenderers[rendererIndex];
                 if (renderer == null) continue;
                 if (!target.Equals(renderer.name) && !cloneTarget.Equals(renderer.name)) continue;
                 if (targetIndices.Contains(matchingRendererIndex))
                 {
-                    emissiveMaterials[emissiveMaterialIndex++] = renderer.material;
+                    controlledRenderers[emissiveMaterialIndex++] = renderer;
                 }
                 ++matchingRendererIndex;
             }
 
-            return emissiveMaterials;
+            return controlledRenderers;
+        }
+
+        internal static MeshRenderer[] GetMeshes(Part part)
+        {
+            return part.FindModelComponents<MeshRenderer>().ToArray();
         }
 
         private static HashSet<int> ParseIndices(string listText)
         {
-            string[] tokens = listText.Split(',');
+            string[] tokens = ParsedParameters.Tokenize(listText, ',');
             HashSet<int> indices = new HashSet<int>();
             for (int i = 0; i < tokens.Length; ++i)
             {
@@ -165,35 +174,11 @@ namespace IndicatorLights
             }
         }
 
-        private Material[] Materials
-        {
-            get
-            {
-                if (materials == null)
-                {
-                    materials = GetEmissiveMaterials();
-                }
-                return materials;
-            }
-        }
-
         public string Identifier
         {
             get
             {
                 return emissiveName;
-            }
-        }
-
-        private bool ActiveVesselChanged
-        {
-            get
-            {
-                Vessel activeVessel = FlightGlobals.ActiveVessel;
-                if (activeVessel == null) return true;
-                if (activeVessel.id == lastActiveVessel) return false;
-                lastActiveVessel = activeVessel.id;
-                return true;
             }
         }
     }
