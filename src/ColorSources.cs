@@ -10,7 +10,7 @@ namespace IndicatorLights
         public static readonly IColorSource ERROR = new ErrorColorSource();
 
         /// <summary>
-        /// Signature for a function that knows how to parse an IColorSource from a part and
+        /// Signature for a function that knows how to parse an IColorSource from a module and
         /// a ParsedParams. Returns null if it it's not recognized. Throws ColorSourceException
         /// if it's recognized, but invalid syntax.
         /// </summary>
@@ -76,6 +76,21 @@ namespace IndicatorLights
 
 
         /// <summary>
+        /// Gets a source that provides a random flickering blink.
+        /// </summary>
+        /// <param name="onSource"></param>
+        /// <param name="offSource"></param>
+        /// <param name="periodMillis"></param>
+        /// <param name="bias"></param>
+        /// <param name="seed"></param>
+        /// <returns></returns>
+        public static IColorSource Random(IColorSource onSource, IColorSource offSource, long periodMillis, double bias = 0, int seed = 0)
+        {
+            return new RandomColorSource(onSource, offSource, periodMillis, bias, seed);
+        }
+
+
+        /// <summary>
         /// Gets a source that applies a constant brightness multiplier to another source.
         /// </summary>
         /// <param name="origin"></param>
@@ -100,7 +115,7 @@ namespace IndicatorLights
             }
             catch (ColorSourceException e)
             {
-                String message = "Invalid color source '" + sourceID + "' specified for " + module.ClassName + " on " + module.part.GetTitle() + ": " + e.Message;
+                string message = "Invalid color source '" + sourceID + "' specified for " + module.ClassName + " on " + module.part.GetTitle() + ": " + e.Message;
                 for (Exception cause = e.InnerException; cause != null; cause = cause.InnerException)
                 {
                     message += " -> " + cause.Message;
@@ -266,11 +281,11 @@ namespace IndicatorLights
                 float multiplier;
                 try
                 {
-                    multiplier = float.Parse(parsedParams[1]);
+                    multiplier = (float)Scalars.Parse(module, parsedParams[1]);
                 }
-                catch (FormatException e)
+                catch (ArgumentException e)
                 {
-                    throw new ColorSourceException(module, tag + "(): Invalid multiplier value '" + parsedParams[1] + "' (must be a float)", e);
+                    throw new ColorSourceException(module, tag + "(): Invalid multiplier value '" + parsedParams[1] + "': " + e.Message, e);
                 }
                 if (multiplier < 0)
                 {
@@ -381,11 +396,11 @@ namespace IndicatorLights
                 long onMillis;
                 try
                 {
-                    onMillis = long.Parse(parsedParams[1]);
+                    onMillis = (long)Scalars.Parse(module, parsedParams[1]);
                 }
-                catch (FormatException e)
+                catch (ArgumentException e)
                 {
-                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid 'on' milliseconds value '" + parsedParams[1] + "' (must be an integer)", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid 'on' milliseconds value '" + parsedParams[1] + "': " + e.Message, e);
                 }
                 if (onMillis < 1)
                 {
@@ -405,11 +420,11 @@ namespace IndicatorLights
                 long offMillis;
                 try
                 {
-                    offMillis = long.Parse(parsedParams[3]);
+                    offMillis = (long)Scalars.Parse(module, parsedParams[3]);
                 }
-                catch (FormatException e)
+                catch (ArgumentException e)
                 {
-                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid 'off' milliseconds value '" + parsedParams[3] + "' (must be an integer)", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid 'off' milliseconds value '" + parsedParams[3] + "': " + e.Message, e);
                 }
                 if (offMillis < 1)
                 {
@@ -421,11 +436,11 @@ namespace IndicatorLights
                 {
                     try
                     {
-                        phase = float.Parse(parsedParams[4]);
+                        phase = (float)Scalars.Parse(module, parsedParams[4]);
                     }
-                    catch (FormatException e)
+                    catch (ArgumentException e)
                     {
-                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid phase value '" + parsedParams[4] + "' (must be a float)", e);
+                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid phase value '" + parsedParams[4] + "': " + e.Message, e);
                     }
                 }
 
@@ -533,11 +548,11 @@ namespace IndicatorLights
                 long cycleMillis;
                 try
                 {
-                    cycleMillis = long.Parse(parsedParams[1]);
+                    cycleMillis = (long)Scalars.Parse(module, parsedParams[1]);
                 }
-                catch (FormatException e)
+                catch (ArgumentException e)
                 {
-                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid cycle milliseconds value '" + parsedParams[1] + "'", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid cycle milliseconds value '" + parsedParams[1] + "': " + e.Message, e);
                 }
                 if (cycleMillis < 1)
                 {
@@ -547,11 +562,11 @@ namespace IndicatorLights
                 float multiplier2;
                 try
                 {
-                    multiplier2 = float.Parse(parsedParams[2]);
+                    multiplier2 = (float)Scalars.Parse(module, parsedParams[2]);
                 }
-                catch (FormatException e)
+                catch (ArgumentException e)
                 {
-                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[2] + "' (must be a float)", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[2] + "': " + e.Message, e);
                 }
                 if ((multiplier2 < 0) || (multiplier2 > 1))
                 {
@@ -563,11 +578,11 @@ namespace IndicatorLights
                 {
                     try
                     {
-                        multiplier1 = float.Parse(parsedParams[3]);
+                        multiplier1 = (float)Scalars.Parse(module, parsedParams[3]);
                     }
                     catch (FormatException e)
                     {
-                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[3] + "' (must be a float)", e);
+                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[3] + "': " + e.Message, e);
                     }
                     if ((multiplier1 < 0) || (multiplier1 > 1))
                     {
@@ -692,11 +707,11 @@ namespace IndicatorLights
                 long periodMillis;
                 try
                 {
-                    periodMillis = long.Parse(parsedParams[2]);
+                    periodMillis = (long)Scalars.Parse(module, parsedParams[2]);
                 }
-                catch (FormatException e)
+                catch (ArgumentException e)
                 {
-                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid 'period' milliseconds value '" + parsedParams[2] + "' (must be an integer)", e);
+                    throw new ColorSourceException(module, TYPE_NAME + "(): Invalid 'period' milliseconds value '" + parsedParams[2] + "': " + e.Message, e);
                 }
                 if (periodMillis < 1)
                 {
@@ -708,11 +723,11 @@ namespace IndicatorLights
                 {
                     try
                     {
-                        bias = double.Parse(parsedParams[3]);
+                        bias = Scalars.Parse(module, parsedParams[3]);
                     }
-                    catch (FormatException e)
+                    catch (ArgumentException e)
                     {
-                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid bias value '" + parsedParams[3] + "' (must be a double)", e);
+                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid bias value '" + parsedParams[3] + "': " + e.Message, e);
                     }
                     if ((bias < -1) || (bias > 1))
                     {
@@ -725,11 +740,11 @@ namespace IndicatorLights
                 {
                     try
                     {
-                        seed = int.Parse(parsedParams[4]);
+                        seed = (int)Scalars.Parse(module, parsedParams[4]);
                     }
-                    catch (FormatException e)
+                    catch (ArgumentException e)
                     {
-                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid seed value '" + parsedParams[4] + "' (must be an integer)", e);
+                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid seed value '" + parsedParams[4] + "': " + e.Message, e);
                     }
                 }
                 if (module.vessel != null) seed ^= module.vessel.id.GetHashCode();

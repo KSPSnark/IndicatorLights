@@ -77,6 +77,10 @@ namespace IndicatorLights
         {
             if ((controlledEmissives != null) && HasColor)
             {
+                // If the thermal overlay is toggled on, don't try to set the color (will prevent
+                // the overlay from doing its thing and make things show up black)
+                if (HighLogic.LoadedSceneIsFlight && PhysicsGlobals.ThermalColorsDebug) return;
+
                 for (int i = 0; i < controlledEmissives.Count; ++i)
                 {
                     controlledEmissives[i].Color = OutputColor;

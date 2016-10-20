@@ -1,3 +1,8 @@
+Release v1.2, a.k.a. "The Antennas Edition"
+* Add indicators to all antennas, with a random modem-like flicker while transmitting data. Faster transmitters = faster flicker.
+* Fix a bug that caused IndicatorLights-enabled meshes to not work with the thermal overlay (Science Jr. was especially bad).
+* Moddability: add "scalar" functionality for more flexible configuration of color source syntax.
+
 Release v1.1, a.k.a. "The Community Edition"
 * Changed to CC-BY-NC-SA license (was previously MIT).
 * KSP 1.2 compatibility.
@@ -22,7 +27,7 @@ Release v1.1, a.k.a. "The Community Edition"
 * Not included here, but: A shout-out to Kerbas_ad_astra and Jiraiyah for supplying mod-compatibility patches, which were spun out to their own mod, "IndicatorLights Community Extensions".
 
 
-Release v1.0, a.k.a. "Why Wait Any Longer Edition"
+Release v1.0, a.k.a. "The 'Why Wait Any Longer' Edition"
 * Add phase control to blinking lights.
 * Implemented ModuleIndirectToggleIndicator (not yet used for anything).
 * Decided to stop pretending this is a "pre-release".  :-)
