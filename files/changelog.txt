@@ -1,3 +1,8 @@
+Release v1.3, a.k.a. "The Bootleg Edition"
+* ModuleScienceAvailabilityIndicator can now specify lowDataColor and unavailableColor sources, and can be constrained to a single experimentID on multi-experiment parts
+* Fix a bug in ModuleScienceDataIndicator that showed dataColor instead of lowDataColor when science data worth zero was stored
+* ModuleReactionWheelIndicator no longer flashes "deprived" warnings when SAS is turned off (prevents false alarms and incorrect readings that were ocurring if fuel ran out or was replenished while SAS was disabled)
+
 Release v1.2, a.k.a. "The Antennas Edition"
 * Add indicators to all antennas, with a random modem-like flicker while transmitting data. Faster transmitters = faster flicker.
 * Fix a bug that caused IndicatorLights-enabled meshes to not work with the thermal overlay (Science Jr. was especially bad).
