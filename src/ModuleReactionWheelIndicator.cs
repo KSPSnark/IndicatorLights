@@ -64,7 +64,7 @@ namespace IndicatorLights
             get
             {
                 Color baseColor = CurrentSource.OutputColor;
-                if (IsDeprived) return BLINK.State ? baseColor : DefaultColor.Off.Value();
+                if (IsDeprived && IsAutopilotActive) return BLINK.State ? baseColor : DefaultColor.Off.Value();
                 return (IsAutopilotActive) ? baseColor : (0.5f * baseColor);
             }
         }
@@ -93,6 +93,12 @@ namespace IndicatorLights
                 for (int i = 0; i < SourceModule.resHandler.inputResources.Count; ++i)
                 {
                     ModuleResource resource = SourceModule.resHandler.inputResources[i];
+
+                    // Temporary code for debugging
+                    //Logging.Log("Reaction wheel " + resource.name + (resource.available ? " available" : " unavailable")
+                    //  + ".  Amount: " + resource.amount + ", currentAmount: " + resource.currentAmount
+                    //  + ", currentRequest: " + resource.currentRequest + ", isDeprived: " + resource.isDeprived);
+
                     // I'm using !available rather than isDeprived, because as far as I can tell, isDeprived is always false
                     if (!resource.available) return true;
                 }

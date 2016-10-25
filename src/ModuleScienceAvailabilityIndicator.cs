@@ -9,13 +9,23 @@ namespace IndicatorLights
     class ModuleScienceAvailabilityIndicator : ModuleSourceIndicator<ModuleScienceExperiment>, IToggle, IScalar
     {
         private static readonly TimeSpan UPDATE_INTERVAL = TimeSpan.FromMilliseconds(300);
-        private static readonly IColorSource NO_SCIENCE_SOURCE = ColorSources.BLACK;
 
         private string _subjectIdForCurrentSituation = null;
         private DateTime nextSituationUpdate = DateTime.MinValue;
         
+        private IColorSource unavailableSource;
+        private IColorSource lowValueSource;
         private IColorSource mediumValueSource;
         private IColorSource highValueSource;
+
+        /// <summary>
+        /// Indicates the experiment which corresponds to this indicator (mainly useful
+        /// for cases where one part may have multiple science experiments on it).
+        /// Optional field.  If null or empty, will simply use the first science experiment
+        /// found on the part.
+        /// </summary>
+        [KSPField]
+        public string experimentID = null;
 
         /// <summary>
         /// Science value (as a fraction from 0 to 1) below which it should be treated as "low value".
@@ -28,6 +38,22 @@ namespace IndicatorLights
         /// </summary>
         [KSPField]
         public float highScienceThreshold = ScienceValue.DEFAULT_HIGH_SCIENCE_THRESHOLD;
+
+        /// <summary>
+        /// The color to use when no new science is available, the available science is already stored
+        /// on board, or the controller is toggled off. If left blank, defers to $Off.
+        /// </summary>
+        [KSPField]
+        [ColorSourceIDField]
+        public string unavailableColor = Colors.ToString(DefaultColor.Off);
+
+        /// <summary>
+        /// The color to use for science that's nearly worthless (e.g. because we've
+        /// recovered it previously). If left blank, defers to unavailableColor.
+        /// </summary>
+        [KSPField]
+        [ColorSourceIDField]
+        public string lowValueColor = string.Empty;
 
         /// <summary>
         /// The color to use for science that's partially valuable (e.g. that we've
@@ -48,7 +74,8 @@ namespace IndicatorLights
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-
+            unavailableSource = FindColorSource(unavailableColor);
+            lowValueSource = string.IsNullOrEmpty(lowValueColor) ? unavailableSource : FindColorSource(lowValueColor);
             mediumValueSource = FindColorSource(mediumValueColor);
             highValueSource = FindColorSource(highValueColor);
             nextSituationUpdate = DateTime.MinValue;
@@ -75,24 +102,27 @@ namespace IndicatorLights
             get
             {
                 // Is it actually *possible* to get science here? If not, no light.
-                if (!IsScienceAvailable) return NO_SCIENCE_SOURCE;
+                if (!IsScienceAvailable) return unavailableSource;
 
                 // What's the science here?
                 string subjectId = SituationSubjectId;
 
                 // Do we already have it on board somewhere? If so, shut up about it.
-                if (AlreadyHasAboard(subjectId)) return NO_SCIENCE_SOURCE;
+                if (AlreadyHasAboard(subjectId)) return unavailableSource;
 
                 // Okay, how valuable is it?
-                ScienceValue.Fraction fraction = ScienceValue.Get(subjectId, lowScienceThreshold, highScienceThreshold);
-                switch (fraction)
+                float fraction = ScienceValue.Get(subjectId);
+                if (fraction == 0) return unavailableSource;
+                switch (ScienceValue.FractionOf(fraction, lowScienceThreshold, highScienceThreshold))
                 {
                     case ScienceValue.Fraction.High:
                         return highValueSource;
                     case ScienceValue.Fraction.Medium:
                         return mediumValueSource;
+                    case ScienceValue.Fraction.Low:
+                        return lowValueSource;
                     default:
-                        return NO_SCIENCE_SOURCE;
+                        return unavailableSource;
                 }
             }
         }
@@ -133,7 +163,7 @@ namespace IndicatorLights
         {
             get
             {
-                return ReferenceEquals(CurrentSource, NO_SCIENCE_SOURCE);
+                return ReferenceEquals(CurrentSource, unavailableSource);
             }
         }
 
@@ -196,5 +226,10 @@ namespace IndicatorLights
                 return Vessel.GetLandedAtString(vessel.landedAt);
             }
         }
-    }
+
+        protected override bool IsSource(ModuleScienceExperiment candidate) {
+          return string.IsNullOrEmpty(experimentID) ? base.IsSource(candidate) : (experimentID.Equals(candidate.experimentID));
+        }
+
+  }
 }

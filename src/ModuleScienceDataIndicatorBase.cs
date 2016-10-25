@@ -90,6 +90,7 @@ namespace IndicatorLights
                 if ((partialDataSource == null) || (lowDataSource == null)) return dataSource;
                 switch (ScienceFraction)
                 {
+                    case null:
                     case ScienceValue.Fraction.Low:
                         return lowDataSource;
                     case ScienceValue.Fraction.Medium:
