@@ -46,13 +46,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Animations.cs" />
+    <Compile Include="ColorSourceArray.cs" />
     <Compile Include="ColorSourceIDField.cs" />
     <Compile Include="ColorSources.cs" />
     <Compile Include="Console\DebugConsole.cs" />
     <Compile Include="Console\HelpCommand.cs" />
     <Compile Include="Console\PartCommand.cs" />
     <Compile Include="Console\PartsCommand.cs" />
+    <Compile Include="Console\LightsEnabledCommand.cs" />
     <Compile Include="DefaultColor.cs" />
+    <Compile Include="ExperimentalController.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="GlobalSettings.cs" />
     <Compile Include="IColorSource.cs" />
     <Compile Include="Identifiers.cs" />
     <Compile Include="IScalar.cs" />
@@ -65,6 +70,8 @@
     <Compile Include="ModuleDataTransmitterIndicator.cs" />
     <Compile Include="ModuleDockingCrossfeedIndicator.cs" />
     <Compile Include="ModuleDockingStateIndicator.cs" />
+    <Compile Include="ModuleEmissiveArrayController.cs" />
+    <Compile Include="ModuleEmissiveControllerBase.cs" />
     <Compile Include="ModuleIndicatorToggle.cs" />
     <Compile Include="ModuleBooleanIndicator.cs" />
     <Compile Include="ModuleOrbitalSurveyorIndicator.cs" />
@@ -92,6 +99,7 @@
     <Compile Include="Scalars.cs" />
     <Compile Include="ScienceValue.cs" />
     <Compile Include="SplashScreen.cs" />
+    <Compile Include="Toggles.cs" />
     <Compile Include="VesselRegistrar.cs" />
     <Compile Include="Vessels.cs" />
     <Compile Include="VesselScienceContents.cs" />

@@ -1,7 +1,20 @@
+Release v1.2.1, a.k.a. "The Fwiffo Edition"
+* ModuleReactionWheelIndicator now supports IToggle and IScalar.
+* Fixed ModuleReactionWheelIndicator bug that caused it to always flash on launch. (Thanks to Fwiffo for catching.)
+* Added new toggle syntax (allows saying things like "and(toggle1, !toggle2)" for color sources.
+* Breaking change to ModuleBooleanIndicator to use the new toggle syntax.
+* Added new "if()" color source syntax. (Thanks to Fwiffo for suggesting.)
+* ModuleCustomBlink now has a field that can choose where to show its UI (editor, flight, both, neither). Thanks to Fwiffo for suggesting.
+* Modified BL-01 light's config so that its "blink enabled/disabled?" UI is only shown in the editor.
+* ModuleScienceAvailabilityIndicator can now specify experiment ID and "low science" color. (Thanks to Fwiffo for suggesting.)
+* Add new ModuleEmissiveArrayController, with sample config. (Experimental module, subject to breaking change without warning in future updates. You've been warned.)
+
+
 Release v1.2, a.k.a. "The Antennas Edition"
 * Add indicators to all antennas, with a random modem-like flicker while transmitting data. Faster transmitters = faster flicker.
 * Fix a bug that caused IndicatorLights-enabled meshes to not work with the thermal overlay (Science Jr. was especially bad).
 * Moddability: add "scalar" functionality for more flexible configuration of color source syntax.
+
 
 Release v1.1, a.k.a. "The Community Edition"
 * Changed to CC-BY-NC-SA license (was previously MIT).

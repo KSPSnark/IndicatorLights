@@ -20,6 +20,7 @@ namespace IndicatorLights.Console
         internal static readonly DebugConsoleCommand[] COMMANDS =
         {
             new HelpCommand(),
+            new LightsEnabledCommand(),
             new PartsCommand(),
             new PartCommand()
         };
@@ -39,7 +40,7 @@ namespace IndicatorLights.Console
         private void OnCommand(string argumentString)
         {
             string[] arguments = ParseArguments(argumentString);
-            if (arguments.Length == 0) arguments = new string[] { "help" };
+            if (arguments.Length == 0) arguments = new string[] { HelpCommand.COMMAND };
 
             string command = arguments[0];
             string[] commandArgs = new string[arguments.Length - 1];

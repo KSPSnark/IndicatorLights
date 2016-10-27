@@ -3,7 +3,7 @@
     /// <summary>
     /// A simple interface for toggle controllers.
     /// </summary>
-    interface IToggle
+    public interface IToggle
     {
         /// <summary>
         /// The current on/off status of the toggle.

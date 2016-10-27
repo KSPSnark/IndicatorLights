@@ -26,6 +26,7 @@ namespace IndicatorLights
         public static T FindFirst<T>(Part part, string identifier) where T : class
         {
             if (part == null) return null;
+            identifier = identifier.Trim();
             bool findFirst = string.IsNullOrEmpty(identifier);
             for (int i = 0; i < part.Modules.Count; ++i)
             {

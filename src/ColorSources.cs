@@ -9,6 +9,8 @@ namespace IndicatorLights
 
         public static readonly IColorSource ERROR = new ErrorColorSource();
 
+        private const string INDEX_TAG = "index";
+
         /// <summary>
         /// Signature for a function that knows how to parse an IColorSource from a module and
         /// a ParsedParams. Returns null if it it's not recognized. Throws ColorSourceException
@@ -24,7 +26,8 @@ namespace IndicatorLights
             BlinkColorSource.TryParse,
             PulsateColorSource.TryParse,
             DimColorSource.TryParse,
-            RandomColorSource.TryParse
+            RandomColorSource.TryParse,
+            IfColorSource.TryParse
         };
 
         /// <summary>
@@ -127,6 +130,48 @@ namespace IndicatorLights
                 }
                 return ERROR;
             }
+        }
+
+        /// <summary>
+        /// Given a color source ID (which might be a literal color, the ID of a controller,
+        /// or a parameterized source) and a count, try to get an array of that many color
+        /// sources, each parsed from the source ID, but substituting the zero-based index for
+        /// the string literal "index".
+        /// </summary>
+        /// <param name="module"></param>
+        /// <param name="sourceID"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public static IColorSource[] FindWithIndex(PartModule module, string sourceID, int count)
+        {
+            IColorSource[] sources = new IColorSource[count];
+            int index = 0;
+            try
+            {
+                for ( ; index < sources.Length; ++index)
+                {
+                    string withIndex = sourceID.Replace(INDEX_TAG, index.ToString());
+                    sources[index] = FindPrivate(module, withIndex);
+                }
+            }
+            catch (ColorSourceException e)
+            {
+                string message = "Invalid color source '" + sourceID + "' specified for " + module.ClassName + " on " + module.part.GetTitle() + ": " + e.Message;
+                for (Exception cause = e.InnerException; cause != null; cause = cause.InnerException)
+                {
+                    message += " -> " + cause.Message;
+                }
+                Logging.Warn(message);
+                if (Configuration.isVerbose)
+                {
+                    Logging.Exception(e);
+                }
+                for ( ; index < sources.Length; ++index)
+                {
+                    sources[index] = ERROR;
+                }
+            }
+            return sources;
         }
 
         /// <summary>
@@ -370,6 +415,7 @@ namespace IndicatorLights
             /// Try to get a blink color source from a ParsedParameters. The expected format is:
             /// 
             /// blink(onSource, onMillis, offSource, offMillis)
+            /// blink(onSource, onMillis, offSource, offMillis, phase)
             /// </summary>
             public static IColorSource TryParse(PartModule module, ParsedParameters parsedParams)
             {
@@ -790,6 +836,94 @@ namespace IndicatorLights
                     if (object.ReferenceEquals(module.part.Modules[i], module)) return i;
                 }
                 return -1; // should never happen
+            }
+        }
+        #endregion
+
+
+        #region IfColorSource
+        private class IfColorSource : IColorSource
+        {
+            private static readonly string TYPE_NAME = "if";
+            private readonly IToggle toggle;
+            private readonly IColorSource onSource;
+            private readonly IColorSource offSource;
+            private readonly string id;
+
+            public IfColorSource(IToggle toggle, string toggleID, IColorSource onSource, IColorSource offSource)
+            {
+                this.toggle = toggle;
+                this.onSource = onSource;
+                this.offSource = offSource;
+
+                if ((offSource.ColorSourceID == Colors.ToString(DefaultColor.Off))
+                    || (offSource.ColorSourceID == Colors.ToString(Color.black)))
+                {
+                    id = string.Format(
+                        "{0}({1},{2})",
+                        TYPE_NAME,
+                        toggleID,
+                        onSource.ColorSourceID);
+                }
+                else
+                {
+                    id = string.Format(
+                        "{0}({1},{2},{3})",
+                        TYPE_NAME,
+                        toggleID,
+                        onSource.ColorSourceID,
+                        offSource.ColorSourceID);
+                }
+            }
+
+            /// <summary>
+            /// Try to get an "if" color source from a ParsedParameters. The expected format is:
+            ///
+            /// if(toggle, onSource)
+            /// if(toggle, onSource, offSource)
+            /// </summary>
+            public static IColorSource TryParse(PartModule module, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
+                if ((parsedParams.Count < 2) || (parsedParams.Count > 3))
+                {
+                    throw new ColorSourceException(
+                        module,
+                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (2-3 required)");
+                }
+                IToggle toggle = null;
+                try
+                {
+                    toggle = Toggles.Parse(module, parsedParams[0]);
+                }
+                catch (ArgumentException e)
+                {
+                    throw new ColorSourceException(module, "Invalid toggle specified for " + TYPE_NAME + "(): " + e.Message);
+                }
+                IColorSource onSource = Find(module, parsedParams[1]);
+                IColorSource offSource = (parsedParams.Count > 2) ? Find(module, parsedParams[2]) : BLACK;
+                return new IfColorSource(toggle, parsedParams[0], onSource, offSource);
+            }
+
+            public string ColorSourceID
+            {
+                get { return id; }
+            }
+
+            public bool HasColor
+            {
+                get { return CurrentSource.HasColor; }
+            }
+
+            public Color OutputColor
+            {
+                get { return CurrentSource.OutputColor; }
+            }
+
+            private IColorSource CurrentSource
+            {
+                get { return toggle.ToggleStatus ? onSource : offSource; }
             }
         }
         #endregion

@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace IndicatorLights
 {
     /// <summary>
     /// A module that sets the display based on the current status of a reaction wheel.
     /// </summary>
-    class ModuleReactionWheelIndicator : ModuleSourceIndicator<ModuleReactionWheel>
+    class ModuleReactionWheelIndicator : ModuleSourceIndicator<ModuleReactionWheel>, IToggle, IScalar
     {
         private static readonly Animations.Blink BLINK = Animations.Blink.of(250, 250, 0);
 
@@ -77,10 +78,7 @@ namespace IndicatorLights
         {
             get
             {
-                if (startState == StartState.Editor) return true;
-                Vessel vessel = FlightGlobals.ActiveVessel;
-                if (vessel == null) return true;
-                return vessel.Autopilot.Enabled;
+                return ((startState == StartState.Editor) || (vessel == null)) ? true : vessel.Autopilot.Enabled;
             }
         }
 
@@ -88,15 +86,10 @@ namespace IndicatorLights
         {
             get
             {
-                if (startState == StartState.Editor) return false;
-                if ((SourceModule == null) || (SourceModule.resHandler == null) || (SourceModule.resHandler.inputResources == null)) return false;
-                for (int i = 0; i < SourceModule.resHandler.inputResources.Count; ++i)
-                {
-                    ModuleResource resource = SourceModule.resHandler.inputResources[i];
-                    // I'm using !available rather than isDeprived, because as far as I can tell, isDeprived is always false
-                    if (!resource.available) return true;
-                }
-                return false;
+                return (startState != StartState.Editor)
+                    && (SourceModule != null)
+                    && !SourceModule.operational
+                    && IsAutopilotActive;
             }
         }
 
@@ -122,6 +115,25 @@ namespace IndicatorLights
                     default:
                         return normalSource;
                 }
+            }
+        }
+
+        public bool ToggleStatus
+        {
+            get
+            {
+                return (SourceModule.State == ModuleReactionWheel.WheelState.Active)
+                    && (SourceModule.authorityLimiter > 0);
+            }
+        }
+
+        public double ScalarValue
+        {
+            get
+            {
+                return (SourceModule.State == ModuleReactionWheel.WheelState.Active)
+                    ? SourceModule.authorityLimiter
+                    : 0.0;
             }
         }
     }

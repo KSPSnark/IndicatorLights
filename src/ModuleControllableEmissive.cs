@@ -22,7 +22,7 @@ namespace IndicatorLights
 
         private bool isValid = false;
         private MaterialPropertyBlock materialPropertyBlock;
-        private MeshRenderer[] renderers;
+        private MeshRenderer[] renderers = null;
         private Guid lastActiveVessel = Guid.Empty;
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace IndicatorLights
         public string emissiveName = null;
 
         /// <summary>
-        /// Sets the emissive color of the module.
+        /// Sets the emissive color of all controlled meshes on the module.
         /// </summary>
         public Color Color
         {
@@ -54,6 +54,28 @@ namespace IndicatorLights
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets the emissive color of the specified controlled mesh on the module.
+        /// This is typically called only from "array" style controllers that don't
+        /// use the Color property to set all meshes at once.
+        /// </summary>
+        /// <param name="index">The index of the mesh whose color to set. Must be between 0 and Count-1.</param>
+        public void SetColorAt(Color color, int index)
+        {
+            if ((index < 0) || (index >= renderers.Length)) return;
+            materialPropertyBlock.SetColor(EMISSIVE_COLOR_ID, color);
+            renderers[index].SetPropertyBlock(materialPropertyBlock);
+        }
+
+        /// <summary>
+        /// Gets the number of meshes that this module controls. This is only available
+        /// after Start() time, and will return -1 if not yet initialized.
+        /// </summary>
+        public int Count
+        {
+            get { return (renderers == null) ? -1 : renderers.Length; }
         }
 
         public void Start()
@@ -72,39 +94,28 @@ namespace IndicatorLights
         private MeshRenderer[] GetControlledRenderers()
         {
             if (part == null) return NO_RENDERERS;
-            if (part.transform == null) return NO_RENDERERS;
             if (string.IsNullOrEmpty(target))
             {
                 Logging.Warn("No emissive target identified for " + part.GetTitle());
                 return NO_RENDERERS;
             }
+
+            // Get all the meshes on the part (regardless of whether we're doing anything with them or not).
             MeshRenderer[] allRenderers = GetMeshes(part);
-            if (allRenderers == null) return NO_RENDERERS;
+            if ((allRenderers == null) || (allRenderers.Length < 1)) return NO_RENDERERS;
 
             // If they've ended with a colon and a list of indices, use that.
             Match match = TARGET_PATTERN.Match(target);
-            HashSet<int> targetIndices = null;
+            List<int> targetIndices = null;
             if (match.Success)
             {
                 target = match.Groups[1].Value;
                 targetIndices = ParseIndices(match.Groups[2].Value);
             }
-            if (targetIndices == null) targetIndices = new HashSet<int>();
 
-            int count = 0;
-
-            // If a model is added via ModuleManager config, it looks like it gets "(Clone)" added
-            // to the end of the renderer name.
-            string cloneTarget = target + CLONE_TAG;
-
-            for (int rendererIndex = 0; rendererIndex < allRenderers.Length; ++rendererIndex)
-            {
-                Renderer renderer = allRenderers[rendererIndex];
-                if (renderer == null) continue;
-                if (!target.Equals(renderer.name) && !cloneTarget.Equals(renderer.name)) continue;
-                ++count;
-            }
-            if (count < 1)
+            // Filter our list of meshes down to just the ones that match our target.
+            MeshRenderer[] candidates = FilterMeshes(allRenderers, target);
+            if (candidates.Length < 1)
             {
                 Logging.Warn("No emissive materials named '" + target + "' could be identified for " + part.GetTitle());
                 for (int rendererIndex = 0; rendererIndex < allRenderers.Length; ++rendererIndex)
@@ -115,43 +126,49 @@ namespace IndicatorLights
                 }
                 return NO_RENDERERS;
             }
-            PruneIndices(targetIndices, count);
-            if (targetIndices.Count == 0)
+
+            // Were specific indices specified?
+            if ((targetIndices == null) || (targetIndices.Count < 1))
             {
-                // just include them all
-                for (int i = 0; i < count; ++i) targetIndices.Add(i);
-            }
-            MeshRenderer[] controlledRenderers = new MeshRenderer[targetIndices.Count];
-            int matchingRendererIndex = 0;
-            int emissiveMaterialIndex = 0;
-            for (int rendererIndex = 0; rendererIndex < allRenderers.Length; ++rendererIndex)
-            {
-                MeshRenderer renderer = allRenderers[rendererIndex];
-                if (renderer == null) continue;
-                if (!target.Equals(renderer.name) && !cloneTarget.Equals(renderer.name)) continue;
-                if (targetIndices.Contains(matchingRendererIndex))
-                {
-                    controlledRenderers[emissiveMaterialIndex++] = renderer;
-                }
-                ++matchingRendererIndex;
+                // No indices specified, just return the full list of candidates.
+                return candidates;
             }
 
-            return controlledRenderers;
+            // Okay, a specific list of indices was specified. Assemble our results based on that.
+            List<MeshRenderer> results = new List<MeshRenderer>(candidates.Length);
+            for (int i = 0; i < targetIndices.Count; ++i)
+            {
+                int targetIndex = targetIndices[i];
+                if ((targetIndex < 0) || (targetIndex >= candidates.Length)) continue;
+                results.Add(candidates[targetIndex]);
+            }
+            return results.ToArray();
         }
 
+        /// <summary>
+        /// Get an array of all renderers for the specified part.
+        /// </summary>
+        /// <param name="part"></param>
+        /// <returns></returns>
         internal static MeshRenderer[] GetMeshes(Part part)
         {
             return part.FindModelComponents<MeshRenderer>().ToArray();
         }
 
-        private static HashSet<int> ParseIndices(string listText)
+        /// <summary>
+        /// Given a comma-delimited list of integers, get a list of them in order.
+        /// </summary>
+        /// <param name="listText"></param>
+        /// <returns></returns>
+        private static List<int> ParseIndices(string listText)
         {
             string[] tokens = ParsedParameters.Tokenize(listText, ',');
-            HashSet<int> indices = new HashSet<int>();
+            List<int> indices = new List<int>();
             for (int i = 0; i < tokens.Length; ++i)
             {
                 try {
-                    indices.Add(int.Parse(tokens[i]));
+                    int index = int.Parse(tokens[i]);
+                    if (!indices.Contains(index)) indices.Add(index);
                 }
                 catch
                 {
@@ -161,17 +178,28 @@ namespace IndicatorLights
             return indices;
         }
 
-        private static void PruneIndices(HashSet<int> indices, int limit)
+        /// <summary>
+        /// Given an array of renderers, filter them down to just the ones that match
+        /// the target.
+        /// </summary>
+        /// <param name="renderers"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        private static MeshRenderer[] FilterMeshes(MeshRenderer[] renderers, string target)
         {
-            List<int> overflows = new List<int>();
-            foreach (int index in indices)
+            // If a model is added via ModuleManager config, it looks like it gets "(Clone)" added
+            // to the end of the renderer name.
+            string cloneTarget = target + CLONE_TAG;
+
+            List<MeshRenderer> candidates = new List<MeshRenderer>();
+            for (int rendererIndex = 0; rendererIndex < renderers.Length; ++rendererIndex)
             {
-                if (index >= limit) overflows.Add(index);
+                MeshRenderer renderer = renderers[rendererIndex];
+                if (renderer == null) continue;
+                if (!target.Equals(renderer.name) && !cloneTarget.Equals(renderer.name)) continue;
+                candidates.Add(renderer);
             }
-            foreach (int overflow in overflows)
-            {
-                indices.Remove(overflow);
-            }
+            return (candidates.Count > 0) ? candidates.ToArray() : NO_RENDERERS;
         }
 
         public string Identifier

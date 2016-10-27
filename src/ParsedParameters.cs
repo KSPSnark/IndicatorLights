@@ -20,16 +20,28 @@ namespace IndicatorLights
             this.parameters = parameters;
         }
 
+        /// <summary>
+        /// The primary identifier of the parsed parameters. For functional expressions of
+        /// the form "foo(arg1, arg2, ...)", this is the "foo".
+        /// </summary>
         public string Identifier
         {
             get { return identifier; }
         }
 
+        /// <summary>
+        /// Gets the number of parameters (zero or more).
+        /// </summary>
         public int Count
         {
             get { return parameters.Length; }
         }
 
+        /// <summary>
+        /// Gets the indexth parameter.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public string this[int index]
         {
             get { return parameters[index]; }

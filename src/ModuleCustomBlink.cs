@@ -4,7 +4,7 @@ namespace IndicatorLights
 {
     class ModuleCustomBlink : ModuleEmissiveController, IToggle
     {
-        [KSPField(guiName = "Mode", isPersistant = true, guiActive = true, guiActiveEditor = true), UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "Blinking", disabledText = "Continuous")]
+        [KSPField(guiName = "Mode", isPersistant = true, guiActive = false, guiActiveEditor = true), UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "Blinking", disabledText = "Continuous")]
         public bool blinkEnabled = false;
         private BaseField BlinkEnabledField { get { return Fields["blinkEnabled"]; } }
 
@@ -33,6 +33,12 @@ namespace IndicatorLights
         /// </summary>
         [KSPField]
         public string offColor = null;
+
+        /// <summary>
+        /// Determines where the "blink on/off" UI is visible.
+        /// </summary>
+        [KSPField]
+        public UI_Scene uiToggle = UI_Scene.All;
 
         private IColorSource sourceOn = null;
         private IColorSource sourceOff = null;
@@ -104,7 +110,7 @@ namespace IndicatorLights
         {
             base.OnUiEnabled(enabled);
 
-            BlinkEnabledField.guiActiveEditor = enabled;
+            BlinkEnabledField.guiActiveEditor = enabled && uiToggle.IsEditorEnabled();
             OnMillisField.guiActiveEditor = enabled && blinkEnabled;
             OffMillisField.guiActiveEditor = enabled && blinkEnabled;
             PhaseField.guiActiveEditor = enabled && blinkEnabled;
@@ -131,7 +137,7 @@ namespace IndicatorLights
         {
             get
             {
-                return blinkEnabled;
+                return blinkEnabled && blink.State;
             }
         }
 
@@ -173,6 +179,8 @@ namespace IndicatorLights
 
         private void SetUiState()
         {
+            BlinkEnabledField.guiActiveEditor = isUiEnabled && uiToggle.IsEditorEnabled();
+            BlinkEnabledField.guiActive = isUiEnabled && uiToggle.IsFlightEnabled();
             OnMillisField.guiActiveEditor = isUiEnabled && blinkEnabled;
             OffMillisField.guiActiveEditor = isUiEnabled && blinkEnabled;
             PhaseField.guiActiveEditor = isUiEnabled && blinkEnabled;

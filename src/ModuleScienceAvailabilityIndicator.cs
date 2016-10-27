@@ -9,13 +9,22 @@ namespace IndicatorLights
     class ModuleScienceAvailabilityIndicator : ModuleSourceIndicator<ModuleScienceExperiment>, IToggle, IScalar
     {
         private static readonly TimeSpan UPDATE_INTERVAL = TimeSpan.FromMilliseconds(300);
-        private static readonly IColorSource NO_SCIENCE_SOURCE = ColorSources.BLACK;
 
         private string _subjectIdForCurrentSituation = null;
         private DateTime nextSituationUpdate = DateTime.MinValue;
-        
+
+        private IColorSource lowValueSource;
         private IColorSource mediumValueSource;
         private IColorSource highValueSource;
+
+        /// <summary>
+        /// Indicates the experiment which corresponds to this indicator (mainly useful
+        /// for cases where one part may have multiple science experiments on it).
+        /// Optional field.  If null or empty, will simply use the first science experiment
+        /// found on the part.
+        /// </summary>
+        [KSPField]
+        public string experimentID = null;
 
         /// <summary>
         /// Science value (as a fraction from 0 to 1) below which it should be treated as "low value".
@@ -28,6 +37,13 @@ namespace IndicatorLights
         /// </summary>
         [KSPField]
         public float highScienceThreshold = ScienceValue.DEFAULT_HIGH_SCIENCE_THRESHOLD;
+
+        /// <summary>
+        /// The color to use for science that's unavailable (or has a value nearly zero).
+        /// </summary>
+        [KSPField]
+        [ColorSourceIDField]
+        public string lowValueColor = Colors.ToString(DefaultColor.Off);
 
         /// <summary>
         /// The color to use for science that's partially valuable (e.g. that we've
@@ -49,6 +65,7 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
+            lowValueSource = FindColorSource(lowValueColor);
             mediumValueSource = FindColorSource(mediumValueColor);
             highValueSource = FindColorSource(highValueColor);
             nextSituationUpdate = DateTime.MinValue;
@@ -69,19 +86,24 @@ namespace IndicatorLights
                 return CurrentSource.OutputColor;
             }
         }
-        
+
+        protected override bool IsSource(ModuleScienceExperiment candidate)
+        {
+            return string.IsNullOrEmpty(experimentID) || (experimentID.Equals(candidate.experimentID));
+        }
+
         private IColorSource CurrentSource
         {
             get
             {
                 // Is it actually *possible* to get science here? If not, no light.
-                if (!IsScienceAvailable) return NO_SCIENCE_SOURCE;
+                if (!ToggleStatus) return lowValueSource;
 
                 // What's the science here?
                 string subjectId = SituationSubjectId;
 
                 // Do we already have it on board somewhere? If so, shut up about it.
-                if (AlreadyHasAboard(subjectId)) return NO_SCIENCE_SOURCE;
+                if (AlreadyHasAboard(subjectId)) return lowValueSource;
 
                 // Okay, how valuable is it?
                 ScienceValue.Fraction fraction = ScienceValue.Get(subjectId, lowScienceThreshold, highScienceThreshold);
@@ -92,23 +114,8 @@ namespace IndicatorLights
                     case ScienceValue.Fraction.Medium:
                         return mediumValueSource;
                     default:
-                        return NO_SCIENCE_SOURCE;
+                        return lowValueSource;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Gets whether science is available in the current situation.
-        /// </summary>
-        private bool IsScienceAvailable
-        {
-            get
-            {
-                if (vessel == null) return false;
-                if (!vessel.isCommandable) return false;
-                if (!SourceModule.rerunnable && SourceModule.Inoperable) return false;
-
-                return SourceModule.experiment.IsAvailableWhile(ScienceUtil.GetExperimentSituation(vessel), vessel.mainBody);
             }
         }
 
@@ -127,13 +134,17 @@ namespace IndicatorLights
         }
 
         /// <summary>
-        /// IToggle implementation
+        /// IToggle implementation. Gets whether science is available in the current situation.
         /// </summary>
         public bool ToggleStatus
         {
             get
             {
-                return ReferenceEquals(CurrentSource, NO_SCIENCE_SOURCE);
+                if (vessel == null) return false;
+                if (!vessel.isCommandable) return false;
+                if (!SourceModule.rerunnable && SourceModule.Inoperable) return false;
+
+                return SourceModule.experiment.IsAvailableWhile(ScienceUtil.GetExperimentSituation(vessel), vessel.mainBody);
             }
         }
 
@@ -144,7 +155,7 @@ namespace IndicatorLights
         {
             get
             {
-                if (!IsScienceAvailable) return 0;
+                if (!ToggleStatus) return 0;
                 string subjectId = SituationSubjectId;
                 return AlreadyHasAboard(subjectId) ? 0 : ScienceValue.Get(subjectId);
             }
