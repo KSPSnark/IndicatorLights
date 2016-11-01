@@ -29,10 +29,9 @@ namespace IndicatorLights
             ColorSources.Constant(DefaultColor.Off),
             300).ColorSourceID;
 
-        public override void OnStart(StartState state)
+        public override void ParseIDs()
         {
-            base.OnStart(state);
-
+            base.ParseIDs();
             enabledSource = FindColorSource(enabledColor);
             disabledSource = FindColorSource(disabledColor);
         }

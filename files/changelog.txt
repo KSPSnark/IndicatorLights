@@ -1,3 +1,12 @@
+Release v1.2.2
+* Breaking change to ModuleScalarIndicator to use new scalar syntax.
+* Update pulsate color source to allow a "phase" parameter. Switched the order of the two multipliers.
+* Updated "/il part" command to allow dynamically (and non-persistently) setting ColorSource fields on the fly, for debugging.
+* Add new "lerp" color source type.  Syntax: lerp(scalarID, colorSource1, scalarValue1, colorSource2, scalarValue2)
+* Add new parseable scalar syntax. Includes function types: scale, offset, range, lt, gt, max, min, average, scalar
+* Add more parseable toggle function types: gt, lt, ge, le, eq, between
+
+
 Release v1.2.1, a.k.a. "The Fwiffo Edition"
 * ModuleReactionWheelIndicator now supports IToggle and IScalar.
 * Fixed ModuleReactionWheelIndicator bug that caused it to always flash on launch. (Thanks to Fwiffo for catching.)
@@ -8,6 +17,7 @@ Release v1.2.1, a.k.a. "The Fwiffo Edition"
 * Modified BL-01 light's config so that its "blink enabled/disabled?" UI is only shown in the editor.
 * ModuleScienceAvailabilityIndicator can now specify experiment ID and "low science" color. (Thanks to Fwiffo for suggesting.)
 * Add new ModuleEmissiveArrayController, with sample config. (Experimental module, subject to breaking change without warning in future updates. You've been warned.)
+* Add new "/il enabled on" and "/il enabled off" debug console commands, so the user can completely enable/disable the mod for debugging purposes.
 
 
 Release v1.2, a.k.a. "The Antennas Edition"

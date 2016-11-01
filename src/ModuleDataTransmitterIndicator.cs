@@ -14,7 +14,7 @@ namespace IndicatorLights
         /// <summary>
         /// The data rate of the transmitter, in mits/second.
         /// </summary>
-        [ScalarField]
+        [StaticField]
         private double dataRate;
 
         /*
@@ -54,10 +54,15 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
+            deployable = part.FindModuleImplementing<ModuleDeployableAntenna>(); // may be null
+        }
+
+        public override void ParseIDs()
+        {
+            base.ParseIDs();
             dataRate = (SourceModule == null) ? 0.0 : SourceModule.DataRate;
             busySource = FindColorSource(busyColor);
             inactiveSource = FindColorSource(inactiveColor);
-            deployable = part.FindModuleImplementing<ModuleDeployableAntenna>(); // may be null
         }
 
         public override Color OutputColor

@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -28,9 +27,9 @@ namespace IndicatorLights
         private IColorSource disengage = null;
 
 
-        public override void OnStart(StartState state)
+        public override void ParseIDs()
         {
-            base.OnStart(state);
+            base.ParseIDs();
             ready = FindColorSource(readyColor);
             acquire = FindColorSource(acquireColor);
             disengage = FindColorSource(disengageColor);

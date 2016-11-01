@@ -25,10 +25,9 @@ namespace IndicatorLights
         [ColorSourceIDField]
         public string inactiveColor = Colors.ToString(DefaultColor.Off);
 
-        public override void OnStart(StartState state)
+        public override void ParseIDs()
         {
-            base.OnStart(state);
-
+            base.ParseIDs();
             readySource = FindColorSource(readyColor);
             inactiveSource = FindColorSource(inactiveColor);
         }

@@ -55,6 +55,7 @@ namespace IndicatorLights
         /// The resource abundance below which we treat it as having zero availability.
         /// </summary>
         [KSPField]
+        [StaticField]
         public double unavailableResourceThreshold = 1E-03;
 
         /// <summary>
@@ -62,18 +63,19 @@ namespace IndicatorLights
         /// 0.025 is chosen specifically to align with the minimum mining threshold of the mini-drill.
         /// </summary>
         [KSPField]
+        [StaticField]
         public double lowResourceThreshold = 0.025;
 
         /// <summary>
         /// The resource abundance threshold between "medium" and "high".
         /// </summary>
         [KSPField]
+        [StaticField]
         public double highResourceThreshold = 0.05;
 
-        public override void OnStart(StartState state)
+        public override void ParseIDs()
         {
-            base.OnStart(state);
-
+            base.ParseIDs();
             inactiveSource = FindColorSource(inactiveColor);
             unavailableSource = FindColorSource(unavailableColor);
             lowSource = FindColorSource(lowResourceColor);

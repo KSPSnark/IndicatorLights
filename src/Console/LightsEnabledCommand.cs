@@ -8,7 +8,7 @@ namespace IndicatorLights.Console
         private const string STATUS_ON = "on";
         private const string STATUS_OFF = "off";
         private const string HELP = "Global switch for all lights in the mod";
-        private const string USAGE = "{" + STATUS_ON + "|" + STATUS_OFF + "}";
+        private const string USAGE = "{" + STATUS_ON + " | " + STATUS_OFF + "}";
 
         public LightsEnabledCommand() : base(COMMAND, HELP, USAGE) {}
 

@@ -18,9 +18,9 @@ namespace IndicatorLights
         private IColorSource onSource = null;
         private IColorSource offSource = null;
 
-        public override void OnStart(StartState state)
+        public override void ParseIDs()
         {
-            base.OnStart(state);
+            base.ParseIDs();
             onSource = FindColorSource(crossfeedOnSource);
             offSource = FindColorSource(crossfeedOffSource);
         }

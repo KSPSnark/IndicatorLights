@@ -48,16 +48,19 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
-            activeSource = FindColorSource(activeColor);
-            inactiveSource = FindColorSource(inactiveColor);
-
             converter = FindConverter();
             if (converter == null)
             {
                 // bad config!
                 Logging.Warn("Can't find converter named '" + converterName + "' on " + part.GetTitle());
-                return;
             }
+        }
+
+        public override void ParseIDs()
+        {
+            base.ParseIDs();
+            activeSource = FindColorSource(activeColor);
+            inactiveSource = FindColorSource(inactiveColor);
         }
 
         /// <summary>

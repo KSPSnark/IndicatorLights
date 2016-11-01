@@ -25,6 +25,7 @@ namespace IndicatorLights
         /// color string, or it might be the controllerName of another controller on the part.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string onColor = null;
 
         /// <summary>
@@ -32,6 +33,7 @@ namespace IndicatorLights
         /// color string, or it might be the controllerName of another controller on the part.
         /// </summary>
         [KSPField]
+        [ColorSourceIDField]
         public string offColor = null;
 
         /// <summary>
@@ -78,8 +80,6 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
-            sourceOn = FindColorSource(onColor);
-            sourceOff = FindColorSource(offColor);
             blink = Animations.Blink.of((long)onMillis, (long)offMillis, phase);
 
             BlinkEnabledField.uiControlEditor.onFieldChanged = OnBlinkEnabledChanged;
@@ -88,6 +88,13 @@ namespace IndicatorLights
             PhaseField.uiControlEditor.onFieldChanged = OnMillisChanged;
 
             SetUiState();
+        }
+
+        public override void ParseIDs()
+        {
+            base.ParseIDs();
+            sourceOn = FindColorSource(onColor);
+            sourceOff = FindColorSource(offColor);
         }
 
         public override bool HasColor

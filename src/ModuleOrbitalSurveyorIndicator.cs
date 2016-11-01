@@ -59,10 +59,9 @@ namespace IndicatorLights
         [KSPField]
         public bool requireTerrain = true;
 
-        public override void OnStart(StartState state)
+        public override void ParseIDs()
         {
-            base.OnStart(state);
-
+            base.ParseIDs();
             alreadyScannedSource = FindColorSource(alreadyScannedColor);
             potentialScanSource = FindColorSource(potentialScanColor);
             readyScanSource = FindColorSource(readyScanColor);

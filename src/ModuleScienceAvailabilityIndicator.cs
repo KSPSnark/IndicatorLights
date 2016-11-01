@@ -64,11 +64,15 @@ namespace IndicatorLights
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
+            nextSituationUpdate = DateTime.MinValue;
+        }
 
+        public override void ParseIDs()
+        {
+            base.ParseIDs();
             lowValueSource = FindColorSource(lowValueColor);
             mediumValueSource = FindColorSource(mediumValueColor);
             highValueSource = FindColorSource(highValueColor);
-            nextSituationUpdate = DateTime.MinValue;
         }
 
         public override bool HasColor

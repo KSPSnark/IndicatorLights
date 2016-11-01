@@ -9,6 +9,7 @@
     class ModuleEmissiveArrayController : ModuleEmissiveControllerBase
     {
         [KSPField]
+        [ToggleIDField]
         public string toggleID = string.Empty;
 
         [KSPField]

@@ -91,10 +91,14 @@ namespace IndicatorLights
 
             StatusField.uiControlEditor.onFieldChanged = OnEditorToggleChanged;
 
+            SetInputUIState();
+        }
+
+        public override void ParseIDs()
+        {
+            base.ParseIDs();
             inputActive = FindColorSource(activeColor);
             inputInactive = FindColorSource(inactiveColor);
-
-            SetInputUIState();
         }
 
 

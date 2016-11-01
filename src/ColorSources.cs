@@ -27,7 +27,8 @@ namespace IndicatorLights
             PulsateColorSource.TryParse,
             DimColorSource.TryParse,
             RandomColorSource.TryParse,
-            IfColorSource.TryParse
+            IfColorSource.TryParse,
+            LerpColorSource.TryParse
         };
 
         /// <summary>
@@ -70,11 +71,13 @@ namespace IndicatorLights
         /// </summary>
         /// <param name="origin"></param>
         /// <param name="cycleMillis"></param>
-        /// <param name="multiplier"></param>
+        /// <param name="multiplier1"></param>
+        /// <param name="multiplier2"></param>
+        /// <param name="phase"></param>
         /// <returns></returns>
-        public static IColorSource Pulsate(IColorSource origin, long cycleMillis, float multiplier)
+        public static IColorSource Pulsate(IColorSource origin, long cycleMillis, float multiplier1, float multiplier2, float phase = 0F)
         {
-            return new PulsateColorSource(origin, cycleMillis, multiplier);
+            return new PulsateColorSource(origin, cycleMillis, multiplier1, multiplier2, phase);
         }
 
 
@@ -326,7 +329,7 @@ namespace IndicatorLights
                 float multiplier;
                 try
                 {
-                    multiplier = (float)Scalars.Parse(module, parsedParams[1]);
+                    multiplier = (float)Statics.Parse(module, parsedParams[1]);
                 }
                 catch (ArgumentException e)
                 {
@@ -377,7 +380,7 @@ namespace IndicatorLights
         /// </summary>
         private class BlinkColorSource : IColorSource
         {
-            private static readonly string TYPE_NAME = "blink";
+            private const string TYPE_NAME = "blink";
             private readonly Animations.Blink blink;
             private readonly IColorSource onSource;
             private readonly IColorSource offSource;
@@ -442,7 +445,7 @@ namespace IndicatorLights
                 long onMillis;
                 try
                 {
-                    onMillis = (long)Scalars.Parse(module, parsedParams[1]);
+                    onMillis = (long)Statics.Parse(module, parsedParams[1]);
                 }
                 catch (ArgumentException e)
                 {
@@ -466,7 +469,7 @@ namespace IndicatorLights
                 long offMillis;
                 try
                 {
-                    offMillis = (long)Scalars.Parse(module, parsedParams[3]);
+                    offMillis = (long)Statics.Parse(module, parsedParams[3]);
                 }
                 catch (ArgumentException e)
                 {
@@ -482,7 +485,7 @@ namespace IndicatorLights
                 {
                     try
                     {
-                        phase = (float)Scalars.Parse(module, parsedParams[4]);
+                        phase = (float)Statics.Parse(module, parsedParams[4]);
                     }
                     catch (ArgumentException e)
                     {
@@ -528,7 +531,7 @@ namespace IndicatorLights
         /// </summary>
         private class PulsateColorSource : IColorSource
         {
-            private static readonly string TYPE_NAME = "pulsate";
+            private const string TYPE_NAME = "pulsate";
             private readonly Animations.TriangleWave wave;
             private readonly IColorSource origin;
             private readonly string id;
@@ -538,8 +541,9 @@ namespace IndicatorLights
             /// </summary>
             /// <param name="origin">The ColorSource to which to apply a pulsating brightness filter.</param>
             /// <param name="cycleMillis">The duration of a pulsate cycle, in milliseconds.</param>
-            /// <param name="multiplier">The brightness factor to apply at the bottom of a cycle. 0 = pulsates down to black (strongest effect).  1 = no pulsation, acts like constant.</param>
-            public PulsateColorSource(IColorSource origin, long cycleMillis, float multiplier) : this(origin, cycleMillis, 1, multiplier)
+            /// <param name="multiplier1">The brightness factor to apply at one end of a cycle. 0 = pulsates down to black (strongest effect), 1 = no dimming.</param>
+            /// <param name="multiplier2">The brightness factor to apply at the other end of a cycle. 0 = pulsates down to black (strongest effect), 1 = no dimming.</param>
+            public PulsateColorSource(IColorSource origin, long cycleMillis, float multiplier1, float multiplier2) : this(origin, cycleMillis, multiplier1, multiplier2, 0)
             {
             }
 
@@ -550,23 +554,40 @@ namespace IndicatorLights
             /// <param name="cycleMillis">The duration of a pulsate cycle, in milliseconds.</param>
             /// <param name="multiplier1">The brightness factor to apply at one end of a cycle. 0 = pulsates down to black (strongest effect), 1 = no dimming.</param>
             /// <param name="multiplier2">The brightness factor to apply at the other end of a cycle. 0 = pulsates down to black (strongest effect), 1 = no dimming.</param>
-            public PulsateColorSource(IColorSource origin, long cycleMillis, float multiplier1, float multiplier2)
+            /// <param name="phase">The phase of the animation.</param>
+            public PulsateColorSource(IColorSource origin, long cycleMillis, float multiplier1, float multiplier2, float phase)
             {
                 this.origin = origin;
-                this.wave = Animations.TriangleWave.of(cycleMillis, multiplier1, multiplier2, 0F);
-                this.id = string.Format(
-                    "{0}({1},{2},{3},{4})",
-                    TYPE_NAME,
-                    origin.ColorSourceID,
-                    cycleMillis,
-                    multiplier1,
-                    multiplier2);
+                this.wave = Animations.TriangleWave.of(cycleMillis, multiplier1, multiplier2, phase);
+                if (phase == 0)
+                {
+                    this.id = string.Format(
+                        "{0}({1},{2},{3},{4})",
+                        TYPE_NAME,
+                        origin.ColorSourceID,
+                        cycleMillis,
+                        multiplier1,
+                        multiplier2);
+                }
+                else
+                {
+                    this.id = string.Format(
+                        "{0}({1},{2},{3},{4},{5})",
+                        TYPE_NAME,
+                        origin.ColorSourceID,
+                        cycleMillis,
+                        multiplier1,
+                        multiplier2,
+                        phase);
+                }
             }
 
             /// <summary>
             /// Try to get a pulsate color source from a ParsedParameters. The expected format is:
             /// 
             /// pulsate(origin, cycleMillis, multiplier)
+            /// pulsate(origin, cycleMillis, multiplier1, multiplier2)
+            /// pulsate(origin, cycleMillis, multiplier1, multiplier2, phase)
             /// 
             /// ...where multiplier is a float in the range 0 - 1.
             /// </summary>
@@ -574,11 +595,11 @@ namespace IndicatorLights
             {
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
-                if ((parsedParams.Count < 3) || (parsedParams.Count > 4))
+                if ((parsedParams.Count < 4) || (parsedParams.Count > 5))
                 {
                     throw new ColorSourceException(
                         module,
-                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (3-4 required)");
+                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (3-5 required)");
                 }
 
                 IColorSource origin;
@@ -594,7 +615,7 @@ namespace IndicatorLights
                 long cycleMillis;
                 try
                 {
-                    cycleMillis = (long)Scalars.Parse(module, parsedParams[1]);
+                    cycleMillis = (long)Statics.Parse(module, parsedParams[1]);
                 }
                 catch (ArgumentException e)
                 {
@@ -605,40 +626,54 @@ namespace IndicatorLights
                     throw new ColorSourceException(module, TYPE_NAME + "(): cycle milliseconds must be positive");
                 }
 
-                float multiplier2;
+                float multiplier1;
                 try
                 {
-                    multiplier2 = (float)Scalars.Parse(module, parsedParams[2]);
+                    multiplier1 = (float)Statics.Parse(module, parsedParams[2]);
                 }
                 catch (ArgumentException e)
                 {
                     throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[2] + "': " + e.Message, e);
                 }
-                if ((multiplier2 < 0) || (multiplier2 > 1))
+                if ((multiplier1 < 0) || (multiplier1 > 1))
                 {
                     throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[2] + "' (must be in range 0 - 1)");
                 }
 
-                float multiplier1 = 1;
+                float multiplier2 = 1f;
                 if (parsedParams.Count > 3)
                 {
                     try
                     {
-                        multiplier1 = (float)Scalars.Parse(module, parsedParams[3]);
+                        multiplier2 = (float)Statics.Parse(module, parsedParams[3]);
                     }
-                    catch (FormatException e)
+                    catch (ArgumentException e)
                     {
                         throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[3] + "': " + e.Message, e);
                     }
-                    if ((multiplier1 < 0) || (multiplier1 > 1))
+                    if ((multiplier2 < 0) || (multiplier2 > 1))
                     {
                         throw new ColorSourceException(module, TYPE_NAME + "(): Invalid multiplier value '" + parsedParams[3] + "' (must be in range 0 - 1)");
                     }
                 }
 
-                if ((multiplier1 >= 1) && (multiplier2 >= 1)) return origin;
+                float phase = 0;
+                if (parsedParams.Count > 4)
+                {
+                    try
+                    {
+                        phase = (float)Statics.Parse(module, parsedParams[4]);
+                    }
+                    catch (ArgumentException e)
+                    {
+                        throw new ColorSourceException(module, TYPE_NAME + "(): Invalid phase value '" + parsedParams[4] + "': " + e.Message, e);
+                    }
+                }
 
-                return new PulsateColorSource(origin, cycleMillis, multiplier1, multiplier2);
+                if ((multiplier1 >= 1) && (multiplier2 >= 1)) return origin;
+                if ((multiplier1 <= 0) && (multiplier2 <= 0)) return BLACK;
+
+                return new PulsateColorSource(origin, cycleMillis, multiplier1, multiplier2, phase);
             }
 
             public bool HasColor
@@ -665,7 +700,7 @@ namespace IndicatorLights
         /// </summary>
         private class RandomColorSource : IColorSource
         {
-            private static readonly string TYPE_NAME = "random";
+            private const string TYPE_NAME = "random";
             private readonly Animations.RandomBlink blink;
             private readonly IColorSource onSource;
             private readonly IColorSource offSource;
@@ -753,7 +788,7 @@ namespace IndicatorLights
                 long periodMillis;
                 try
                 {
-                    periodMillis = (long)Scalars.Parse(module, parsedParams[2]);
+                    periodMillis = (long)Statics.Parse(module, parsedParams[2]);
                 }
                 catch (ArgumentException e)
                 {
@@ -769,7 +804,7 @@ namespace IndicatorLights
                 {
                     try
                     {
-                        bias = Scalars.Parse(module, parsedParams[3]);
+                        bias = Statics.Parse(module, parsedParams[3]);
                     }
                     catch (ArgumentException e)
                     {
@@ -786,7 +821,7 @@ namespace IndicatorLights
                 {
                     try
                     {
-                        seed = (int)Scalars.Parse(module, parsedParams[4]);
+                        seed = (int)Statics.Parse(module, parsedParams[4]);
                     }
                     catch (ArgumentException e)
                     {
@@ -844,7 +879,7 @@ namespace IndicatorLights
         #region IfColorSource
         private class IfColorSource : IColorSource
         {
-            private static readonly string TYPE_NAME = "if";
+            private const string TYPE_NAME = "if";
             private readonly IToggle toggle;
             private readonly IColorSource onSource;
             private readonly IColorSource offSource;
@@ -927,6 +962,101 @@ namespace IndicatorLights
             }
         }
         #endregion
+
+
+        #region LerpColorSource
+        /// <summary>
+        /// Color source that does linear interpolation between two other color sources, depending on the
+        /// value of a scalar input.
+        /// </summary>
+        private class LerpColorSource : IColorSource
+        {
+            private const string TYPE_NAME = "lerp";
+            private readonly IScalar input;
+            private readonly IColorSource minColor;
+            private readonly double minValue;
+            private readonly IColorSource maxColor;
+            private readonly double maxValue;
+            private readonly string id;
+
+            /// <summary>
+            /// Try to get a lerp color source from a ParsedParameters. The expected format is:
+            ///
+            /// lerp(input, source1, source2)
+            /// lerp(input, source1, value1, source2, value2)
+            /// </summary>
+            public static IColorSource TryParse(PartModule module, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (parsedParams.Identifier != TYPE_NAME) return null;
+                if ((parsedParams.Count != 3) && (parsedParams.Count != 5))
+                {
+                    throw new ColorSourceException(
+                        module,
+                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (3 or 5 required)");
+                }
+                IScalar input = Scalars.Parse(module, parsedParams[0]);
+                if (parsedParams.Count == 3)
+                {
+                    return new LerpColorSource(
+                        input,
+                        Find(module, parsedParams[1]),
+                        0,
+                        Find(module, parsedParams[2]),
+                        1,
+                        parsedParams.ToString());
+                }
+                else
+                {
+                    return new LerpColorSource(
+                        input,
+                        Find(module, parsedParams[1]),
+                        Statics.Parse(module, parsedParams[2]),
+                        Find(module, parsedParams[3]),
+                        Statics.Parse(module, parsedParams[4]),
+                        parsedParams.ToString());
+                }
+            }
+
+            public bool HasColor
+            {
+                get { return minColor.HasColor && maxColor.HasColor; }
+            }
+
+            public Color OutputColor
+            {
+                get
+                {
+                    double value = input.ScalarValue;
+                    if (value <= minValue) return minColor.OutputColor;
+                    if (value >= maxValue) return maxColor.OutputColor;
+                    double fraction = (value - minValue) / (maxValue - minValue);
+                    return Color.Lerp(minColor.OutputColor, maxColor.OutputColor, (float)fraction);
+                }
+            }
+
+            public string ColorSourceID
+            {
+                get { return id; }
+            }
+
+            private LerpColorSource(
+                IScalar input,
+                IColorSource minColor,
+                double minValue,
+                IColorSource maxColor,
+                double maxValue,
+                string id)
+            {
+                this.input = input;
+                this.minColor = minColor;
+                this.minValue = minValue;
+                this.maxColor = maxColor;
+                this.maxValue = maxValue;
+                this.id = id;
+            }
+        }
+        #endregion LerpColorSource
 
 
         #region ErrorColorSource

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -19,6 +20,7 @@ namespace IndicatorLights
         public int slot = NO_SLOT;
 
         [KSPField]
+        [ToggleIDField]
         public string toggleName = null;
 
         [KSPField]
@@ -50,14 +52,6 @@ namespace IndicatorLights
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-
-            toggle = Identifiers.FindFirst<IToggle>(part, toggleName);
-
-            emptySource = FindColorSource(emptyColor);
-            pilotSource = FindColorSource(pilotColor);
-            engineerSource = FindColorSource(engineerColor);
-            scientistSource = FindColorSource(scientistColor);
-            touristSource = FindColorSource(touristColor);
 
             // The default value for slot is NO_SLOT. When we start up, we scan for all ModuleCrewIndicators
             // on the part, and assign them sequentially to slots, if available.
@@ -93,6 +87,26 @@ namespace IndicatorLights
                 indicator.slot = slotIndex;
                 slotAssignments[slotIndex] = true;
             }
+        }
+
+        public override void ParseIDs()
+        {
+            base.ParseIDs();
+            try
+            {
+                toggle = FindToggle(toggleName);
+            }
+            catch (ArgumentException)
+            {
+                Logging.Warn("No toggle \"" + toggleName + "\" found for " + ClassName + " on " + part.GetTitle());
+                toggle = null;
+            }
+
+            emptySource = FindColorSource(emptyColor);
+            pilotSource = FindColorSource(pilotColor);
+            engineerSource = FindColorSource(engineerColor);
+            scientistSource = FindColorSource(scientistColor);
+            touristSource = FindColorSource(touristColor);
         }
 
         public override bool HasColor

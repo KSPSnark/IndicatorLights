@@ -19,7 +19,12 @@ namespace IndicatorLights
         private static readonly TryParseToggle[] PARSEABLE_TOGGLES =
         {
             LogicalAnd.TryParse,
-            LogicalOr.TryParse
+            LogicalOr.TryParse,
+            GreaterThan.TryParse,
+            LessThan.TryParse,
+            GreaterThanOrEqual.TryParse,
+            LessThanOrEqual.TryParse,
+            Between.TryParse
         };
 
         /// <summary>
@@ -65,6 +70,7 @@ namespace IndicatorLights
             throw new ArgumentException("Invalid toggle syntax \"" + text + "\"");
         }
 
+
         #region Inverter
         /// <summary>
         /// IToggle implementation that returns the logical NOT of another toggle.
@@ -94,6 +100,7 @@ namespace IndicatorLights
             }
         }
         #endregion
+
 
         #region LogicalAnd
         private class LogicalAnd : IToggle
@@ -125,7 +132,7 @@ namespace IndicatorLights
             {
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
-                if (parsedParams.Count < 1) throw new ArgumentException("Invalid " + TYPE_NAME + "() syntax: must have at least one argument");
+                parsedParams.RequireCount(module, 1, -1);
                 if (parsedParams.Count == 1) return Parse(module, parsedParams[0]);
                 IToggle[] inputs = new IToggle[parsedParams.Count];
                 for (int i = 0; i < inputs.Length; ++i)
@@ -141,6 +148,7 @@ namespace IndicatorLights
             }
         }
         #endregion
+
 
         #region LogicalOr
         private class LogicalOr : IToggle
@@ -172,7 +180,7 @@ namespace IndicatorLights
             {
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
-                if (parsedParams.Count < 1) throw new ArgumentException("Invalid " + TYPE_NAME + "() syntax: must have at least one argument");
+                parsedParams.RequireCount(module, 1, -1);
                 if (parsedParams.Count == 1) return Parse(module, parsedParams[0]);
                 IToggle[] inputs = new IToggle[parsedParams.Count];
                 for (int i = 0; i < inputs.Length; ++i)
@@ -189,6 +197,8 @@ namespace IndicatorLights
         }
         #endregion
 
+
+        #region Constant
         private class Constant : IToggle
         {
             public static readonly Constant TRUE = new Constant(true);
@@ -206,5 +216,173 @@ namespace IndicatorLights
                 get { return status; }
             }
         }
+        #endregion
+
+
+        #region IScalar conversions
+        /// <summary>
+        /// Allows treating an IScalar as a toggle (evaluates as true when it's in a range).
+        /// </summary>
+        private abstract class FromScalar : IToggle
+        {
+            private readonly IScalar input;
+            private readonly double threshold;
+
+            protected FromScalar(IScalar input, double threshold)
+            {
+                this.input = input;
+                this.threshold = threshold;
+            }
+
+            protected abstract bool Evaluate(double value, double threshold);
+
+            public bool ToggleStatus
+            {
+                get
+                {
+                    return Evaluate(input.ScalarValue, threshold);
+                }
+            }
+        }
+
+        /// <summary>
+        /// True if the input is greater than the threshold.
+        /// </summary>
+        private class GreaterThan : FromScalar
+        {
+            private const string TYPE_NAME = "gt";
+
+            public static IToggle TryParse(PartModule module, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (parsedParams.Identifier != TYPE_NAME) return null;
+                parsedParams.RequireCount(module, 2);
+                IScalar input = Scalars.Parse(module, parsedParams[0]);
+                double threshold = Statics.Parse(module, parsedParams[1]);
+                return new GreaterThan(input, threshold);
+            }
+
+            private GreaterThan(IScalar input, double threshold) : base(input, threshold) { }
+
+            protected override bool Evaluate(double value, double threshold)
+            {
+                return value > threshold;
+            }
+        }
+
+        /// <summary>
+        /// True if the input is greater than the threshold.
+        /// </summary>
+        private class LessThan : FromScalar
+        {
+            private const string TYPE_NAME = "lt";
+
+            public static IToggle TryParse(PartModule module, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (parsedParams.Identifier != TYPE_NAME) return null;
+                parsedParams.RequireCount(module, 2);
+                IScalar input = Scalars.Parse(module, parsedParams[0]);
+                double threshold = Statics.Parse(module, parsedParams[1]);
+                return new LessThan(input, threshold);
+            }
+
+            private LessThan(IScalar input, double threshold) : base(input, threshold) { }
+
+            protected override bool Evaluate(double value, double threshold)
+            {
+                return value < threshold;
+            }
+        }
+
+        /// <summary>
+        /// True if the input is greater than the threshold.
+        /// </summary>
+        private class GreaterThanOrEqual : FromScalar
+        {
+            private const string TYPE_NAME = "ge";
+
+            public static IToggle TryParse(PartModule module, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (parsedParams.Identifier != TYPE_NAME) return null;
+                parsedParams.RequireCount(module, 2);
+                IScalar input = Scalars.Parse(module, parsedParams[0]);
+                double threshold = Statics.Parse(module, parsedParams[1]);
+                return new GreaterThanOrEqual(input, threshold);
+            }
+
+            private GreaterThanOrEqual(IScalar input, double threshold) : base(input, threshold) { }
+
+            protected override bool Evaluate(double value, double threshold)
+            {
+                return value >= threshold;
+            }
+        }
+
+        /// <summary>
+        /// True if the input is greater than the threshold.
+        /// </summary>
+        private class LessThanOrEqual : FromScalar
+        {
+            private const string TYPE_NAME = "le";
+
+            public static IToggle TryParse(PartModule module, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (parsedParams.Identifier != TYPE_NAME) return null;
+                parsedParams.RequireCount(module, 2);
+                IScalar input = Scalars.Parse(module, parsedParams[0]);
+                double threshold = Statics.Parse(module, parsedParams[1]);
+                return new LessThanOrEqual(input, threshold);
+            }
+
+            private LessThanOrEqual(IScalar input, double threshold) : base(input, threshold) { }
+
+            protected override bool Evaluate(double value, double threshold)
+            {
+                return value <= threshold;
+            }
+        }
+
+        /// <summary>
+        /// True if the input is greater than the threshold.
+        /// </summary>
+        private class Between : IToggle
+        {
+            private const string TYPE_NAME = "between";
+            private readonly IScalar input;
+            private readonly double minimum;
+            private readonly double maximum;
+
+            public bool ToggleStatus
+            {
+                get
+                {
+                    double value = input.ScalarValue;
+                    return (value >= minimum) && (value <= maximum);
+                }
+            }
+
+            public static IToggle TryParse(PartModule module, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (parsedParams.Identifier != TYPE_NAME) return null;
+                parsedParams.RequireCount(module, 3);
+                IScalar input = Scalars.Parse(module, parsedParams[0]);
+                double minimum = Statics.Parse(module, parsedParams[1]);
+                double maximum = Statics.Parse(module, parsedParams[2]);
+                if (minimum > maximum) return Constant.FALSE;
+                return new Between(input, minimum, maximum);
+            }
+
+            private Between(IScalar input, double minimum, double maximum)
+            {
+                this.input = input;
+                this.minimum = minimum;
+                this.maximum = maximum;
+            }
+        }
+        #endregion
     }
 }

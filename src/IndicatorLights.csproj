@@ -95,10 +95,13 @@
     <Compile Include="ModuleToggleLED.cs" />
     <Compile Include="ParsedParameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScalarField.cs" />
+    <Compile Include="ScalarIDField.cs" />
+    <Compile Include="StaticField.cs" />
     <Compile Include="Scalars.cs" />
+    <Compile Include="Statics.cs" />
     <Compile Include="ScienceValue.cs" />
     <Compile Include="SplashScreen.cs" />
+    <Compile Include="ToggleIDField.cs" />
     <Compile Include="Toggles.cs" />
     <Compile Include="VesselRegistrar.cs" />
     <Compile Include="Vessels.cs" />

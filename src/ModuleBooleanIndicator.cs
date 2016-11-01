@@ -16,6 +16,7 @@ namespace IndicatorLights
         /// syntax such as "and(toggle1, !toggle2)".
         /// </summary>
         [KSPField]
+        [ToggleIDField]
         public string input = string.Empty;
 
         /// <summary>
@@ -37,13 +38,9 @@ namespace IndicatorLights
         private IColorSource activeSource = null;
         private IColorSource inactiveSource = null;
 
-        /// <summary>
-        /// Here when we're starting up.
-        /// </summary>
-        /// <param name="state"></param>
-        public override void OnStart(StartState state)
+        public override void ParseIDs()
         {
-            base.OnStart(state);
+            base.ParseIDs();
 
             try
             {

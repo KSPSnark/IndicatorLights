@@ -64,12 +64,17 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
+            nextUpdate = DateTime.MinValue;
+            _scienceFraction = null;
+        }
+
+        public override void ParseIDs()
+        {
+            base.ParseIDs();
             dataSource = FindColorSource(dataColor);
             partialDataSource = string.IsNullOrEmpty(partialDataColor) ? null : FindColorSource(partialDataColor);
             lowDataSource = string.IsNullOrEmpty(lowDataColor) ? null : FindColorSource(lowDataColor);
             emptySource = FindColorSource(emptyColor);
-            nextUpdate = DateTime.MinValue;
-            _scienceFraction = null;
         }
 
         public override bool HasColor

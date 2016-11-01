@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -8,8 +7,6 @@ namespace IndicatorLights
     /// </summary>
     class ModuleReactionWheelIndicator : ModuleSourceIndicator<ModuleReactionWheel>, IToggle, IScalar
     {
-        private static readonly Animations.Blink BLINK = Animations.Blink.of(250, 250, 0);
-
         private StartState startState = StartState.None;
         private IColorSource problemSource = null;
         private IColorSource normalSource = null;
@@ -48,11 +45,16 @@ namespace IndicatorLights
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            this.startState = state;
-            this.problemSource = FindColorSource(problemColor);
-            this.normalSource = FindColorSource(normalColor);
-            this.pilotOnlySource = FindColorSource(pilotOnlyColor);
-            this.sasOnlySource = FindColorSource(sasOnlyColor);
+            startState = state;
+        }
+
+        public override void ParseIDs()
+        {
+            base.ParseIDs();
+            problemSource = FindColorSource(problemColor);
+            normalSource = FindColorSource(normalColor);
+            pilotOnlySource = FindColorSource(pilotOnlyColor);
+            sasOnlySource = FindColorSource(sasOnlyColor);
         }
 
         public override bool HasColor
@@ -65,7 +67,6 @@ namespace IndicatorLights
             get
             {
                 Color baseColor = CurrentSource.OutputColor;
-                if (IsDeprived) return BLINK.State ? baseColor : DefaultColor.Off.Value();
                 return (IsAutopilotActive) ? baseColor : (0.5f * baseColor);
             }
         }
@@ -79,17 +80,6 @@ namespace IndicatorLights
             get
             {
                 return ((startState == StartState.Editor) || (vessel == null)) ? true : vessel.Autopilot.Enabled;
-            }
-        }
-
-        private bool IsDeprived
-        {
-            get
-            {
-                return (startState != StartState.Editor)
-                    && (SourceModule != null)
-                    && !SourceModule.operational
-                    && IsAutopilotActive;
             }
         }
 

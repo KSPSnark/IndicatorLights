@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace IndicatorLights
@@ -45,6 +46,64 @@ namespace IndicatorLights
         public string this[int index]
         {
             get { return parameters[index]; }
+        }
+
+        /// <summary>
+        /// Helper method that evaluates the number of parameters and throws an ArgumentException
+        /// if the count is wrong.
+        /// </summary>
+        /// <param name="module">The module where this occurs (used for composing error message)</param>
+        /// <param name="minimum">Minimum allowed number of parameters.  -1 if no minimum.</param>
+        /// <param name="maximum">Maximum allowed number of parameters. -1 if no maximum.</param>
+        public void RequireCount(PartModule module, int minimum, int maximum)
+        {
+            if ((minimum < 0) && (maximum < 0)) return;
+            string correct;
+            if (minimum < 0)
+            {
+                if (maximum < 0) return;
+                correct = "at most " + maximum;
+            }
+            else
+            {
+                correct = (maximum < 0)
+                    ? ("at least " + minimum)
+                    : ((minimum == maximum) ? minimum.ToString() : (minimum.ToString() + "-" + maximum));
+            }
+            if ((minimum >= 0) && (parameters.Length < minimum))
+            {
+                throw new ArgumentException("Not enough parameters for " + identifier + "() on "
+                    + module.ClassName + " of " + module.part.GetTitle() + " (must be " + correct + ")");
+            }
+            if ((maximum >= 0) && (parameters.Length > maximum))
+            {
+                throw new ArgumentException("Too many parameters for " + identifier + "() on "
+                    + module.ClassName + " of " + module.part.GetTitle() + " (must be " + correct + ")");
+            }
+        }
+
+        /// <summary>
+        /// Helper method that evaluates the number of parameters and throws an ArgumentException
+        /// if the count is wrong.
+        /// </summary>
+        /// <param name="module">The module where this occurs (used for composing error message)</param>
+        /// <param name="count">Required number of parameters.</param>
+        public void RequireCount(PartModule module, int count)
+        {
+            RequireCount(module, count, count);
+        }
+
+        public override string ToString()
+        {
+            if (parameters.Length < 1) return Identifier + "()";
+            StringBuilder builder = new StringBuilder(Identifier)
+                .Append("(")
+                .Append(parameters[0]);
+            for (int i = 1; i < parameters.Length; ++i)
+            {
+                builder.Append(",").Append(parameters[i]);
+            }
+            return builder.Append(")").ToString();
         }
 
         /// <summary>

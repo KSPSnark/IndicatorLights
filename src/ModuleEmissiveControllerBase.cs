@@ -68,6 +68,16 @@ namespace IndicatorLights
 
             controlledEmissives = HasEmissive ? Identifiers.FindAll<ModuleControllableEmissive>(part, emissiveName) : null;
             SetUiEnabled(isUiEnabled);
+
+            ParseIDs();
+        }
+
+        /// <summary>
+        /// Called at OnStart time to parse all identifiers needed for the module's operations.
+        /// </summary>
+        public virtual void ParseIDs()
+        {
+            // Base class has no IDs to parse.
         }
 
         /// <summary>
@@ -145,6 +155,16 @@ namespace IndicatorLights
         protected IToggle FindToggle(string toggleID)
         {
             return Toggles.Parse(this, toggleID);
+        }
+
+        /// <summary>
+        /// Find the specified scalar. Throws ArgumentException if there's a problem.
+        /// </summary>
+        /// <param name="scalarID"></param>
+        /// <returns></returns>
+        protected IScalar FindScalar(string scalarID)
+        {
+            return Scalars.Parse(this, scalarID);
         }
 
         private bool HasEmissive

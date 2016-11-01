@@ -3,7 +3,7 @@
     /// <summary>
     /// A simple interface for controllers that work off a scalar quatity (e.g. resource level).
     /// </summary>
-    interface IScalar
+    public interface IScalar
     {
         double ScalarValue { get; }
     }

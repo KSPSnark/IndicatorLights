@@ -16,12 +16,15 @@ namespace IndicatorLights.Console
         private const string EMISSIVES = "emissives";
         private const string CONTROLLERS = "controllers";
         private const string CONTROLLER = "controller";
-        private const string USAGE = "<index> {" + MESHES + "|" + EMISSIVES + "|" + CONTROLLERS + "}";
+        private const string SET = "set";
+        private const string USAGE = "<index> { " + MESHES + " | " + EMISSIVES + " | " + CONTROLLERS + " | " + CONTROLLER + " <index> }";
+        private string[] originalArguments;
 
         public PartCommand() : base(COMMAND, HELP, USAGE) { }
 
         public override void Call(string[] arguments)
         {
+            originalArguments = arguments;
             if (arguments.Length == 0)
             {
                 Logging.Log(HelpCommand.HelpStringOf(this));
@@ -32,7 +35,7 @@ namespace IndicatorLights.Console
             ShowPart(
                 part,
                 (arguments.Length > 1) ? arguments[1] : null,
-                (arguments.Length > 2) ? arguments[2] : null);
+                (arguments.Length > 2) ? arguments.SubArray(2) : new string[0]);
         }
 
         private int parseInteger(string argument, int lowerBoundInclusive, int upperBoundExclusive, string label)
@@ -53,7 +56,7 @@ namespace IndicatorLights.Console
             return index;
         }
 
-        private void ShowPart(Part part, string qualifier, string qualifierArgument)
+        private void ShowPart(Part part, string qualifier, string[] arguments)
         {
             if (qualifier == null)
             {
@@ -62,7 +65,7 @@ namespace IndicatorLights.Console
                     Logging.GetTitle(part),
                     ModuleControllableEmissive.GetMeshes(part).Length,
                     FindModules<ModuleControllableEmissive>(part).Count,
-                    FindModules<ModuleEmissiveController>(part).Count));
+                    FindModules<ModuleEmissiveControllerBase>(part).Count));
                 return;
             }
 
@@ -80,15 +83,18 @@ namespace IndicatorLights.Console
 
             if (qualifier == CONTROLLERS)
             {
-                ShowModules<ModuleEmissiveController>(part, "controllers", DescribeController);
+                ShowModules<ModuleEmissiveControllerBase>(part, "controllers", DescribeController);
                 return;
             }
 
             if (qualifier == CONTROLLER)
             {
-                if (string.IsNullOrEmpty(qualifierArgument)) throw GetException("No controller index specified");
-                List<ModuleEmissiveController> controllers = FindModules<ModuleEmissiveController>(part);
-                ShowController(controllers[parseInteger(qualifierArgument, 0, controllers.Count, "controller index")]);
+
+                if (arguments.Length < 1) throw GetException("No controller index specified");
+                List<ModuleEmissiveControllerBase> controllers = FindModules<ModuleEmissiveControllerBase>(part);
+                int index = parseInteger(arguments[0], 0, controllers.Count, "controller index");
+                ShowController(controllers[index], arguments.SubArray(1));
+                return;
             }
 
             throw GetException("/" + DebugConsole.COMMAND + " " + COMMAND + ": unknown qualifier '" + qualifier + "'");
@@ -158,9 +164,66 @@ namespace IndicatorLights.Console
         }
 
 
-        private void ShowController(ModuleEmissiveController controller)
+        private void ShowController(ModuleEmissiveControllerBase controller, string[] arguments)
         {
-            DescribeController(controller);
+            string description = DescribeController(controller);
+            List<BaseField> idFields = new List<BaseField>();
+            for (int i = 0; i < controller.Fields.Count; ++i)
+            {
+                BaseField field = controller.Fields[i];
+                if (ToggleIDField.Is(field) || ScalarIDField.Is(field) || ColorSourceIDField.Is(field)) idFields.Add(field);
+            }
+            StringBuilder builder = new StringBuilder()
+                .AppendFormat("{0}'s {1}:", controller.part.GetTitle(), controller.ClassName);
+            if (arguments.Length < 1)
+            {
+                // Just show the controller.
+                if (idFields.Count > 0)
+                {
+                    builder.AppendFormat("\n{0} parseable ID fields:", idFields.Count);
+                    for (int i = 0; i < idFields.Count; ++i)
+                    {
+                        builder.AppendFormat("\n{0}: {1}", idFields[i].name, idFields[i].GetValue<string>(controller));
+                    }
+                }
+                builder.AppendFormat("\nTo temporarily override a field: /{0} {1} ", DebugConsole.COMMAND, COMMAND);
+                for (int i = 0; i < originalArguments.Length; ++i)
+                {
+                    builder.AppendFormat(" {0}", originalArguments[i]);
+                }
+                builder.AppendFormat(" {0} <name> <value>", SET);
+            }
+            else
+            {
+                // See if they're setting a field.
+                if (arguments[0] != SET)
+                {
+                    throw GetException("/" + DebugConsole.COMMAND + " " + COMMAND + ": unknown qualifier '" + arguments[0] + "'");
+                }
+                if (arguments.Length < 3)
+                {
+                    throw GetException("/" + DebugConsole.COMMAND + " " + COMMAND + ": '" + SET + "' command requires field name and value");
+                }
+                string fieldName = arguments[1];
+                BaseField field = null;
+                for (int i = 0; i < idFields.Count; ++i)
+                {
+                    if (idFields[i].name == fieldName)
+                    {
+                        field = idFields[i];
+                        break;
+                    }
+                }
+                if (field == null)
+                {
+                    throw GetException("/" + DebugConsole.COMMAND + " " + COMMAND + ": Unknown field '" + fieldName + "'");
+                }
+                string fieldValue = arguments.SubArray(2).Join(" ");
+                builder.AppendFormat(" Setting {0} to: {1}", fieldName, fieldValue);
+                field.SetValue(fieldValue, controller);
+                controller.ParseIDs();
+            }
+            Logging.Log(builder.ToString());
         }
 
         /// <summary>
@@ -186,17 +249,18 @@ namespace IndicatorLights.Console
         }
 
         /// <summary>
-        /// Get a descriptive string for a ModuleEmissiveController.
+        /// Get a descriptive string for a ModuleEmissiveControllerBase.
         /// </summary>
         /// <param name="controller"></param>
         /// <returns></returns>
-        private string DescribeController(ModuleEmissiveController controller)
+        private string DescribeController(ModuleEmissiveControllerBase controller)
         {
             StringBuilder builder = new StringBuilder();
             builder.Append(controller.ClassName);
-            if (!string.IsNullOrEmpty(controller.controllerName))
+            ModuleEmissiveController simpleController = controller as ModuleEmissiveController;
+            if ((simpleController != null) && !string.IsNullOrEmpty(simpleController.controllerName))
             {
-                builder.AppendFormat(" \"{0}\"", controller.controllerName);
+                builder.AppendFormat(" \"{0}\"", simpleController.controllerName);
             }
             builder.Append(", ");
             if (string.IsNullOrEmpty(controller.emissiveName))
