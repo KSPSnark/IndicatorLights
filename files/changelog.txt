@@ -1,4 +1,9 @@
+Release v1.2.3
+* Fix stupid careless bug introduced in v1.2.2 that broke the data transmission display of antennas.
+
+
 Release v1.2.2
+* Stop ModuleReactionWheelIndicator from flashing during time warp.
 * Breaking change to ModuleScalarIndicator to use new scalar syntax.
 * Update pulsate color source to allow a "phase" parameter. Switched the order of the two multipliers.
 * Updated "/il part" command to allow dynamically (and non-persistently) setting ColorSource fields on the fly, for debugging.

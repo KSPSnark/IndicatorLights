@@ -68,7 +68,15 @@ namespace IndicatorLights
 
             controlledEmissives = HasEmissive ? Identifiers.FindAll<ModuleControllableEmissive>(part, emissiveName) : null;
             SetUiEnabled(isUiEnabled);
+        }
 
+        /// <summary>
+        /// Runs after OnStart is finished.
+        /// </summary>
+        /// <param name="state"></param>
+        public override void OnStartFinished(StartState state)
+        {
+            base.OnStartFinished(state);
             ParseIDs();
         }
 

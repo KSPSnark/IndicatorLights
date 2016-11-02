@@ -16,7 +16,7 @@ namespace IndicatorLights
         private delegate double TryParseSource(PartModule module, ParsedParameters parsedParams);
 
         private static readonly TryParseSource[] PARSEABLE_SOURCES = {
-            TryParseScalar,
+            TryParseField,
             TryParseAdd,
             TryParseSubtract,
             TryParseMultiply,
@@ -68,7 +68,7 @@ namespace IndicatorLights
         /// <param name="module"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        private static double TryParseScalar(PartModule module, ParsedParameters parameters)
+        private static double TryParseField(PartModule module, ParsedParameters parameters)
         {
             if (parameters.Identifier != "static") return double.NaN;
             parameters.RequireCount(module, 1);
@@ -205,14 +205,14 @@ namespace IndicatorLights
         /// <summary>
         /// Parse a static expression thus:
         ///
-        /// range(arg, minimum, maximum)
+        /// between(arg, minimum, maximum)
         /// </summary>
         /// <param name="module"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         private static double TryParseRange(PartModule module, ParsedParameters parameters)
         {
-            double[] args = TryParseArguments(module, parameters, 3, true, "range");
+            double[] args = TryParseArguments(module, parameters, 3, true, "between");
             if (args == null) return double.NaN;
             if (args[0] < args[1]) return args[1];
             if (args[0] > args[2]) return args[2];
