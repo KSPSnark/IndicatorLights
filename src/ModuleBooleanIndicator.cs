@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace IndicatorLights
@@ -44,7 +42,7 @@ namespace IndicatorLights
 
             try
             {
-                inputToggle = FindToggle(input);
+                inputToggle = RequireToggle(input);
                 isValid = true;
             }
             catch (ArgumentException e)

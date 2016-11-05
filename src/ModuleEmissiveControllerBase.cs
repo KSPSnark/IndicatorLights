@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace IndicatorLights
@@ -11,6 +12,7 @@ namespace IndicatorLights
     public abstract class ModuleEmissiveControllerBase : PartModule
     {
         private List<ModuleControllableEmissive> controlledEmissives = null;
+        private bool isInitializedAndValid = false;
 
         /// <summary>
         /// This identifies the ModuleControllableEmissive within the part whose material's emissive color
@@ -34,7 +36,7 @@ namespace IndicatorLights
         /// </summary>
         void Update()
         {
-            if (controlledEmissives == null) return;
+            if (!isInitializedAndValid) return;
             if (HighLogic.LoadedSceneIsFlight && PhysicsGlobals.ThermalColorsDebug) return;
             if (GlobalSettings.IsEnabled)
             {
@@ -56,18 +58,25 @@ namespace IndicatorLights
         /// <param name="state"></param>
         public override void OnStart(StartState state)
         {
-            base.OnStart(state);
-
-            if (ExperimentalController.Is(this))
+            try
             {
-                // Log an error so that it loudly announces itself, in case someone didn't
-                // get the memo "hey, this is experimental!"
-                Logging.Error("Warning! " + ClassName + " (on " + part.GetTitle()
-                    + ") is an experimental controller and subject to change without notice.");
-            }
+                base.OnStart(state);
 
-            controlledEmissives = HasEmissive ? Identifiers.FindAll<ModuleControllableEmissive>(part, emissiveName) : null;
-            SetUiEnabled(isUiEnabled);
+                if (ExperimentalController.Is(this))
+                {
+                    // Log an error so that it loudly announces itself, in case someone didn't
+                    // get the memo "hey, this is experimental!"
+                    Logging.Error("Warning! " + ClassName + " (on " + part.GetTitle()
+                        + ") is an experimental controller and subject to change without notice.");
+                }
+
+                controlledEmissives = HasEmissive ? Identifiers.FindAll<ModuleControllableEmissive>(part, emissiveName) : null;
+                SetUiEnabled(isUiEnabled);
+            }
+            catch (Exception e)
+            {
+                Logging.Exception("Error in OnStart", e);
+            }
         }
 
         /// <summary>
@@ -76,8 +85,20 @@ namespace IndicatorLights
         /// <param name="state"></param>
         public override void OnStartFinished(StartState state)
         {
-            base.OnStartFinished(state);
-            ParseIDs();
+            try
+            {
+                base.OnStartFinished(state);
+                ParseIDs();
+                // Wait until now to set isValid to true. That's because the game can call Update() after
+                // OnStart finishes, but before OnStartFinished is called, and we want to make sure that
+                // we don't consider ourselves valid (and try to set colors) until after ParseIDs has
+                // successfully run.
+                isInitializedAndValid = controlledEmissives != null;
+            }
+            catch (Exception e)
+            {
+                Logging.Exception("Error in OnStartFinished", e);
+            }
         }
 
         /// <summary>
@@ -156,13 +177,33 @@ namespace IndicatorLights
         }
 
         /// <summary>
+        /// Try to find the specified toggle. Returns null if not found or there's a problem.
+        /// </summary>
+        /// <param name="toggleID"></param>
+        /// <returns></returns>
+        protected IToggle TryFindToggle(string toggleID)
+        {
+            return Toggles.TryParse(this, toggleID);
+        }
+
+        /// <summary>
         /// Find the specified toggle. Throws ArgumentException if there's a problem.
         /// </summary>
         /// <param name="toggleID"></param>
         /// <returns></returns>
-        protected IToggle FindToggle(string toggleID)
+        protected IToggle RequireToggle(string toggleID)
         {
-            return Toggles.Parse(this, toggleID);
+            return Toggles.Require(this, toggleID);
+        }
+
+        /// <summary>
+        /// Try to find the specified scalar. Returns null if not found or there's a problem.
+        /// </summary>
+        /// <param name="scalarID"></param>
+        /// <returns></returns>
+        protected IScalar TryFindScalar(string scalarID)
+        {
+            return Scalars.TryParse(this, scalarID);
         }
 
         /// <summary>
@@ -170,9 +211,9 @@ namespace IndicatorLights
         /// </summary>
         /// <param name="scalarID"></param>
         /// <returns></returns>
-        protected IScalar FindScalar(string scalarID)
+        protected IScalar RequireScalar(string scalarID)
         {
-            return Scalars.Parse(this, scalarID);
+            return Scalars.Require(this, scalarID);
         }
 
         private bool HasEmissive

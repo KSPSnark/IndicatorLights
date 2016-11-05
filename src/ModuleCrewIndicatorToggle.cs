@@ -8,9 +8,16 @@
         [KSPField(guiName = "Crew LEDs", isPersistant = true, guiActive = true, guiActiveEditor = true),
          UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "On", disabledText = "Off")]
         public bool status = Configuration.crewIndicatorDefaultStatus;
+        private BaseField StatusField { get { return Fields["status"]; } }
 
         [KSPField]
         public string toggleName = null;
+
+        /// <summary>
+        /// Determines where the toggle UI is visible.
+        /// </summary>
+        [KSPField]
+        public UI_Scene uiToggle = UI_Scene.All;
 
         /// <summary>
         /// Action-group method for toggling status.
@@ -53,6 +60,13 @@
         public bool ToggleStatus
         {
             get { return status; }
+        }
+
+        public override void OnStart(StartState state)
+        {
+            base.OnStart(state);
+            StatusField.guiActive = uiToggle.IsFlightEnabled();
+            StatusField.guiActiveEditor = uiToggle.IsEditorEnabled();
         }
     }
 }

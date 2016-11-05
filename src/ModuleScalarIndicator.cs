@@ -93,7 +93,7 @@ namespace IndicatorLights
             base.ParseIDs();
             try
             {
-                inputScalar = FindScalar(input);
+                inputScalar = RequireScalar(input);
                 isValid = true;
             }
             catch (ArgumentException e)

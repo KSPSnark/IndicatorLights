@@ -26,13 +26,36 @@ namespace IndicatorLights
             ToggleAsScalar.TryParse
         };
 
+
         /// <summary>
-        /// Try to parse an IScalar from the specified text. Throws ArgumentException if there's a problem.
+        /// Try to parse an optional IScalar from the specified text. Returns null if there's a problem.
         /// </summary>
         /// <param name="module"></param>
         /// <param name="text"></param>
         /// <returns></returns>
-        public static IScalar Parse(PartModule module, string text)
+        public static IScalar TryParse(PartModule module, string text)
+        {
+            if (string.IsNullOrEmpty(text)) return null;
+            try
+            {
+                return Require(module, text);
+            }
+            catch (ArgumentException e)
+            {
+                Logging.Warn(
+                    "Can't parse a scalar from \"" + text + "\" on " + module.ClassName
+                    + " of " + module.part.GetTitle() + ", ignoring: " + e.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Parse an IScalar from the specified text. Throws ArgumentException if there's a problem.
+        /// </summary>
+        /// <param name="module"></param>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static IScalar Require(PartModule module, string text)
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -43,7 +66,7 @@ namespace IndicatorLights
             // Perhaps it's an inverted scalar?
             if (text.StartsWith(INVERT_OPERATOR))
             {
-                return LinearTransform.Invert(Parse(module, text.Substring(INVERT_OPERATOR.Length)));
+                return LinearTransform.Invert(Require(module, text.Substring(INVERT_OPERATOR.Length)));
             }
 
             // Maybe it's an identifier for a scalar.
@@ -112,7 +135,7 @@ namespace IndicatorLights
                     case SCALE:
                         {
                             parsedParams.RequireCount(module, 2, 3);
-                            IScalar input = Scalars.Parse(module, parsedParams[0]);
+                            IScalar input = Scalars.Require(module, parsedParams[0]);
                             double scale = Statics.Parse(module, parsedParams[1]);
                             double offset = (parsedParams.Count > 2) ? Statics.Parse(module, parsedParams[2]) : 0.0;
                             return Of(input, scale, offset);
@@ -120,7 +143,7 @@ namespace IndicatorLights
                     case OFFSET:
                         {
                             parsedParams.RequireCount(module, 2);
-                            IScalar input = Scalars.Parse(module, parsedParams[0]);
+                            IScalar input = Scalars.Require(module, parsedParams[0]);
                             double offset = Statics.Parse(module, parsedParams[1]);
                             return Offset(input, offset);
                         }
@@ -225,7 +248,7 @@ namespace IndicatorLights
                     case RANGE:
                         {
                             parsedParams.RequireCount(module, 3);
-                            IScalar input = Scalars.Parse(module, parsedParams[0]);
+                            IScalar input = Scalars.Require(module, parsedParams[0]);
                             double minimum = Statics.Parse(module, parsedParams[1]);
                             double maximum = Statics.Parse(module, parsedParams[2]);
                             return Between(input, minimum, maximum);
@@ -233,14 +256,14 @@ namespace IndicatorLights
                     case GREATER_THAN:
                         {
                             parsedParams.RequireCount(module, 2);
-                            IScalar input = Scalars.Parse(module, parsedParams[0]);
+                            IScalar input = Scalars.Require(module, parsedParams[0]);
                             double minimum = Statics.Parse(module, parsedParams[1]);
                             return AtLeast(input, minimum);
                         }
                     case LESS_THAN:
                         {
                             parsedParams.RequireCount(module, 2);
-                            IScalar input = Scalars.Parse(module, parsedParams[0]);
+                            IScalar input = Scalars.Require(module, parsedParams[0]);
                             double maximum = Statics.Parse(module, parsedParams[1]);
                             return AtMost(input, maximum);
                         }
@@ -348,7 +371,7 @@ namespace IndicatorLights
                 IScalar[] inputs = new IScalar[parsedParams.Count];
                 for (int i = 0; i < inputs.Length; ++i)
                 {
-                    inputs[i] = Scalars.Parse(module, parsedParams[i]);
+                    inputs[i] = Scalars.Require(module, parsedParams[i]);
                 }
                 return Of(inputs);
             }
@@ -398,7 +421,7 @@ namespace IndicatorLights
                 IScalar[] inputs = new IScalar[parsedParams.Count];
                 for (int i = 0; i < inputs.Length; ++i)
                 {
-                    inputs[i] = Scalars.Parse(module, parsedParams[i]);
+                    inputs[i] = Scalars.Require(module, parsedParams[i]);
                 }
                 return Of(inputs);
             }
@@ -448,7 +471,7 @@ namespace IndicatorLights
                 IScalar[] inputs = new IScalar[parsedParams.Count];
                 for (int i = 0; i < inputs.Length; ++i)
                 {
-                    inputs[i] = Scalars.Parse(module, parsedParams[i]);
+                    inputs[i] = Scalars.Require(module, parsedParams[i]);
                 }
                 return Of(inputs);
             }
@@ -496,7 +519,7 @@ namespace IndicatorLights
                 if (parsedParams == null) return null;
                 if (parsedParams.Identifier != TYPE_NAME) return null;
                 parsedParams.RequireCount(module, 1);
-                return Of(Toggles.Parse(module, parsedParams[0]), 1, 0);
+                return Of(Toggles.Require(module, parsedParams[0]), 1, 0);
             }
 
             public static IScalar Of(IToggle input, double activeValue, double inactiveValue)

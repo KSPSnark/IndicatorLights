@@ -930,7 +930,7 @@ namespace IndicatorLights
                 IToggle toggle = null;
                 try
                 {
-                    toggle = Toggles.Parse(module, parsedParams[0]);
+                    toggle = Toggles.Require(module, parsedParams[0]);
                 }
                 catch (ArgumentException e)
                 {
@@ -995,7 +995,7 @@ namespace IndicatorLights
                         module,
                         TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (3 or 5 required)");
                 }
-                IScalar input = Scalars.Parse(module, parsedParams[0]);
+                IScalar input = Scalars.Require(module, parsedParams[0]);
                 if (parsedParams.Count == 3)
                 {
                     return new LerpColorSource(

@@ -30,12 +30,14 @@ namespace IndicatorLights
         /// Science value (as a fraction from 0 to 1) below which it should be treated as "low value".
         /// </summary>
         [KSPField]
+        [StaticField]
         public float lowScienceThreshold = ScienceValue.DEFAULT_LOW_SCIENCE_THRESHOLD;
 
         /// <summary>
         /// Science value (as a fraction from 0 to 1) above which it should be treated as "high value".
         /// </summary>
         [KSPField]
+        [StaticField]
         public float highScienceThreshold = ScienceValue.DEFAULT_HIGH_SCIENCE_THRESHOLD;
 
         /// <summary>

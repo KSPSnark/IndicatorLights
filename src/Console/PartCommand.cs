@@ -186,7 +186,7 @@ namespace IndicatorLights.Console
                         builder.AppendFormat("\n{0}: {1}", idFields[i].name, idFields[i].GetValue<string>(controller));
                     }
                 }
-                builder.AppendFormat("\nTo temporarily override a field: /{0} {1} ", DebugConsole.COMMAND, COMMAND);
+                builder.AppendFormat("\nTo temporarily override a field: /{0} {1}", DebugConsole.COMMAND, COMMAND);
                 for (int i = 0; i < originalArguments.Length; ++i)
                 {
                     builder.AppendFormat(" {0}", originalArguments[i]);

@@ -1,3 +1,11 @@
+Release v1.2.4
+* Fix some recently-introduced bugs that caused log error spam.
+* Fix a bug in which the supposedly optional toggleName field for ModuleCrewIndicator wasn't actually optional.
+* Add a uiToggle field to ModuleCrewIndicatorToggle, allowing config to specify where the UI is available.
+* Add static field specifiers to various controller fields (allows using them as static-value references in IndicatorLights syntax).
+* Update to ModuleManager 2.7.3.
+
+
 Release v1.2.3
 * Fix stupid careless bug introduced in v1.2.2 that broke the data transmission display of antennas.
 
@@ -6,7 +14,7 @@ Release v1.2.2
 * Stop ModuleReactionWheelIndicator from flashing during time warp.
 * Breaking change to ModuleScalarIndicator to use new scalar syntax.
 * Update pulsate color source to allow a "phase" parameter. Switched the order of the two multipliers.
-* Updated "/il part" command to allow dynamically (and non-persistently) setting ColorSource fields on the fly, for debugging.
+* Update "/il part" command to allow dynamically (and non-persistently) setting ColorSource fields on the fly, for debugging.
 * Add new "lerp" color source type.  Syntax: lerp(scalarID, colorSource1, scalarValue1, colorSource2, scalarValue2)
 * Add new parseable scalar syntax. Includes function types: scale, offset, range, lt, gt, max, min, average, scalar
 * Add more parseable toggle function types: gt, lt, ge, le, eq, between

@@ -28,12 +28,34 @@ namespace IndicatorLights
         };
 
         /// <summary>
-        /// Try to parse an IToggle from the specified text. Throws ArgumentException if there's a problem.
+        /// Try to parse an optional IToggle from the specified text. Returns null if there's a problem.
         /// </summary>
         /// <param name="module"></param>
         /// <param name="text"></param>
         /// <returns></returns>
-        public static IToggle Parse(PartModule module, string text)
+        public static IToggle TryParse(PartModule module, string text)
+        {
+            if (string.IsNullOrEmpty(text)) return null;
+            try
+            {
+                return Require(module, text);
+            }
+            catch (ArgumentException e)
+            {
+                Logging.Warn(
+                    "Can't parse a toggle from \"" + text + "\" on " + module.ClassName
+                    + " of " + module.part.GetTitle() + ", ignoring: " + e.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Parse an IToggle from the specified text. Throws ArgumentException if there's a problem.
+        /// </summary>
+        /// <param name="module"></param>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static IToggle Require(PartModule module, string text)
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -48,7 +70,7 @@ namespace IndicatorLights
             // Perhaps it's an inverted toggle?
             if (text.StartsWith(NOT_OPERATOR))
             {
-                return Inverter.of(Parse(module, text.Substring(NOT_OPERATOR.Length)));
+                return Inverter.of(Require(module, text.Substring(NOT_OPERATOR.Length)));
             }
 
             // Maybe it's an identifier for a toggle.
@@ -133,11 +155,11 @@ namespace IndicatorLights
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
                 parsedParams.RequireCount(module, 1, -1);
-                if (parsedParams.Count == 1) return Parse(module, parsedParams[0]);
+                if (parsedParams.Count == 1) return Require(module, parsedParams[0]);
                 IToggle[] inputs = new IToggle[parsedParams.Count];
                 for (int i = 0; i < inputs.Length; ++i)
                 {
-                    inputs[i] = Parse(module, parsedParams[i]);
+                    inputs[i] = Require(module, parsedParams[i]);
                 }
                 return new LogicalAnd(inputs);
             }
@@ -181,11 +203,11 @@ namespace IndicatorLights
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
                 parsedParams.RequireCount(module, 1, -1);
-                if (parsedParams.Count == 1) return Parse(module, parsedParams[0]);
+                if (parsedParams.Count == 1) return Require(module, parsedParams[0]);
                 IToggle[] inputs = new IToggle[parsedParams.Count];
                 for (int i = 0; i < inputs.Length; ++i)
                 {
-                    inputs[i] = Parse(module, parsedParams[i]);
+                    inputs[i] = Require(module, parsedParams[i]);
                 }
                 return new LogicalOr(inputs);
             }
@@ -257,7 +279,7 @@ namespace IndicatorLights
                 if (parsedParams == null) return null;
                 if (parsedParams.Identifier != TYPE_NAME) return null;
                 parsedParams.RequireCount(module, 2);
-                IScalar input = Scalars.Parse(module, parsedParams[0]);
+                IScalar input = Scalars.Require(module, parsedParams[0]);
                 double threshold = Statics.Parse(module, parsedParams[1]);
                 return new GreaterThan(input, threshold);
             }
@@ -282,7 +304,7 @@ namespace IndicatorLights
                 if (parsedParams == null) return null;
                 if (parsedParams.Identifier != TYPE_NAME) return null;
                 parsedParams.RequireCount(module, 2);
-                IScalar input = Scalars.Parse(module, parsedParams[0]);
+                IScalar input = Scalars.Require(module, parsedParams[0]);
                 double threshold = Statics.Parse(module, parsedParams[1]);
                 return new LessThan(input, threshold);
             }
@@ -307,7 +329,7 @@ namespace IndicatorLights
                 if (parsedParams == null) return null;
                 if (parsedParams.Identifier != TYPE_NAME) return null;
                 parsedParams.RequireCount(module, 2);
-                IScalar input = Scalars.Parse(module, parsedParams[0]);
+                IScalar input = Scalars.Require(module, parsedParams[0]);
                 double threshold = Statics.Parse(module, parsedParams[1]);
                 return new GreaterThanOrEqual(input, threshold);
             }
@@ -332,7 +354,7 @@ namespace IndicatorLights
                 if (parsedParams == null) return null;
                 if (parsedParams.Identifier != TYPE_NAME) return null;
                 parsedParams.RequireCount(module, 2);
-                IScalar input = Scalars.Parse(module, parsedParams[0]);
+                IScalar input = Scalars.Require(module, parsedParams[0]);
                 double threshold = Statics.Parse(module, parsedParams[1]);
                 return new LessThanOrEqual(input, threshold);
             }
@@ -369,7 +391,7 @@ namespace IndicatorLights
                 if (parsedParams == null) return null;
                 if (parsedParams.Identifier != TYPE_NAME) return null;
                 parsedParams.RequireCount(module, 3);
-                IScalar input = Scalars.Parse(module, parsedParams[0]);
+                IScalar input = Scalars.Require(module, parsedParams[0]);
                 double minimum = Statics.Parse(module, parsedParams[1]);
                 double maximum = Statics.Parse(module, parsedParams[2]);
                 if (minimum > maximum) return Constant.FALSE;

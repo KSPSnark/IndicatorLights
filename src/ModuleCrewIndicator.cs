@@ -92,15 +92,7 @@ namespace IndicatorLights
         public override void ParseIDs()
         {
             base.ParseIDs();
-            try
-            {
-                toggle = FindToggle(toggleName);
-            }
-            catch (ArgumentException)
-            {
-                Logging.Warn("No toggle \"" + toggleName + "\" found for " + ClassName + " on " + part.GetTitle());
-                toggle = null;
-            }
+            toggle = TryFindToggle(toggleName);
 
             emptySource = FindColorSource(emptyColor);
             pilotSource = FindColorSource(pilotColor);
@@ -196,7 +188,6 @@ namespace IndicatorLights
         {
             get
             {
-                if ((toggle != null) && (!toggle.ToggleStatus)) return false;
                 return Crew != null;
             }
         }
