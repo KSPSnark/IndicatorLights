@@ -24,9 +24,12 @@ namespace IndicatorLights
             "Jiraiyah",        // Impossible Innovations support
             "Kerbart",         // lots of helpful suggestions, especially in v0.9.1
             "Kerbas_ad_astra", // putting in lots of work for providing Ven's Stock Revamp support
+            "mikerl",          // suggestion for crew indicators to support other kerbal types
             "NathanKell",      // just 'coz he's awesome :-)
             "NecroBones",      // lots and lots of patient hand-holding, teaching me how to model
+            "SchwinnTropius",  // Patches for Mk1CabinHatch, Porkjet's PartOverhauls
             "Sharpy",          // help with TweakScale support
+            "steedcrugeon",    // suggestion for vessel-situation feature; innovatively using IL in mod
             "VintageXP"        // lots of patient help with Unity and Blender
         };
 

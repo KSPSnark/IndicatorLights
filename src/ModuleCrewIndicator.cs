@@ -15,6 +15,7 @@ namespace IndicatorLights
         private IColorSource engineerSource = null;
         private IColorSource scientistSource = null;
         private IColorSource touristSource = null;
+        private IColorSource otherSource = null;
 
         [KSPField(isPersistant = true)]
         public int slot = NO_SLOT;
@@ -42,6 +43,10 @@ namespace IndicatorLights
         [KSPField]
         [ColorSourceIDField]
         public string touristColor = Colors.ToString(DefaultColor.CrewTourist);
+
+        [KSPField]
+        [ColorSourceIDField]
+        public string otherColor = Colors.ToString(DefaultColor.Unknown);
 
         private IToggle toggle = null;
 
@@ -99,6 +104,7 @@ namespace IndicatorLights
             engineerSource = FindColorSource(engineerColor);
             scientistSource = FindColorSource(scientistColor);
             touristSource = FindColorSource(touristColor);
+            otherSource = FindColorSource(otherColor);
         }
 
         public override bool HasColor
@@ -175,8 +181,9 @@ namespace IndicatorLights
                     case "Scientist":
                         return scientistSource;
                     default:
-                        // Should never happen, but put this as a placeholder so we'll know if it does.
-                        return ColorSources.ERROR;
+                        // Will never happen in stock, but can happen if the player's running some mod
+                        // that adds additional kerbal types.
+                        return otherSource;
                 }
             }
         }

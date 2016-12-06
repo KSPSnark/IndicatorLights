@@ -143,6 +143,15 @@ namespace IndicatorLights
         /// Color displayed to indicate a problem.
         /// </summary>
         Warning,
+
+        /// <summary>
+        /// Used for handling the "anything else" case for indicators that show one of several
+        /// different colors to indicate one of several different known states. This provides
+        /// a way to handle unexpected cases that aren't errors, such as when some mod
+        /// adds new options that IndicatorLights doesn't know about.
+        /// Defaults to magenta.
+        /// </summary>
+        Unknown,
     }
 
     public static class DefaultColorExtensions
@@ -210,9 +219,11 @@ namespace IndicatorLights
                     return Color.red * 0.45f;
                 case DefaultColor.Warning:
                     return Color.red;
-                default:
-                    // this should only happen if there's a bug... pick an odd color to make it obvious
+                case DefaultColor.Unknown:
                     return Color.magenta;
+                default:
+                    // this should only happen if there's a bug...
+                    return DefaultValue(DefaultColor.Unknown);
             }
         }
 
@@ -269,6 +280,8 @@ namespace IndicatorLights
                     return Configuration.lowScienceColor;
                 case DefaultColor.Warning:
                     return Configuration.warningColor;
+                case DefaultColor.Unknown:
+                    return Configuration.unknownColor;
                 default:
                     return defaultColor.DefaultValue();
             }

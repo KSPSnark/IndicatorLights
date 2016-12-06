@@ -47,6 +47,9 @@ namespace IndicatorLights
         // General warning status
         public static readonly Color warningColor;
 
+        // For none-of-the-above cases
+        public static readonly Color unknownColor;
+
         static Configuration()
         {
             PluginConfiguration config = PluginConfiguration.CreateForType<ModuleControllableEmissive>();
@@ -83,6 +86,8 @@ namespace IndicatorLights
             lowScienceColor = ParseColor(config, DefaultColor.LowScience);
 
             warningColor = ParseColor(config, DefaultColor.Warning);
+
+            unknownColor = ParseColor(config, DefaultColor.Unknown);
 
             config.save();
         }

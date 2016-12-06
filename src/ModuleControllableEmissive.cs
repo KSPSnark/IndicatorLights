@@ -48,10 +48,21 @@ namespace IndicatorLights
                 if (isValid)
                 {
                     materialPropertyBlock.SetColor(EMISSIVE_COLOR_ID, value);
+                    bool needCleanup = false;
                     for (int i = 0; i < renderers.Length; ++i)
                     {
-                        renderers[i].SetPropertyBlock(materialPropertyBlock);
+                        if (renderers[i] == null)
+                        {
+                            // This can happen if a breakable part breaks, and there was an emissive mesh
+                            // on the broken part; suddenly we end up with a null renderer in our array.
+                            needCleanup = true;
+                        }
+                        else
+                        {
+                            renderers[i].SetPropertyBlock(materialPropertyBlock);
+                        }
                     }
+                    if (needCleanup) CleanupRenderers();
                 }
             }
         }
@@ -153,6 +164,36 @@ namespace IndicatorLights
         internal static MeshRenderer[] GetMeshes(Part part)
         {
             return part.FindModelComponents<MeshRenderer>().ToArray();
+        }
+
+        /// <summary>
+        /// Go through the list of renderers and remove any that are null. This is called
+        /// whenever we find a null renderer, which can happen when a breakable part breaks
+        /// and an emissive mesh goes poof.
+        /// </summary>
+        private void CleanupRenderers()
+        {
+            int nullCount = 0;
+            for (int i = 0; i < renderers.Length; ++i)
+            {
+                if (renderers[i] == null) ++nullCount;
+            }
+            if (nullCount < 1) return; // nope, no nulls found
+            if (nullCount == renderers.Length) // they're ALL null!
+            {
+                renderers = NO_RENDERERS;
+                isValid = false;
+                return;
+            }
+            // Some but not all are null.  Need to compact.
+            MeshRenderer[] newRenderers = new MeshRenderer[renderers.Length - nullCount];
+            int newIndex = 0;
+            for (int oldIndex = 0; oldIndex < renderers.Length; ++oldIndex)
+            {
+                if (renderers[oldIndex] == null) continue;
+                newRenderers[newIndex++] = renderers[oldIndex];
+            }
+            renderers = newRenderers;
         }
 
         /// <summary>

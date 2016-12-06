@@ -309,12 +309,7 @@ namespace IndicatorLights
 
                 string tag = FindTag(parsedParams.Identifier);
                 if (tag == null) return null;
-                if (parsedParams.Count != 2)
-                {
-                    throw new ColorSourceException(
-                        module,
-                        tag + "() source specified " + parsedParams.Count + " parameters (2 required)");
-                }
+                parsedParams.RequireCount(module, 2);
 
                 IColorSource origin;
                 try
@@ -424,12 +419,7 @@ namespace IndicatorLights
             {
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
-                if ((parsedParams.Count < 4) || (parsedParams.Count > 5))
-                {
-                    throw new ColorSourceException(
-                        module,
-                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (4-5 required)");
-                }
+                parsedParams.RequireCount(module, 4, 5);
 
                 IColorSource onSource;
                 try
@@ -595,12 +585,7 @@ namespace IndicatorLights
             {
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
-                if ((parsedParams.Count < 4) || (parsedParams.Count > 5))
-                {
-                    throw new ColorSourceException(
-                        module,
-                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (3-5 required)");
-                }
+                parsedParams.RequireCount(module, 3, 5);
 
                 IColorSource origin;
                 try
@@ -757,12 +742,7 @@ namespace IndicatorLights
             {
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
-                if ((parsedParams.Count < 3) || (parsedParams.Count > 5))
-                {
-                    throw new ColorSourceException(
-                        module,
-                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (4-5 required)");
-                }
+                parsedParams.RequireCount(module, 3, 5);
 
                 IColorSource onSource;
                 try
@@ -921,12 +901,7 @@ namespace IndicatorLights
             {
                 if (parsedParams == null) return null;
                 if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
-                if ((parsedParams.Count < 2) || (parsedParams.Count > 3))
-                {
-                    throw new ColorSourceException(
-                        module,
-                        TYPE_NAME + "() source specified " + parsedParams.Count + " parameters (2-3 required)");
-                }
+                parsedParams.RequireCount(module, 2, 3);
                 IToggle toggle = null;
                 try
                 {

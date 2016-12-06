@@ -1,3 +1,12 @@
+Release v1.2.5
+* Add "unknown" default color (magenta! but configurable), and enable crew indicators to use that for new kerbal types. (Thanks to mikerl for the suggestion.)
+* Cover up a dummy stock "indicator" on the Z4K battery that was causing player confusion. (Thanks to Fwiffo for the suggestion.)
+* Add situation() toggle syntax, with example config. (Thanks to steedcrugeon for the feature idea.)
+* Fix a careless bug that broke the 3-argument form of the pulsate() syntax.
+* Fix a NullReferenceException bug that happens when a breakable part has an indicator that disappears when the part breaks.
+* Update to ModuleManager 2.7.5.
+
+
 Release v1.2.4
 * Fix some recently-introduced bugs that caused log error spam.
 * Fix a bug in which the supposedly optional toggleName field for ModuleCrewIndicator wasn't actually optional.

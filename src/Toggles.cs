@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace IndicatorLights
 {
@@ -24,7 +25,8 @@ namespace IndicatorLights
             LessThan.TryParse,
             GreaterThanOrEqual.TryParse,
             LessThanOrEqual.TryParse,
-            Between.TryParse
+            Between.TryParse,
+            VesselSituationMatch.TryParse,
         };
 
         /// <summary>
@@ -403,6 +405,88 @@ namespace IndicatorLights
                 this.input = input;
                 this.minimum = minimum;
                 this.maximum = maximum;
+            }
+        }
+        #endregion
+
+
+        #region VesselSituationMatch
+        /// <summary>
+        /// Returns true if the vessel's current situation matches any of the specified flags.
+        /// </summary>
+        private class VesselSituationMatch : IToggle
+        {
+            private const string TYPE_NAME = "situation";
+            private static readonly Vessel.Situations[] ALL_SITUATIONS = (Vessel.Situations[])Enum.GetValues(typeof(Vessel.Situations));
+            private static readonly string ALL_SITUATIONS_LIST = BuildList(ALL_SITUATIONS);
+            private readonly PartModule module;
+            private readonly int requiredSituations;
+
+            public bool ToggleStatus
+            {
+                get
+                {
+                    if (module.part == null) return false;
+                    if (module.part.vessel == null) return false;
+                    int currentSituations = (int)module.part.vessel.situation;
+                    return (currentSituations & requiredSituations) != 0;
+                }
+            }
+
+            /// <summary>
+            /// Try to get a "vessel situation" matcher from a ParsedParameters. The expected format is:
+            ///
+            /// situation(situation1, situation2, ...)
+            ///
+            /// Must have at least one situation. The allowed situation values are the enum constants
+            /// in Vessel.Situations.
+            /// </summary>
+            /// <param name="module"></param>
+            /// <param name="parsedParams"></param>
+            /// <returns></returns>
+            public static IToggle TryParse(PartModule module, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
+                parsedParams.RequireCount(module, 1, -1);
+                Vessel.Situations requiredSituations = ParseSituation(module, parsedParams[0]);
+                for (int i = 1; i < parsedParams.Count; ++i)
+                {
+                    requiredSituations |= ParseSituation(module, parsedParams[i]);
+                }
+                return new VesselSituationMatch(module, requiredSituations);
+            }
+
+            private VesselSituationMatch(PartModule module, Vessel.Situations requiredSituations)
+            {
+                this.module = module;
+                this.requiredSituations = (int)requiredSituations;
+            }
+
+            private static Vessel.Situations ParseSituation(PartModule module, string param)
+            {
+                for (int i = 0; i < ALL_SITUATIONS.Length; ++i)
+                {
+                    if (ALL_SITUATIONS[i].ToString().Equals(param))
+                    {
+                        return ALL_SITUATIONS[i];
+                    }
+                }
+                // Invalid situation specified!
+                throw new ArgumentException(
+                    "Invalid Vessel.Situations value '" + param + "' for " + TYPE_NAME
+                    + "() on " + module.ClassName + " of " + module.part.GetTitle()
+                    + " (valid values are: " + ALL_SITUATIONS_LIST + ")");
+            }
+
+            private static string BuildList(Vessel.Situations[] situations)
+            {
+                StringBuilder builder = new StringBuilder(situations[0].ToString());
+                for (int i = 1; i < situations.Length; ++i)
+                {
+                    builder.Append(", ").Append(situations[i]);
+                }
+                return builder.ToStringAndRelease();
             }
         }
         #endregion
