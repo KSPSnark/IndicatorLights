@@ -115,7 +115,8 @@ namespace IndicatorLights
         {
             get
             {
-                return Resource.amount > 0.0;
+                PartResource resource = Resource;
+                return (resource != null) && (resource.amount > 0.0);
             }
         }
 
@@ -126,7 +127,8 @@ namespace IndicatorLights
         {
             get
             {
-                return Resource.amount / Resource.maxAmount;
+                PartResource resource = Resource;
+                return (resource == null) ? 0.0 : resource.amount / resource.maxAmount;
             }
         }
     }

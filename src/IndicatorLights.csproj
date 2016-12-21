@@ -94,7 +94,9 @@
     <Compile Include="ModuleResourceLevelIndicator.cs" />
     <Compile Include="ModuleToggleLED.cs" />
     <Compile Include="ParsedParameters.cs" />
+    <Compile Include="PartSearchStrategy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RenderType.cs" />
     <Compile Include="ScalarIDField.cs" />
     <Compile Include="StaticField.cs" />
     <Compile Include="Scalars.cs" />

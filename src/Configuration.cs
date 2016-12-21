@@ -70,7 +70,7 @@ namespace IndicatorLights
             dockingCrossfeedOnColor = ParseColor(config, DefaultColor.DockingCrossfeedOn);
             dockingCrossfeedOffColor = ParseColor(config, DefaultColor.DockingCrossfeedOff);
 
-            crewIndicatorDefaultStatus = config.GetValue("CrewIndicatorDefaultStatus", false);
+            crewIndicatorDefaultStatus = config.GetValue("CrewIndicatorDefaultStatus", true);
             crewPilotColor = ParseColor(config, DefaultColor.CrewPilot);
             crewEngineerColor = ParseColor(config, DefaultColor.CrewEngineer);
             crewScientistColor = ParseColor(config, DefaultColor.CrewScientist);

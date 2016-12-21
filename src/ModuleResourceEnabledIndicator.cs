@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace IndicatorLights
 {
@@ -51,7 +50,10 @@ namespace IndicatorLights
 
         private IColorSource CurrentSource
         {
-            get { return Resource.flowState ? enabledSource : disabledSource; }
+            get
+            {
+                return ToggleStatus ? enabledSource : disabledSource;
+            }
         }
 
         /// <summary>
@@ -59,7 +61,11 @@ namespace IndicatorLights
         /// </summary>
         public bool ToggleStatus
         {
-            get { return Resource.flowState; }
+            get
+            {
+                PartResource resource = Resource;
+                return (resource != null) && resource.flowState;
+            }
         }
     }
 }

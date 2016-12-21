@@ -89,18 +89,8 @@ namespace IndicatorLights
                             }
                         }
                     }
-                    // No, so it must be a literal RGB value.
-                    if ((text.Length == 7) && text.StartsWith("#"))
-                    {
-                        int red, green, blue;
-                        if (TryParseHex(text.Substring(1, 2), out red)
-                            && TryParseHex(text.Substring(3, 2), out green)
-                            && TryParseHex(text.Substring(5, 2), out blue))
-                        {
-                            color = new Color(ChannelValue(red), ChannelValue(green), ChannelValue(blue), 1f);
-                            return true;
-                        }
-                    }
+                    // Maybe it's a literal color string?
+                    if (TryParseLiteralColor(text, out color)) return true;
                 } // if the text is long enough
             } // if the text's not null
 
@@ -109,6 +99,60 @@ namespace IndicatorLights
             return false;
         }
 
+        /// <summary>
+        /// Attempt to parse a literal color from a string. Handles formats #RRGGBB and #RRGGBBAA.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        private static bool TryParseLiteralColor(string text, out Color color)
+        {
+            color = Color.black;
+            if (!text.StartsWith("#")) return false;
+            bool needAlpha;
+            switch (text.Length)
+            {
+                case 7:
+                    needAlpha = false;
+                    break;
+                case 9:
+                    needAlpha = true;
+                    break;
+                default:
+                    // wrong length; not a literal color
+                    return false;
+            }
+
+            // get the RGB values
+            int red, green, blue;
+            if (!TryParseHex(text.Substring(1, 2), out red)
+                || !TryParseHex(text.Substring(3, 2), out green)
+                || !TryParseHex(text.Substring(5, 2), out blue))
+            {
+                // nope, couldn't get them
+                return false;
+            }
+
+            // get the alpha value, if needed
+            int alpha = 255;
+            if (needAlpha && !TryParseHex(text.Substring(7, 2), out alpha))
+            {
+                // needed alpha, but couldn't get it
+                return false;
+            }
+
+            // got all the necessary ingredients
+            color = new Color(ChannelValue(red), ChannelValue(green), ChannelValue(blue), ChannelValue(alpha));
+            return true;
+        }
+
+        /// <summary>
+        /// Attempt to parse an integer value in the range 0-255 out of a hexadecimal
+        /// representation thereof. Returns true for success, false for invalid format.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         private static bool TryParseHex(string text, out int value)
         {
             value = 0;

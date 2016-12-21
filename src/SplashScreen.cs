@@ -20,6 +20,7 @@ namespace IndicatorLights
         private static readonly string[] THANK_USERS =
         {
             "Beetlecat",       // for suggesting random-blinking lights
+            "Enceos",          // feature suggestions: tint shaders, alpha colors, parent-part indicators
             "Fwiffo",          // LOTS of helpful moddability suggestions and detailed feedback
             "Jiraiyah",        // Impossible Innovations support
             "Kerbart",         // lots of helpful suggestions, especially in v0.9.1

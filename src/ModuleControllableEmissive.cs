@@ -17,13 +17,12 @@ namespace IndicatorLights
     {
         internal const string CLONE_TAG = "(Clone)";
         private static readonly Regex TARGET_PATTERN = new Regex("^(.+):([\\d,]+)$");
-        private static readonly int EMISSIVE_COLOR_ID = Shader.PropertyToID("_EmissiveColor");
         private static readonly MeshRenderer[] NO_RENDERERS = new MeshRenderer[0];
 
         private bool isValid = false;
         private MaterialPropertyBlock materialPropertyBlock;
         private MeshRenderer[] renderers = null;
-        private Guid lastActiveVessel = Guid.Empty;
+        private int shaderPropertyId;
 
         /// <summary>
         /// This identifies the target renderer within the part whose material's emissive color
@@ -39,6 +38,12 @@ namespace IndicatorLights
         public string emissiveName = null;
 
         /// <summary>
+        /// The type of renderer color which this module controls.
+        /// </summary>
+        [KSPField]
+        public RenderType renderType = RenderTypes.Default;
+
+        /// <summary>
         /// Sets the emissive color of all controlled meshes on the module.
         /// </summary>
         public Color Color
@@ -47,7 +52,7 @@ namespace IndicatorLights
             {
                 if (isValid)
                 {
-                    materialPropertyBlock.SetColor(EMISSIVE_COLOR_ID, value);
+                    materialPropertyBlock.SetColor(shaderPropertyId, value);
                     bool needCleanup = false;
                     for (int i = 0; i < renderers.Length; ++i)
                     {
@@ -76,7 +81,7 @@ namespace IndicatorLights
         public void SetColorAt(Color color, int index)
         {
             if ((index < 0) || (index >= renderers.Length)) return;
-            materialPropertyBlock.SetColor(EMISSIVE_COLOR_ID, color);
+            materialPropertyBlock.SetColor(shaderPropertyId, color);
             renderers[index].SetPropertyBlock(materialPropertyBlock);
         }
 
@@ -93,6 +98,7 @@ namespace IndicatorLights
         {
             materialPropertyBlock = new MaterialPropertyBlock();
             renderers = GetControlledRenderers();
+            shaderPropertyId = renderType.GetShaderPropertyId();
             isValid = renderers.Length > 0;
         }
 

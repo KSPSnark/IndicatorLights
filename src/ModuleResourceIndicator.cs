@@ -8,6 +8,12 @@
         private PartResource resource = null;
 
         /// <summary>
+        /// Determines which part is searched for the specified resource.
+        /// </summary>
+        [KSPField]
+        public PartSearchStrategy searchStrategy = PartSearchStrategies.Default;
+
+        /// <summary>
         /// The name of the resource which this controller tracks. If left null, the controller will
         /// pick the first resource it finds.
         /// </summary>
@@ -23,21 +29,27 @@
             base.OnStart(state);
 
             resource = FindResource();
-            if (resource == null)
+            if ((resource == null) && (searchStrategy == PartSearchStrategy.host))
             {
                 Logging.Warn("ModuleResourceIndicator is inactive");
                 return;
             }
         }
 
-        public override bool HasColor
-        {
-            get { return resource != null; }
-        }
-
         protected PartResource Resource
         {
-            get { return resource; }
+            get
+            {
+                if (searchStrategy != PartSearchStrategy.host)
+                {
+                    Part sourcePart = (resource == null) ? null : resource.part;
+                    if (!searchStrategy.IsChoice(this, sourcePart))
+                    {
+                        resource = FindResource();
+                    }
+                }
+                return resource;
+            }
         }
 
         /// <summary>
@@ -46,29 +58,30 @@
         /// <returns></returns>
         private PartResource FindResource()
         {
-            if (part == null) return null;
-            if ((part.Resources == null) || (part.Resources.Count == 0))
+            Part sourcePart = searchStrategy.ChoosePart(this);
+            if (sourcePart == null) return null;
+            if ((sourcePart.Resources == null) || (sourcePart.Resources.Count == 0))
             {
-                Logging.Warn(part.GetTitle() + " has no resources, can't track");
+                Logging.Warn(sourcePart.GetTitle() + " has no resources, can't track");
                 return null;
             }
             if ((resourceName == null) || (resourceName.Length == 0))
             {
-                if (part.Resources.Count > 1)
+                if (sourcePart.Resources.Count > 1)
                 {
-                    Logging.Log(part.GetTitle() + " has multiple resources; indicator is defaulting to " + part.Resources[0].resourceName);
+                    Logging.Log(sourcePart.GetTitle() + " has multiple resources; indicator is defaulting to " + sourcePart.Resources[0].resourceName);
                 }
-                return part.Resources[0];
+                return sourcePart.Resources[0];
             }
-            for (int i = 0; i < part.Resources.Count; ++i)
+            for (int i = 0; i < sourcePart.Resources.Count; ++i)
             {
-                PartResource resource = part.Resources[i];
+                PartResource resource = sourcePart.Resources[i];
                 if (resourceName.Equals(resource.resourceName) && (resource.maxAmount > 0))
                 {
                     return resource;
                 }
             }
-            Logging.Warn("No resource '" + resourceName + "' found in " + part.GetTitle() + ", can't track");
+            Logging.Warn("No resource '" + resourceName + "' found in " + sourcePart.GetTitle() + ", can't track");
             return null;
         }
     }
