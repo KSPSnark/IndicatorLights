@@ -1,3 +1,10 @@
+Release v1.2.7
+* Add crew indicators to the Mk3 cockpit and Mk3 crew cabin. (Thanks to SchwinnTropius for the suggestion, and some time-saving numbers.)
+* Add compatibility patch for KIS. (Thanks to Enceos for the suggestion, and for finding the right syntax to use.)
+* Add hasCrewEffect() toggle syntax.
+* Update MPL science lab crew indicators to use hasCrewEffect().
+
+
 Release v1.2.6, a.k.a. "The Enceos Edition"
 * Enable IndicatorLights to work with "tint" color on Unity shaders, not just "emissive" color. (Thanks to Enceos for the suggestion.)
 * Update the color-parsing logic to allow specifying alpha values in config, in addition to RGB. (Thanks to Enceos for the suggestion.)

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Experience;
+using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace IndicatorLights
@@ -27,6 +29,7 @@ namespace IndicatorLights
             LessThanOrEqual.TryParse,
             Between.TryParse,
             VesselSituationMatch.TryParse,
+            CrewEffectMatch.TryParse
         };
 
         /// <summary>
@@ -487,6 +490,151 @@ namespace IndicatorLights
                     builder.Append(", ").Append(situations[i]);
                 }
                 return builder.ToStringAndRelease();
+            }
+        }
+        #endregion
+
+
+        #region CrewEffectMatch
+        /// <summary>
+        /// Returns true if a crew slot has the desired effect.
+        /// </summary>
+        private class CrewEffectMatch : IToggle
+        {
+            private const string TYPE_NAME = "hasCrewEffect";
+            private static readonly HashSet<string> VALID_EFFECT_NAMES = FindValidEffectNames();
+            private static readonly TimeSpan UPDATE_INTERVAL = TimeSpan.FromMilliseconds(250);
+            private readonly PartModule module;
+            private readonly string effectName;
+            private readonly int slot;
+            private readonly int minLevel;
+            private bool cachedValue = false;
+            private DateTime nextUpdate = DateTime.MinValue;
+
+
+            private CrewEffectMatch(PartModule module, string effectName, int slot, int minLevel)
+            {
+                this.module = module;
+                this.effectName = effectName;
+                this.slot = slot;
+                this.minLevel = minLevel;
+            }
+
+            /// <summary>
+            /// Try to get a "vessel situation" matcher from a ParsedParameters. The expected format is:
+            ///
+            /// hasCrewEffect(effectName, slot)
+            /// hasCrewEffect(effectName, slot, minLevel)
+            ///
+            /// ...where effectName is the name of the effect to check for (e.g. "ScienceSkill" or whatever;
+            /// these are generally the names of ExperienceEffect classes in the Experience.Effects namespace),
+            /// slot is the crew slot to evaluate (-1 for "any"), and minLevel is the minimum experience level
+            /// needed for the ExperienceEffect to apply ("any level" if omitted).
+            /// </summary>
+            public static IToggle TryParse(PartModule module, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
+                if (module == null) return null;
+                parsedParams.RequireCount(module, 2, 3);
+                string effectName = parsedParams[0];
+                if (!VALID_EFFECT_NAMES.Contains(effectName))
+                {
+                    StringBuilder builder = new StringBuilder();
+                    foreach (string validName in VALID_EFFECT_NAMES)
+                    {
+                        builder.Append(" ").Append(validName);
+                    }
+                    throw new ArgumentException(
+                        "Invalid effect name '" + effectName + "'. Valid values are:"
+                        + builder.ToString());
+                }
+                int slot = (int)Statics.Parse(module, parsedParams[1]);
+                int minLevel = (parsedParams.Count > 2) ? (int)Statics.Parse(module, parsedParams[2]) : -1;
+                return new CrewEffectMatch(module, effectName, slot, minLevel);
+            }
+
+            /// <summary>
+            /// IToggle implementation. Returns true if the crew trait requirement is met.
+            /// </summary>
+            public bool ToggleStatus
+            {
+                get
+                {
+                    DateTime now = DateTime.Now;
+                    if (now > nextUpdate)
+                    {
+                        nextUpdate = now + UPDATE_INTERVAL;
+                        cachedValue = CalculateStatus();
+                    }
+                    return cachedValue;
+                }
+            }
+
+            private bool CalculateStatus()
+            {
+                if (module.part == null) return false;
+                List<ProtoCrewMember> crew = module.part.protoModuleCrew;
+                if (crew == null) return false;
+                if (slot >= crew.Count) return false;
+
+                // If they specified a particular slot, then the specific slot has to match.
+                if (slot >= 0) return Matches(crew[slot]);
+
+                // If no slot is specified, then it's true if *any* slot matches.
+                for (int i = 0; i < crew.Count; ++i)
+                {
+                    if (Matches(crew[i])) return true;
+                }
+
+                // There's no matching slot.
+                return false;
+            }
+
+            /// <summary>
+            /// Returns true if the specified crew member matches the trait we're looking for.
+            /// </summary>
+            /// <param name="crew"></param>
+            /// <returns></returns>
+            private bool Matches(ProtoCrewMember crew)
+            {
+                ExperienceTrait trait = crew.experienceTrait;
+                if (trait == null) return false;
+                List<ExperienceEffect> effects = trait.Effects;
+                if (effects == null) return false;
+                for (int i = 0; i < effects.Count; ++i)
+                {
+                    ExperienceEffect effect = effects[i];
+                    if (effectName == effect.Name)
+                    {
+                        return trait.CrewMemberExperienceLevel() >= minLevel;
+                    }
+                }
+                return false;
+            }
+
+            private static HashSet<string> FindValidEffectNames()
+            {
+                HashSet<string> names = new HashSet<string>();
+                try
+                {
+                    ExperienceSystemConfig systemConfig = new ExperienceSystemConfig();
+                    for (int traitIndex = 0; traitIndex < systemConfig.Categories.Count; ++traitIndex)
+                    {
+                        ExperienceTraitConfig traitConfig = systemConfig.Categories[traitIndex];
+                        if (traitConfig.Effects == null) continue;
+                        for (int effectIndex = 0; effectIndex < traitConfig.Effects.Count; ++effectIndex)
+                        {
+                            ExperienceEffectConfig effectConfig = traitConfig.Effects[effectIndex];
+                            names.Add(effectConfig.Name);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logging.Exception("Couldn't build list of valid effect names!", e);
+                }
+                return names;
             }
         }
         #endregion

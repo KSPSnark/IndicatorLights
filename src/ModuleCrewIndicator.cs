@@ -18,6 +18,7 @@ namespace IndicatorLights
         private IColorSource otherSource = null;
 
         [KSPField(isPersistant = true)]
+        [StaticField]
         public int slot = NO_SLOT;
 
         [KSPField]

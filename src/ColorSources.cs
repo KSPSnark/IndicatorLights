@@ -9,7 +9,9 @@ namespace IndicatorLights
 
         public static readonly IColorSource ERROR = new ErrorColorSource();
 
-        private const string INDEX_TAG = "index";
+        // These are used as substitution tags when parsing emissive arrays.
+        private const string INDEX_TAG = "index"; // gets substituted by the index within the array
+        private const string COUNT_TAG = "count"; // gets substituted by the size of the array
 
         /// <summary>
         /// Signature for a function that knows how to parse an IColorSource from a module and
@@ -153,7 +155,7 @@ namespace IndicatorLights
             {
                 for ( ; index < sources.Length; ++index)
                 {
-                    string withIndex = sourceID.Replace(INDEX_TAG, index.ToString());
+                    string withIndex = sourceID.Replace(INDEX_TAG, index.ToString()).Replace(COUNT_TAG, count.ToString());
                     sources[index] = FindPrivate(module, withIndex);
                 }
             }
