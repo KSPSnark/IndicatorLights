@@ -7,6 +7,7 @@ cp ../src/bin/Release/IndicatorLights.dll $1/GameData/IndicatorLights
 cp ../LICENSE $1/GameData/IndicatorLights
 cp ../README.md $1/GameData/IndicatorLights
 cp -R ../files/Agencies $1/GameData/IndicatorLights
+cp -R ../files/Config $1/GameData/IndicatorLights
 cp -R ../files/Flags $1/GameData/IndicatorLights
 cp -R ../files/Meshes $1/GameData/IndicatorLights
 cp -R ../files/Parts $1/GameData/IndicatorLights

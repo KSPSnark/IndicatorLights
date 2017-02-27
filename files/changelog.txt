@@ -1,3 +1,8 @@
+Release v1.2.8
+* Make ModuleCrewIndicator friendlier to modders, so they can easily add indicator colors for new (modded) kerbal types. (Thanks to smokytehbear for nudging me into this.)
+* Add "main" renderer type for ModuleControllableEmissive, so it's possible to change the diffuse color of a mesh.
+
+
 Release v1.2.7
 * Add crew indicators to the Mk3 cockpit and Mk3 crew cabin. (Thanks to SchwinnTropius for the suggestion, and some time-saving numbers.)
 * Add compatibility patch for KIS. (Thanks to Enceos for the suggestion, and for finding the right syntax to use.)

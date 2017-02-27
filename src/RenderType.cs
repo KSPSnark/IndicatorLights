@@ -15,7 +15,12 @@ namespace IndicatorLights
         /// <summary>
         /// Controls the tint color of the mesh.
         /// </summary>
-        tint
+        tint,
+
+        /// <summary>
+        /// Controls the "main" color of the mesh (e.g. the diffuse color, for many shaders).
+        /// </summary>
+        main
     }
 
     /// <summary>
@@ -30,6 +35,7 @@ namespace IndicatorLights
 
         private static readonly int EMISSIVE_COLOR_ID = Shader.PropertyToID("_EmissiveColor");
         private static readonly int TINT_COLOR_ID = Shader.PropertyToID("_TintColor");
+        private static readonly int MAIN_COLOR_ID = Shader.PropertyToID("_Color");
 
         /// <summary>
         /// Gets the Unity shader property ID for this render type.
@@ -45,6 +51,9 @@ namespace IndicatorLights
 
                 case RenderType.tint:
                     return TINT_COLOR_ID;
+
+                case RenderType.main:
+                    return MAIN_COLOR_ID;
 
                 default:
                     // Should never happen-- this means there's a bug, i.e. a new RenderType was added

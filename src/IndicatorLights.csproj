@@ -62,6 +62,8 @@
     <Compile Include="Identifiers.cs" />
     <Compile Include="IScalar.cs" />
     <Compile Include="IToggle.cs" />
+    <Compile Include="Kerbals.cs" />
+    <Compile Include="Loader.cs" />
     <Compile Include="ModuleBiomeScannerIndicator.cs" />
     <Compile Include="ModuleCrewIndicator.cs" />
     <Compile Include="ModuleCrewIndicatorToggle.cs" />

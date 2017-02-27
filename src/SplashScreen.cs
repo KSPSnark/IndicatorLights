@@ -30,6 +30,7 @@ namespace IndicatorLights
             "NecroBones",      // lots and lots of patient hand-holding, teaching me how to model
             "SchwinnTropius",  // Patches for Mk1CabinHatch, Porkjet's PartOverhauls
             "Sharpy",          // help with TweakScale support
+            "smokytehbear",    // MKS support; use case helped flesh out crew indicator behavior
             "steedcrugeon",    // suggestion for vessel-situation feature; innovatively using IL in mod
             "VintageXP"        // lots of patient help with Unity and Blender
         };

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace IndicatorLights
@@ -8,6 +9,8 @@ namespace IndicatorLights
         public static readonly IColorSource BLACK = Constant(Color.black);
 
         public static readonly IColorSource ERROR = new ErrorColorSource();
+
+        private static readonly Regex IDENTIFIER_PATTERN = new Regex("^[A-Za-z0-9_]+$");
 
         // These are used as substitution tags when parsing emissive arrays.
         private const string INDEX_TAG = "index"; // gets substituted by the index within the array
@@ -177,6 +180,46 @@ namespace IndicatorLights
                 }
             }
             return sources;
+        }
+
+        /// <summary>
+        /// Provides high-level validation looking for obvious syntactic errors, throwing
+        /// ArgumentException if found. Note that just because a string passes this function,
+        /// that doesn't guarantee that it will work when used on a part module. That's
+        /// because *real* validation needs the module as input, so it can hunt for fields,
+        /// other modules, etc.  This function's validation only covers the *syntax*, not
+        /// the content.
+        /// </summary>
+        /// <param name="sourceID"></param>
+        public static void Validate(string sourceID)
+        {
+            if (string.IsNullOrEmpty(sourceID))
+            {
+                throw new ArgumentException("Null or empty color source");
+            }
+
+            // Maybe it's a color string.
+            if (Colors.IsColorString(sourceID)) return;
+
+            // Is it a parameterized source?
+            if (ParsedParameters.TryParse(sourceID) != null) return;
+
+            // Is it an identifier?  (e.g. module or field name)
+            if (IDENTIFIER_PATTERN.Match(sourceID).Success) return;
+
+            // Could it be a numeric value?
+            try
+            {
+                double.Parse(sourceID);
+                return;
+            }
+            catch (FormatException e)
+            {
+                // nope,  not a number
+            }
+
+            // If we made it this far, it doesn't appear to be syntactically valid.
+            throw new ArgumentException("Invalid color source syntax: " + sourceID);
         }
 
         /// <summary>

@@ -502,7 +502,6 @@ namespace IndicatorLights
         private class CrewEffectMatch : IToggle
         {
             private const string TYPE_NAME = "hasCrewEffect";
-            private static readonly HashSet<string> VALID_EFFECT_NAMES = FindValidEffectNames();
             private static readonly TimeSpan UPDATE_INTERVAL = TimeSpan.FromMilliseconds(250);
             private readonly PartModule module;
             private readonly string effectName;
@@ -521,7 +520,7 @@ namespace IndicatorLights
             }
 
             /// <summary>
-            /// Try to get a "vessel situation" matcher from a ParsedParameters. The expected format is:
+            /// Try to get a "crew effect" matcher from a ParsedParameters. The expected format is:
             ///
             /// hasCrewEffect(effectName, slot)
             /// hasCrewEffect(effectName, slot, minLevel)
@@ -538,10 +537,10 @@ namespace IndicatorLights
                 if (module == null) return null;
                 parsedParams.RequireCount(module, 2, 3);
                 string effectName = parsedParams[0];
-                if (!VALID_EFFECT_NAMES.Contains(effectName))
+                if (!Kerbals.Effects.Contains(effectName))
                 {
                     StringBuilder builder = new StringBuilder();
-                    foreach (string validName in VALID_EFFECT_NAMES)
+                    foreach (string validName in Kerbals.Effects)
                     {
                         builder.Append(" ").Append(validName);
                     }
@@ -611,30 +610,6 @@ namespace IndicatorLights
                     }
                 }
                 return false;
-            }
-
-            private static HashSet<string> FindValidEffectNames()
-            {
-                HashSet<string> names = new HashSet<string>();
-                try
-                {
-                    ExperienceSystemConfig systemConfig = new ExperienceSystemConfig();
-                    for (int traitIndex = 0; traitIndex < systemConfig.Categories.Count; ++traitIndex)
-                    {
-                        ExperienceTraitConfig traitConfig = systemConfig.Categories[traitIndex];
-                        if (traitConfig.Effects == null) continue;
-                        for (int effectIndex = 0; effectIndex < traitConfig.Effects.Count; ++effectIndex)
-                        {
-                            ExperienceEffectConfig effectConfig = traitConfig.Effects[effectIndex];
-                            names.Add(effectConfig.Name);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logging.Exception("Couldn't build list of valid effect names!", e);
-                }
-                return names;
             }
         }
         #endregion
