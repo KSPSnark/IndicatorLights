@@ -213,7 +213,7 @@ namespace IndicatorLights
                 double.Parse(sourceID);
                 return;
             }
-            catch (FormatException e)
+            catch (FormatException)
             {
                 // nope,  not a number
             }
