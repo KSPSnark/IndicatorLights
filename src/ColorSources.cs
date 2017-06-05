@@ -10,8 +10,6 @@ namespace IndicatorLights
 
         public static readonly IColorSource ERROR = new ErrorColorSource();
 
-        private static readonly Regex IDENTIFIER_PATTERN = new Regex("^[A-Za-z0-9_]+$");
-
         // These are used as substitution tags when parsing emissive arrays.
         private const string INDEX_TAG = "index"; // gets substituted by the index within the array
         private const string COUNT_TAG = "count"; // gets substituted by the size of the array
@@ -205,7 +203,7 @@ namespace IndicatorLights
             if (ParsedParameters.TryParse(sourceID) != null) return;
 
             // Is it an identifier?  (e.g. module or field name)
-            if (IDENTIFIER_PATTERN.Match(sourceID).Success) return;
+            if (Identifiers.IsSimpleIdentifier(sourceID)) return;
 
             // Could it be a numeric value?
             try

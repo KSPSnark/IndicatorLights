@@ -20,6 +20,7 @@ namespace IndicatorLights
         private static readonly string[] THANK_USERS =
         {
             "Beetlecat",       // for suggesting random-blinking lights
+            "DStaal",          // for USI construction-port support, which nudged me into field@module syntax
             "Enceos",          // feature suggestions: tint shaders, alpha colors, parent-part indicators
             "Fwiffo",          // LOTS of helpful moddability suggestions and detailed feedback
             "Jiraiyah",        // Impossible Innovations support

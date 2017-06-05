@@ -73,6 +73,19 @@ namespace IndicatorLights
             IScalar found = Identifiers.FindFirst<IScalar>(module.part, text);
             if (found != null) return found;
 
+            // Could it be a named-field reference?
+            Identifiers.IFieldEvaluator field = Identifiers.FindKSPField(module.part, text);
+            if (field != null)
+            {
+                if (NamedSingleField.Is(field)) return new NamedSingleField(field);
+                if (NamedDoubleField.Is(field)) return new NamedDoubleField(field);
+                if (NamedIntegerField.Is(field)) return new NamedIntegerField(field);
+                if (NamedShortField.Is(field)) return new NamedShortField(field);
+                if (NamedLongField.Is(field)) return new NamedLongField(field);
+
+                throw new ArgumentException("Can't use " + text + " as a scalar field (it's of type " + field.FieldType.Name + ")");
+            }
+
             // Perhaps it's a parameterized expression?
             ParsedParameters parsedParams = ParsedParameters.TryParse(text);
             if (parsedParams != null)
@@ -552,6 +565,79 @@ namespace IndicatorLights
             public double ScalarValue
             {
                 get { return input.ToggleStatus ? activeValue : inactiveValue; }
+            }
+        }
+        #endregion
+
+
+        #region NamedField
+        /// <summary>
+        /// Evaluates an arbitrary named field from a PartModule.
+        /// </summary>
+        private abstract class NamedFieldBase<T> : IScalar
+        {
+            private readonly Identifiers.IFieldEvaluator field;
+
+            public static bool Is(Identifiers.IFieldEvaluator field)
+            {
+                return (typeof(T).IsAssignableFrom(field.FieldType));
+            }
+
+            protected NamedFieldBase(Identifiers.IFieldEvaluator field)
+            {
+                this.field = field;
+            }
+
+            protected T FieldValue
+            {
+                get { return (T)field.Value; }
+            }
+
+            public abstract double ScalarValue { get; }
+        }
+
+        private class NamedSingleField : NamedFieldBase<Single>
+        {
+            public NamedSingleField(Identifiers.IFieldEvaluator field) : base(field) { }
+            public override double ScalarValue
+            {
+                get { return FieldValue; }
+            }
+        }
+
+        private class NamedDoubleField : NamedFieldBase<Double>
+        {
+            public NamedDoubleField(Identifiers.IFieldEvaluator field) : base(field) { }
+            public override double ScalarValue
+            {
+                get { return FieldValue; }
+            }
+        }
+
+        private class NamedIntegerField : NamedFieldBase<Int32>
+        {
+            public NamedIntegerField(Identifiers.IFieldEvaluator field) : base(field) { }
+            public override double ScalarValue
+            {
+                get { return FieldValue; }
+            }
+        }
+
+        private class NamedShortField : NamedFieldBase<Int16>
+        {
+            public NamedShortField(Identifiers.IFieldEvaluator field) : base(field) { }
+            public override double ScalarValue
+            {
+                get { return FieldValue; }
+            }
+        }
+
+        private class NamedLongField : NamedFieldBase<Int64>
+        {
+            public NamedLongField(Identifiers.IFieldEvaluator field) : base(field) { }
+            public override double ScalarValue
+            {
+                get { return FieldValue; }
             }
         }
         #endregion

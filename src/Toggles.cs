@@ -1,6 +1,7 @@
 ﻿using Experience;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace IndicatorLights
@@ -81,6 +82,17 @@ namespace IndicatorLights
             // Maybe it's an identifier for a toggle.
             IToggle found = Identifiers.FindFirst<IToggle>(module.part, text);
             if (found != null) return found;
+
+            // Could it be a named-field reference?
+            Identifiers.IFieldEvaluator field = Identifiers.FindKSPField(module.part, text);
+            if (field != null)
+            {
+                if (!typeof(bool).IsAssignableFrom(field.FieldType))
+                {
+                    throw new ArgumentException("Can't use " + text + " as a boolean field (it's of type " + field.FieldType.Name + ")");
+                }
+                return new NamedField(field);
+            }
 
             // Perhaps it's a parameterized expression?
             ParsedParameters parsedParams = ParsedParameters.TryParse(text);
@@ -613,5 +625,29 @@ namespace IndicatorLights
             }
         }
         #endregion
+
+
+        #region NamedField
+        /// <summary>
+        /// This syntax is for a named boolean field of an arbitrary module.
+        /// </summary>
+        private class NamedField : IToggle
+        {
+            private Identifiers.IFieldEvaluator field;
+
+            public NamedField(Identifiers.IFieldEvaluator field)
+            {
+                this.field = field;
+            }
+
+            public bool ToggleStatus
+            {
+                get
+                {
+                    return (bool)field.Value;
+                }
+            }
+        }
+        #endregion // NamedField
     }
 }
