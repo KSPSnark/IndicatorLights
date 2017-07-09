@@ -1,3 +1,8 @@
+Release v1.2.11
+* Add science & activity indicators to the SENTINEL Infrared Telescope.
+* Update to latest ModuleManager version (2.8.1).
+
+
 Release v1.2.10
 * Add "field@module" identifier syntax, to allow targeting arbitrary fields on arbitrary PartModules.
 * Added ArbitraryFieldInputs.cfg in the "examples" section of github to demonstrate how to use the feature.
