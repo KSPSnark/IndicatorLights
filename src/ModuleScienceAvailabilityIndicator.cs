@@ -10,6 +10,18 @@ namespace IndicatorLights
     {
         private static readonly TimeSpan UPDATE_INTERVAL = TimeSpan.FromMilliseconds(300);
 
+        // The default color source to use for high-value science, if not specified in config.
+        // blink($HighScience, 200, $Off, 200)
+        private static readonly IColorSource DEFAULT_HIGH_VALUE_SOURCE = ColorSources.Blink(
+            ColorSources.Constant(DefaultColor.HighScience), 200,
+            ColorSources.Constant(DefaultColor.Off), 200);
+
+        // The default color source to use for medium-value science, if not specified in config.
+        // blink(dim($MediumScience, 0.9), 150, $Off, 1050)
+        private static readonly IColorSource DEFAULT_MEDIUM_VALUE_SOURCE = ColorSources.Blink(
+            ColorSources.Dim(ColorSources.Constant(DefaultColor.MediumScience), 0.9f), 150,
+            ColorSources.Constant(DefaultColor.Off), 1050);
+
         private string _subjectIdForCurrentSituation = null;
         private DateTime nextSituationUpdate = DateTime.MinValue;
 
@@ -53,7 +65,7 @@ namespace IndicatorLights
         /// </summary>
         [KSPField]
         [ColorSourceIDField]
-        public string mediumValueColor = string.Empty;
+        public string mediumValueColor = DEFAULT_MEDIUM_VALUE_SOURCE.ColorSourceID;
 
         /// <summary>
         /// The color to use for science that's highly valuable (because we've never
@@ -61,7 +73,7 @@ namespace IndicatorLights
         /// </summary>
         [KSPField]
         [ColorSourceIDField]
-        public string highValueColor = string.Empty;
+        public string highValueColor = DEFAULT_HIGH_VALUE_SOURCE.ColorSourceID;
 
         public override void OnStart(StartState state)
         {

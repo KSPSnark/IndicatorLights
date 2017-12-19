@@ -69,7 +69,7 @@ namespace IndicatorLights
 
         public virtual void OnDestroy()
         {
-            GameEvents.onVesselCreate.Add(OnVesselAdded);
+            GameEvents.onVesselCreate.Remove(OnVesselAdded);
             GameEvents.onVesselLoaded.Remove(OnVesselAdded);
             GameEvents.onVesselDestroy.Remove(OnVesselRemoved);
             GameEvents.onVesselWasModified.Remove(OnVesselModified);

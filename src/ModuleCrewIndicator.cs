@@ -9,6 +9,10 @@ namespace IndicatorLights
     /// </summary>
     class ModuleCrewIndicator : ModuleEmissiveController, IToggle
     {
+        /// <summary>
+        /// Config node where crew indicator default colors are stored. This gets read
+        /// by the Loader class in this mod.
+        /// </summary>
         public const string CONFIG_NODE_NAME = "CrewIndicatorDefaultColors";
 
         private const string KERBAL_CLASS_UNKNOWN = "Unknown";
@@ -207,10 +211,10 @@ namespace IndicatorLights
         }
 
         /// <summary>
-        /// This gets called once at game load time. We load our kerbal colors from this. It's
-        /// assumed that it has one key for each kerbal class, whose value is the default ColorSource value
-        /// to use for that class.  If there's a kerbal class that doesn't have a corresponding entry
-        /// here, then it will get displayed with the "Unknown" color.
+        /// This gets called once at game load time, from the Loader class in this mod. We load our kerbal
+        /// colors from this. It's assumed that it has one key for each kerbal class, whose value is the
+        /// default ColorSource value to use for that class.  If there's a kerbal class that doesn't have
+        /// a corresponding entry here, then it will get displayed with the "Unknown" color.
         /// </summary>
         /// <param name="config"></param>
         public static void LoadConfig(ConfigNode config)

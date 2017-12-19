@@ -1,3 +1,9 @@
+Release v1.2.12
+* Crew indicators now flash to indicate availability of crew report. (Thanks to Wcmille for the suggestion!)
+* Update to latest ModuleManager, 3.0.1.
+* Minor fixes and polish.
+
+
 Release v1.2.11
 * Add science & activity indicators to the SENTINEL Infrared Telescope.
 * Update to latest ModuleManager version (2.8.1).

@@ -33,7 +33,8 @@ namespace IndicatorLights
             "Sharpy",          // help with TweakScale support
             "smokytehbear",    // MKS support; use case helped flesh out crew indicator behavior
             "steedcrugeon",    // suggestion for vessel-situation feature; innovatively using IL in mod
-            "VintageXP"        // lots of patient help with Unity and Blender
+            "VintageXP",       // lots of patient help with Unity and Blender
+            "Wcmille"          // suggestion for crew indicators to flash if crew report is available
         };
 
         internal void Awake()
