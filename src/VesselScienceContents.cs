@@ -42,6 +42,7 @@ namespace IndicatorLights
         {
             get
             {
+                if (subjectId == null) return false;
                 CacheItem<bool> status = null;
                 if (!hasScienceStatus.TryGetValue(subjectId, out status))
                 {

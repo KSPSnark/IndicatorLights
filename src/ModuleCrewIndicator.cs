@@ -21,6 +21,8 @@ namespace IndicatorLights
 
         private const int NO_SLOT = -1;
 
+        private int lastKnownPartCrewCapacity = -1;
+
         private IColorSource emptySource = null;
         private IColorSource otherSource = null;
         private Dictionary<string, IColorSource> colorSources;
@@ -70,37 +72,7 @@ namespace IndicatorLights
             // The default value for slot is NO_SLOT. When we start up, we scan for all ModuleCrewIndicators
             // on the part, and assign them sequentially to slots, if available.
             if (part == null) return;
-            if (part.CrewCapacity < 1) return;
-            // First, go through and note which slots already have a ModuleCrewIndicator assigned to them.
-            bool[] slotAssignments = new bool[part.CrewCapacity];
-            for (int moduleIndex = 0; moduleIndex < part.Modules.Count; ++moduleIndex)
-            {
-                ModuleCrewIndicator indicator = part.Modules[moduleIndex] as ModuleCrewIndicator;
-                if (indicator == null) continue;
-                if ((indicator.slot < 0) || (indicator.slot >= part.CrewCapacity))
-                {
-                    indicator.slot = NO_SLOT;
-                }
-                else
-                {
-                    slotAssignments[indicator.slot] = true;
-                }
-            }
-            // Next, go through and assign any unassigned ModuleCrewIndicators to any open slots.
-            int slotIndex = 0;
-            for (int moduleIndex = 0; moduleIndex < part.Modules.Count; ++moduleIndex)
-            {
-                ModuleCrewIndicator indicator = part.Modules[moduleIndex] as ModuleCrewIndicator;
-                if (indicator == null) continue;
-                if (indicator.slot != NO_SLOT) continue; // explicitly specifies a slot
-                while (slotAssignments[slotIndex])
-                {
-                    ++slotIndex;
-                    if (slotIndex >= part.CrewCapacity) return;
-                }
-                indicator.slot = slotIndex;
-                slotAssignments[slotIndex] = true;
-            }
+            InitializePartCrewCapacity();
         }
 
         public override void ParseIDs()
@@ -118,7 +90,15 @@ namespace IndicatorLights
         {
             get
             {
-                return (slot >= 0) && (part != null) && (slot < part.CrewCapacity) && CurrentSource.HasColor;
+                if (part == null) return false;
+
+                // This is to cope with a part's crew capacity changing dynamically. Not something
+                // that commonly happens, but it's possible. For example, the inflatable airlock
+                // in "Making History" has a module that changes the part's capacity when the
+                // airlock inflates or deflates.
+                if (part.CrewCapacity != lastKnownPartCrewCapacity) InitializePartCrewCapacity();
+
+                return CurrentSource.HasColor;
             }
         }
 
@@ -127,6 +107,7 @@ namespace IndicatorLights
             get
             {
                 if ((toggle != null) && (!toggle.ToggleStatus)) return DefaultColor.Off.Value();
+                if ((slot < 0) || (slot >= part.CrewCapacity)) return DefaultColor.Off.Value();
                 return CurrentSource.OutputColor;
             }
         }
@@ -171,8 +152,10 @@ namespace IndicatorLights
         {
             get
             {
+                // If there's no kerbal in the slot, or class can't be identified, it's the empty source.
                 string kerbalClass = Kerbals.ClassOf(Crew);
                 if (kerbalClass == null) return emptySource;
+                // Otherwise, get the source based on the kerbal's class.
                 IColorSource current;
                 return colorSources.TryGetValue(kerbalClass, out current) ? current : otherSource;
             }
@@ -208,6 +191,41 @@ namespace IndicatorLights
                 sources.Add(pair.Key, ColorSources.Find(this, pair.Value));
             }
             return sources;
+        }
+
+        private void InitializePartCrewCapacity()
+        {
+            lastKnownPartCrewCapacity = part.CrewCapacity;
+            // First, go through and note which slots already have a ModuleCrewIndicator assigned to them.
+            bool[] slotAssignments = new bool[part.CrewCapacity];
+            for (int moduleIndex = 0; moduleIndex < part.Modules.Count; ++moduleIndex)
+            {
+                ModuleCrewIndicator indicator = part.Modules[moduleIndex] as ModuleCrewIndicator;
+                if (indicator == null) continue;
+                if ((indicator.slot < 0) || (indicator.slot >= part.CrewCapacity))
+                {
+                    indicator.slot = NO_SLOT;
+                }
+                else
+                {
+                    slotAssignments[indicator.slot] = true;
+                }
+            }
+            // Next, go through and assign any unassigned ModuleCrewIndicators to any open slots.
+            int slotIndex = 0;
+            for (int moduleIndex = 0; moduleIndex < part.Modules.Count; ++moduleIndex)
+            {
+                ModuleCrewIndicator indicator = part.Modules[moduleIndex] as ModuleCrewIndicator;
+                if (indicator == null) continue;
+                if (indicator.slot != NO_SLOT) continue; // explicitly specifies a slot
+                while (slotAssignments[slotIndex])
+                {
+                    ++slotIndex;
+                    if (slotIndex >= part.CrewCapacity) return;
+                }
+                indicator.slot = slotIndex;
+                slotAssignments[slotIndex] = true;
+            }
         }
 
         /// <summary>

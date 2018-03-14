@@ -1,3 +1,8 @@
+Release v1.3
+* Updated for KSP 1.4 compatibility.
+* Support for new Making History expansion parts.
+* Update to latest ModuleManager, 3.0.5.
+
 Release v1.2.12
 * Crew indicators now flash to indicate availability of crew report. (Thanks to Wcmille for the suggestion!)
 * Update to latest ModuleManager, 3.0.1.
