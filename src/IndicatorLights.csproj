@@ -49,6 +49,7 @@
     <Compile Include="ColorSourceArray.cs" />
     <Compile Include="ColorSourceIDField.cs" />
     <Compile Include="ColorSources.cs" />
+    <Compile Include="Compatibility\CTIWrapper.cs" />
     <Compile Include="Console\DebugConsole.cs" />
     <Compile Include="Console\HelpCommand.cs" />
     <Compile Include="Console\PartCommand.cs" />
@@ -112,6 +113,7 @@
     <Compile Include="VesselScienceContents.cs" />
     <Compile Include="VesselScienceTracker.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

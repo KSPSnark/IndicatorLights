@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -266,6 +267,35 @@ namespace IndicatorLights
                     Logging.Warn(config.name + " config: No such class '" + entry.name + "' exists, skipping");
                     continue;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Community Trait Icons integration.
+        /// This gets called *after* LoadConfig, adding to / overwriting the IndicatorLights defaults.
+        /// This method is only called if the Community Trait Icons mod has already been detected
+        /// as being present. It's called *after* LoadConfig is called (see above), which means it will
+        /// overwrite any value that's found in IndicatorLights config.
+        /// </summary>
+        public static IEnumerator LoadCommunityTraitIconColors()
+        {
+            if (!Compatibility.CTIWrapper.CTI.Loaded)
+            {
+                Logging.Log("Waiting for Community Trait Icons to load...");
+                yield return new WaitForEndOfFrame();
+            }
+            if (!Compatibility.CTIWrapper.CTI.Loaded) yield break;
+            Logging.Log("Obtaining crew indicator colors from Community Trait Icons.");
+            foreach (string kerbalclass in Kerbals.Classes)
+            {
+                // Query CommunityTraitIcons for each kerbal class.
+                Compatibility.CTIWrapper.KerbalTraitSetting kts = Compatibility.CTIWrapper.CTI.getTrait(kerbalclass);
+                // If CTI doesn't have a setting for this class, it would return settings for "Unknown"; we should ignore such cases
+                if (kerbalclass != kts.Name) continue;
+                // CTI has a setting for the class. Upsert the color for this kerbal class.
+                String colorString = Colors.ToString(kts.Color);
+                Logging.Log("Setting " + kerbalclass + " color to " + colorString + " (from Community Trait Icons)");
+                _kerbalClassColorDefaults[kerbalclass] = colorString;
             }
         }
     }

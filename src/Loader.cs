@@ -26,6 +26,14 @@ namespace IndicatorLights
             }
             ConfigNode masterNode = configs[0].config;
             ProcessMasterNode(masterNode);
+
+            // Community Trait Icons integration. If initCTIWrapper returns true,
+            // it means that Community Trait Icons has been identified as being
+            // loaded, and therefore we can load its colors.
+            if (Compatibility.CTIWrapper.initCTIWrapper())
+            {
+                StartCoroutine(ModuleCrewIndicator.LoadCommunityTraitIconColors());
+            }
         }
 
         /// <summary>
