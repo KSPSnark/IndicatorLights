@@ -1,3 +1,7 @@
+Release v1.4
+* Updated for KSP 1.5 compatibility.
+
+
 Release v1.3.1
 * Integrate support for Community Trait Icons. Will use CTI colors, if that mod's installed. (Thanks to cakepie for suggesting, and for providing compatibility patch.)
 
