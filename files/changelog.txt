@@ -1,3 +1,8 @@
+Release v1.4.1
+* Add crew indicator for Mk1 inline cockpit. (Thanks to Beetlecat for pointing this out!)
+* Update to latest ModuleManager, 3.1.0.
+
+
 Release v1.4
 * Updated for KSP 1.5 compatibility.
 
