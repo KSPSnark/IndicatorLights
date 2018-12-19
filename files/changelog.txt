@@ -1,3 +1,8 @@
+Release v1.4.2
+* Add crew indicators to revamped Mk2 Lander Can in KSP 1.6.
+* Update to latest ModuleManager, 3.1.2.
+
+
 Release v1.4.1
 * Add crew indicator for Mk1 inline cockpit. (Thanks to Beetlecat for pointing this out!)
 * Update to latest ModuleManager, 3.1.0.
