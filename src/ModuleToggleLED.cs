@@ -14,6 +14,11 @@ namespace IndicatorLights
     /// </summary>
     public class ModuleToggleLED : ModuleEmissiveController, IToggle
     {
+        private const float MIN_AXIS = 0f;
+        private const float MAX_AXIS = 1f;
+        private const float MID_AXIS = 0.5f * (MIN_AXIS + MAX_AXIS);
+        private const float AXIS_THRESHOLD = 1.01f * MID_AXIS;
+
         [KSPField(guiName = "LED Status", isPersistant = true, guiActive = true, guiActiveEditor = true), UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "On", disabledText = "Off")]
         public bool status = false;
         private BaseField StatusField { get { return Fields["status"]; } }
@@ -33,6 +38,20 @@ namespace IndicatorLights
         [KSPField]
         [ColorSourceIDField]
         public string inactiveColor = Colors.ToString(DefaultColor.Off);
+
+        /// <summary>
+        /// Brightness of the emitted color, on a scale from 0 to 1.
+        /// </summary>
+        [KSPAxisField(
+            guiName = "Activation",
+            guiActive = false,
+            guiActiveEditor = false,
+            axisMode = KSPAxisMode.Absolute,
+            minValue = MIN_AXIS,
+            maxValue = MAX_AXIS,
+            incrementalSpeed = 1f)]
+        public float axisGroup = MID_AXIS;
+        private BaseAxisField axisGroupField = null;
 
         private IColorSource inputActive = null;
         private IColorSource inputInactive = null;
@@ -89,6 +108,8 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
+            axisGroupField = (BaseAxisField)Fields["axisGroup"];
+
             StatusField.uiControlEditor.onFieldChanged = OnEditorToggleChanged;
 
             SetInputUIState();
@@ -106,7 +127,9 @@ namespace IndicatorLights
         {
             get
             {
-                IColorSource source = status ? inputActive : inputInactive;
+                bool effectiveStatus = status && ((axisGroupField.axisGroup == KSPAxisGroup.None) || (axisGroup > AXIS_THRESHOLD));
+                
+                IColorSource source = effectiveStatus ? inputActive : inputInactive;
                 return source.HasColor ? source.OutputColor : Color.black;
             }
         }

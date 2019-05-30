@@ -81,6 +81,7 @@
     <Compile Include="ModuleResourceEnabledIndicator.cs" />
     <Compile Include="ModuleResourceIndicator.cs" />
     <Compile Include="ModuleResourceScannerIndicator.cs" />
+    <Compile Include="ModuleRoboticControllerIndicator.cs" />
     <Compile Include="ModuleScalarIndicator.cs" />
     <Compile Include="ModuleScienceAvailabilityIndicator.cs" />
     <Compile Include="ModuleScienceContainerIndicator.cs" />
