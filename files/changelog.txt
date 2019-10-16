@@ -1,3 +1,8 @@
+Release v1.6
+* Updated for KSP 1.8 compatibility.
+* Includes update to ModuleManager 4.1.0.
+
+
 Release v1.5
 * Updated for KSP 1.7.1 compatibility.
 * Axis group bindings for ModuleToggleLED and ModuleCustomColoredEmissive (affects BL-01 light).
