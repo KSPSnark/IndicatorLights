@@ -1,3 +1,16 @@
+Release v1.6
+* Updated for KSP 1.8 compatibility.
+* Includes update to ModuleManager 4.1.0.
+
+
+Release v1.5
+* Updated for KSP 1.7.1 compatibility.
+* Axis group bindings for ModuleToggleLED and ModuleCustomColoredEmissive (affects BL-01 light).
+* Added indicator to KAL-1000 robotic controller.
+* Update to latest ModuleManager, 4.0.2.
+* Fix bug in Blinkenlights LLC "agent" that was causing NRE spam. Thanks to Tonka Crash for pointing out and supplying a fix!
+
+
 Release v1.4.2
 * Add crew indicators to revamped Mk2 Lander Can in KSP 1.6.
 * Update to latest ModuleManager, 3.1.2.

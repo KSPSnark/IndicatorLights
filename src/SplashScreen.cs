@@ -35,7 +35,8 @@ namespace IndicatorLights
             "steedcrugeon",    // suggestion for vessel-situation feature; innovatively using IL in mod
             "VintageXP",       // lots of patient help with Unity and Blender
             "Wcmille",         // suggestion for crew indicators to flash if crew report is available
-            "cakepie"          // Community Trait Icons integration
+            "cakepie",         // Community Trait Icons integration
+            "Tonka Crash"      // fix for missing Blinkenlights agent bug
         };
 
         internal void Awake()
