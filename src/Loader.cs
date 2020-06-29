@@ -18,6 +18,7 @@ namespace IndicatorLights
         /// </summary>
         public void Start()
         {
+            Configuration.Configuration_Init();
             UrlDir.UrlConfig[] configs = GameDatabase.Instance.GetConfigs(MASTER_NODE_NAME);
             if (configs.Length < 1)
             {
