@@ -7,50 +7,50 @@ namespace IndicatorLights
     {
         // "Stealth" settings that aren't written to the config file when missing;
         // they have to be manually added by the user.
-        public static readonly bool isVerbose;
+        public static  bool isVerbose;
 
         // For manually toggled LEDs
-        public static readonly Color toggleLEDColor;
+        public static  Color toggleLEDColor;
 
         // For resource indicators
-        public static readonly Color highResourceColor;
-        public static readonly Color mediumResourceColor;
-        public static readonly Color lowResourceColor;
+        public static  Color highResourceColor;
+        public static  Color mediumResourceColor;
+        public static  Color lowResourceColor;
 
         // For reaction wheels
-        public static readonly Color reactionWheelNormalColor;
-        public static readonly Color reactionWheelPilotOnlyColor;
-        public static readonly Color reactionWheelSasOnlyColor;
+        public static  Color reactionWheelNormalColor;
+        public static  Color reactionWheelPilotOnlyColor;
+        public static  Color reactionWheelSasOnlyColor;
 
         // For docking ports
-        public static readonly Color dockingCrossfeedOnColor;
-        public static readonly Color dockingCrossfeedOffColor;
+        public static  Color dockingCrossfeedOnColor;
+        public static  Color dockingCrossfeedOffColor;
 
         // For crew status
-        public static readonly bool crewIndicatorDefaultStatus;
-        public static readonly Color crewPilotColor;
-        public static readonly Color crewEngineerColor;
-        public static readonly Color crewScientistColor;
-        public static readonly Color crewTouristColor;
+        public static  bool crewIndicatorDefaultStatus;
+        public static  Color crewPilotColor;
+        public static  Color crewEngineerColor;
+        public static  Color crewScientistColor;
+        public static  Color crewTouristColor;
 
         // For resources
-        public static readonly Color lfoColor;
-        public static readonly Color liquidFuelColor;
-        public static readonly Color oxidizerColor;
-        public static readonly Color monopropellantColor;
+        public static  Color lfoColor;
+        public static  Color liquidFuelColor;
+        public static  Color oxidizerColor;
+        public static  Color monopropellantColor;
 
         // For science instruments
-        public static readonly Color highScienceColor;
-        public static readonly Color mediumScienceColor;
-        public static readonly Color lowScienceColor;
+        public static  Color highScienceColor;
+        public static  Color mediumScienceColor;
+        public static  Color lowScienceColor;
 
         // General warning status
-        public static readonly Color warningColor;
+        public static  Color warningColor;
 
         // For none-of-the-above cases
-        public static readonly Color unknownColor;
+        public static  Color unknownColor;
 
-        static Configuration()
+        static public void Configuration_Init()
         {
             PluginConfiguration config = PluginConfiguration.CreateForType<ModuleControllableEmissive>();
             config.load();
