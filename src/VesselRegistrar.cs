@@ -84,11 +84,11 @@ namespace IndicatorLights
             if (vessel.Parts.Count == 0) return;
             if (vessel.id == Guid.Empty)
             {
-                if (Configuration.isVerbose) Logging.Log("Ignoring vessel with empty ID");
+                if (Configuration.IsVerbose) Logging.Log("Ignoring vessel with empty ID");
                 return;
             }
 
-            if (Configuration.isVerbose)
+            if (Configuration.IsVerbose)
             {
                 if (registry.ContainsKey(vessel.id))
                 {
@@ -112,17 +112,17 @@ namespace IndicatorLights
         {
             if (vessel.id == Guid.Empty)
             {
-                if (Configuration.isVerbose) Logging.Log("Ignoring vessel with empty ID");
+                if (Configuration.IsVerbose) Logging.Log("Ignoring vessel with empty ID");
                 return;
             }
             T data;
             if (!registry.TryGetValue(vessel.id, out data))
             {
-                if (Configuration.isVerbose) Logging.Log("Unknown vessel " + Describe(vessel) + " removed, ignoring");
+                if (Configuration.IsVerbose) Logging.Log("Unknown vessel " + Describe(vessel) + " removed, ignoring");
                 return;
             }
 
-            if (Configuration.isVerbose) Logging.Log("Stop tracking vessel " + Describe(vessel));
+            if (Configuration.IsVerbose) Logging.Log("Stop tracking vessel " + Describe(vessel));
 
             registry.Remove(vessel.id);
             OnRemoveVessel(vessel, data);
@@ -136,19 +136,19 @@ namespace IndicatorLights
         {
             if (vessel.id == Guid.Empty)
             {
-                if (Configuration.isVerbose) Logging.Log("Ignoring vessel with empty ID");
+                if (Configuration.IsVerbose) Logging.Log("Ignoring vessel with empty ID");
                 return;
             }
             T data;
             if (!registry.TryGetValue(vessel.id, out data))
             {
-                if (Configuration.isVerbose) Logging.Log("Unknown vessel " + Describe(vessel) + " modified, adding");
+                if (Configuration.IsVerbose) Logging.Log("Unknown vessel " + Describe(vessel) + " modified, adding");
                 data = OnAddVessel(vessel);
                 registry.Add(vessel.id, data);
                 return;
             }
 
-            if (Configuration.isVerbose) Logging.Log("Modified vessel " + Describe(vessel));
+            if (Configuration.IsVerbose) Logging.Log("Modified vessel " + Describe(vessel));
 
             T newData = OnModifyVessel(vessel, data);
             if (!object.ReferenceEquals(newData, data))

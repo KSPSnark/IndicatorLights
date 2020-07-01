@@ -30,6 +30,7 @@ namespace IndicatorLights
             LessThanOrEqual.TryParse,
             Between.TryParse,
             VesselSituationMatch.TryParse,
+            VesselControlLevelMatch.TryParse,
             CrewEffectMatch.TryParse
         };
 
@@ -500,6 +501,93 @@ namespace IndicatorLights
                 for (int i = 1; i < situations.Length; ++i)
                 {
                     builder.Append(", ").Append(situations[i]);
+                }
+                return builder.ToStringAndRelease();
+            }
+        }
+        #endregion
+
+
+        #region VesselControlLevelMatch
+        /// <summary>
+        /// Returns true if the vessel's current situation matches any of the specified flags.
+        /// </summary>
+        private class VesselControlLevelMatch : IToggle
+        {
+            private const string TYPE_NAME = "controlLevel";
+            private static readonly Vessel.ControlLevel[] ALL_LEVELS = (Vessel.ControlLevel[])Enum.GetValues(typeof(Vessel.ControlLevel));
+            private static readonly string ALL_LEVELS_LIST = BuildList(ALL_LEVELS);
+            private readonly PartModule module;
+            private readonly HashSet<Vessel.ControlLevel> requiredLevels;
+
+            public bool ToggleStatus
+            {
+                get
+                {
+                    if (module.part == null) return false;
+                    if (module.part.vessel == null) return false;
+                    Vessel.ControlLevel currentControlLevel = module.part.vessel.CurrentControlLevel;
+                    return requiredLevels.Contains(currentControlLevel);
+                }
+            }
+
+            /// <summary>
+            /// Try to get a "vessel control level" matcher from a ParsedParameters. The expected format is:
+            ///
+            /// controlLevel(level1, level2, ...)
+            ///
+            /// Must have at least one level. The allowed control level values are the enum constants
+            /// in Vessel.ControlLevel.
+            /// </summary>
+            /// <param name="module"></param>
+            /// <param name="parsedParams"></param>
+            /// <returns></returns>
+            public static IToggle TryParse(PartModule module, ParsedParameters parsedParams)
+            {
+                if (parsedParams == null) return null;
+                if (!TYPE_NAME.Equals(parsedParams.Identifier)) return null;
+                parsedParams.RequireCount(module, 1, -1);
+                HashSet<Vessel.ControlLevel> requiredLevels = new HashSet<Vessel.ControlLevel>();
+                for (int i = 0; i < parsedParams.Count; ++i)
+                {
+                    Vessel.ControlLevel additionalControlLevel = ParseLevel(module, parsedParams[i]);
+                    if (!requiredLevels.Add(additionalControlLevel))
+                    {
+                        throw new ArgumentException("Duplicate specification of '" + parsedParams[i] + "' for " + TYPE_NAME
+                            + "() on " + module.ClassName + " of " + module.part.GetTitle());
+                    }
+                }
+                return new VesselControlLevelMatch(module, requiredLevels);
+            }
+
+            private VesselControlLevelMatch(PartModule module, HashSet<Vessel.ControlLevel> requiredLevels)
+            {
+                this.module = module;
+                this.requiredLevels = requiredLevels;
+            }
+
+            private static Vessel.ControlLevel ParseLevel(PartModule module, string param)
+            {
+                for (int i = 0; i < ALL_LEVELS.Length; ++i)
+                {
+                    if (ALL_LEVELS[i].ToString().Equals(param))
+                    {
+                        return ALL_LEVELS[i];
+                    }
+                }
+                // Invalid situation specified!
+                throw new ArgumentException(
+                    "Invalid Vessel.ControlLevel value '" + param + "' for " + TYPE_NAME
+                    + "() on " + module.ClassName + " of " + module.part.GetTitle()
+                    + " (valid values are: " + ALL_LEVELS_LIST + ")");
+            }
+
+            private static string BuildList(Vessel.ControlLevel[] levels)
+            {
+                StringBuilder builder = new StringBuilder(levels[0].ToString());
+                for (int i = 1; i < levels.Length; ++i)
+                {
+                    builder.Append(", ").Append(levels[i]);
                 }
                 return builder.ToStringAndRelease();
             }

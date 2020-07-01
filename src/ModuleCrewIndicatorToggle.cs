@@ -7,7 +7,7 @@
     {
         [KSPField(guiName = "Crew LEDs", isPersistant = true, guiActive = true, guiActiveEditor = true),
          UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "On", disabledText = "Off")]
-        public bool status = Configuration.crewIndicatorDefaultStatus;
+        public bool status = true;
         private BaseField StatusField { get { return Fields["status"]; } }
 
         [KSPField]
@@ -17,7 +17,7 @@
         /// Determines where the toggle UI is visible.
         /// </summary>
         [KSPField]
-        public UI_Scene uiToggle = UI_Scene.All;
+        public UI_Scene uiToggle = UI_Scene.Editor;
 
         /// <summary>
         /// Action-group method for toggling status.

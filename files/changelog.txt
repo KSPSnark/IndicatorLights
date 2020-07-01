@@ -1,3 +1,14 @@
+Release v1.7
+* Updated for KSP 1.10 compatibility.
+* Add indicator light to the magnetometer.
+* Fixed Unity startup bug. Thanks to linuxgurugamer for raising the issue (and providing solution!)
+* Eliminate CrewIndicatorDefaultStatus config option.  It just defaults to true.
+* Change the default behavior of crew indicator lights to be toggleable only in the editor, to eliminate UI clutter in flight. Anyone who doesn't like this can change it back with ModuleManager config.
+* Add new controlLevel() parameterized syntax for toggles. See wiki for details. (Thanks to Rodger for the suggestion!)
+* Update all ModuleManager part patches to correctly use the :FOR[IndicatorLights] syntax. This should make IL play nicer with MM relative-order directives.
+* Update to ModuleManager 4.1.3.
+
+
 Release v1.6
 * Updated for KSP 1.8 compatibility.
 * Includes update to ModuleManager 4.1.0.

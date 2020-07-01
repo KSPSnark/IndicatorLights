@@ -5,52 +5,98 @@ namespace IndicatorLights
 {
     internal static class Configuration
     {
+        #region Private members
         // "Stealth" settings that aren't written to the config file when missing;
         // they have to be manually added by the user.
-        public static readonly bool isVerbose;
+        private static bool isVerbose;
 
         // For manually toggled LEDs
-        public static readonly Color toggleLEDColor;
+        private static Color toggleLEDColor;
 
         // For resource indicators
-        public static readonly Color highResourceColor;
-        public static readonly Color mediumResourceColor;
-        public static readonly Color lowResourceColor;
+        private static Color highResourceColor;
+        private static Color mediumResourceColor;
+        private static Color lowResourceColor;
 
         // For reaction wheels
-        public static readonly Color reactionWheelNormalColor;
-        public static readonly Color reactionWheelPilotOnlyColor;
-        public static readonly Color reactionWheelSasOnlyColor;
+        private static Color reactionWheelNormalColor;
+        private static Color reactionWheelPilotOnlyColor;
+        private static Color reactionWheelSasOnlyColor;
 
         // For docking ports
-        public static readonly Color dockingCrossfeedOnColor;
-        public static readonly Color dockingCrossfeedOffColor;
+        private static Color dockingCrossfeedOnColor;
+        private static Color dockingCrossfeedOffColor;
 
         // For crew status
-        public static readonly bool crewIndicatorDefaultStatus;
-        public static readonly Color crewPilotColor;
-        public static readonly Color crewEngineerColor;
-        public static readonly Color crewScientistColor;
-        public static readonly Color crewTouristColor;
+        private static Color crewPilotColor;
+        private static Color crewEngineerColor;
+        private static Color crewScientistColor;
+        private static Color crewTouristColor;
 
         // For resources
-        public static readonly Color lfoColor;
-        public static readonly Color liquidFuelColor;
-        public static readonly Color oxidizerColor;
-        public static readonly Color monopropellantColor;
+        private static Color lfoColor;
+        private static Color liquidFuelColor;
+        private static Color oxidizerColor;
+        private static Color monopropellantColor;
 
         // For science instruments
-        public static readonly Color highScienceColor;
-        public static readonly Color mediumScienceColor;
-        public static readonly Color lowScienceColor;
+        private static Color highScienceColor;
+        private static Color mediumScienceColor;
+        private static Color lowScienceColor;
 
         // General warning status
-        public static readonly Color warningColor;
+        private static Color warningColor;
 
         // For none-of-the-above cases
-        public static readonly Color unknownColor;
+        private static Color unknownColor;
+        #endregion // Private members
 
-        static Configuration()
+        public static bool IsVerbose { get { return isVerbose; } }
+
+        // For manually toggled LEDs
+        public static Color ToggleLEDColor { get { return toggleLEDColor; } }
+
+        // For resource indicators
+        public static Color HighResourceColor { get { return highResourceColor; } }
+        public static Color MediumResourceColor { get { return mediumResourceColor; } }
+        public static Color LowResourceColor { get { return lowResourceColor; } }
+
+        // For reaction wheels
+        public static Color ReactionWheelNormalColor { get { return reactionWheelNormalColor; } }
+        public static Color ReactionWheelPilotOnlyColor { get { return reactionWheelPilotOnlyColor; } }
+        public static Color ReactionWheelSasOnlyColor { get { return reactionWheelSasOnlyColor; } }
+
+        // For docking ports
+        public static Color DockingCrossfeedOnColor { get { return dockingCrossfeedOnColor; } }
+        public static Color DockingCrossfeedOffColor { get { return dockingCrossfeedOffColor; } }
+
+        // For crew status
+        public static Color CrewPilotColor { get { return crewPilotColor; } }
+        public static Color CrewEngineerColor { get { return crewEngineerColor; } }
+        public static Color CrewScientistColor { get { return crewScientistColor; } }
+        public static Color CrewTouristColor { get { return crewTouristColor; } }
+
+        // For resources
+        public static Color LfoColor { get { return lfoColor; } }
+        public static Color LiquidFuelColor { get { return liquidFuelColor; } }
+        public static Color OxidizerColor { get { return oxidizerColor; } }
+        public static Color MonopropellantColor { get { return monopropellantColor; } }
+
+        // For science instruments
+        public static Color HighScienceColor { get { return highScienceColor; } }
+        public static Color MediumScienceColor { get { return mediumScienceColor; } }
+        public static Color LowScienceColor { get { return lowScienceColor; } }
+
+        // General warning status
+        public static Color WarningColor { get { return warningColor; } }
+
+        // For none-of-the-above cases
+        public static Color UnknownColor { get { return unknownColor; } }
+
+        /// <summary>
+        /// To be called once, at Start() time.
+        /// </summary>
+        public static void Initialize()
         {
             PluginConfiguration config = PluginConfiguration.CreateForType<ModuleControllableEmissive>();
             config.load();
@@ -70,7 +116,6 @@ namespace IndicatorLights
             dockingCrossfeedOnColor = ParseColor(config, DefaultColor.DockingCrossfeedOn);
             dockingCrossfeedOffColor = ParseColor(config, DefaultColor.DockingCrossfeedOff);
 
-            crewIndicatorDefaultStatus = config.GetValue("CrewIndicatorDefaultStatus", true);
             crewPilotColor = ParseColor(config, DefaultColor.CrewPilot);
             crewEngineerColor = ParseColor(config, DefaultColor.CrewEngineer);
             crewScientistColor = ParseColor(config, DefaultColor.CrewScientist);

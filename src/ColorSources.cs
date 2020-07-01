@@ -129,7 +129,7 @@ namespace IndicatorLights
                     message += " -> " + cause.Message;
                 }
                 Logging.Warn(message);
-                if (Configuration.isVerbose)
+                if (Configuration.IsVerbose)
                 {
                     Logging.Exception(e);
                 }
@@ -167,7 +167,7 @@ namespace IndicatorLights
                     message += " -> " + cause.Message;
                 }
                 Logging.Warn(message);
-                if (Configuration.isVerbose)
+                if (Configuration.IsVerbose)
                 {
                     Logging.Exception(e);
                 }
