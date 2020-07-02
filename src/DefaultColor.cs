@@ -239,49 +239,49 @@ namespace IndicatorLights
                 case DefaultColor.Off:
                     return defaultColor.DefaultValue();
                 case DefaultColor.ToggleLED:
-                    return Configuration.toggleLEDColor;
+                    return Configuration.ToggleLEDColor;
                 case DefaultColor.HighResource:
-                    return Configuration.highResourceColor;
+                    return Configuration.HighResourceColor;
                 case DefaultColor.MediumResource:
-                    return Configuration.mediumResourceColor;
+                    return Configuration.MediumResourceColor;
                 case DefaultColor.LowResource:
-                    return Configuration.lowResourceColor;
+                    return Configuration.LowResourceColor;
                 case DefaultColor.ReactionWheelNormal:
-                    return Configuration.reactionWheelNormalColor;
+                    return Configuration.ReactionWheelNormalColor;
                 case DefaultColor.ReactionWheelPilotOnly:
-                    return Configuration.reactionWheelPilotOnlyColor;
+                    return Configuration.ReactionWheelPilotOnlyColor;
                 case DefaultColor.ReactionWheelSASOnly:
-                    return Configuration.reactionWheelSasOnlyColor;
+                    return Configuration.ReactionWheelSasOnlyColor;
                 case DefaultColor.DockingCrossfeedOn:
-                    return Configuration.dockingCrossfeedOnColor;
+                    return Configuration.DockingCrossfeedOnColor;
                 case DefaultColor.DockingCrossfeedOff:
-                    return Configuration.dockingCrossfeedOffColor;
+                    return Configuration.DockingCrossfeedOffColor;
                 case DefaultColor.CrewPilot:
-                    return Configuration.crewPilotColor;
+                    return Configuration.CrewPilotColor;
                 case DefaultColor.CrewEngineer:
-                    return Configuration.crewEngineerColor;
+                    return Configuration.CrewEngineerColor;
                 case DefaultColor.CrewScientist:
-                    return Configuration.crewScientistColor;
+                    return Configuration.CrewScientistColor;
                 case DefaultColor.CrewTourist:
-                    return Configuration.crewTouristColor;
+                    return Configuration.CrewTouristColor;
                 case DefaultColor.ResourceLFO:
-                    return Configuration.lfoColor;
+                    return Configuration.LfoColor;
                 case DefaultColor.ResourceLiquidFuel:
-                    return Configuration.liquidFuelColor;
+                    return Configuration.LiquidFuelColor;
                 case DefaultColor.ResourceOxidizer:
-                    return Configuration.oxidizerColor;
+                    return Configuration.OxidizerColor;
                 case DefaultColor.ResourceMonopropellant:
-                    return Configuration.monopropellantColor;
+                    return Configuration.MonopropellantColor;
                 case DefaultColor.HighScience:
-                    return Configuration.highScienceColor;
+                    return Configuration.HighScienceColor;
                 case DefaultColor.MediumScience:
-                    return Configuration.mediumScienceColor;
+                    return Configuration.MediumScienceColor;
                 case DefaultColor.LowScience:
-                    return Configuration.lowScienceColor;
+                    return Configuration.LowScienceColor;
                 case DefaultColor.Warning:
-                    return Configuration.warningColor;
+                    return Configuration.WarningColor;
                 case DefaultColor.Unknown:
-                    return Configuration.unknownColor;
+                    return Configuration.UnknownColor;
                 default:
                     return defaultColor.DefaultValue();
             }
