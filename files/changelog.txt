@@ -1,3 +1,9 @@
+Release v1.8
+* Updated for KSP 1.12 compatibility (fix "vanishing docking ports" bug).
+* Finally added crew indicators to the Mk2 inline cockpit. Thanks to Dominiquini in the KSP forums for helpfully supplying the config!
+* Update to ModuleManager 4.1.4.
+
+
 Release v1.7
 * Updated for KSP 1.10 compatibility.
 * Add indicator light to the magnetometer.

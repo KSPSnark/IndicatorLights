@@ -37,7 +37,9 @@ namespace IndicatorLights
             "Wcmille",         // suggestion for crew indicators to flash if crew report is available
             "cakepie",         // Community Trait Icons integration
             "Tonka Crash",     // fix for missing Blinkenlights agent bug
-            "linuxgurugamer"   // helpful PR to fix Unity initialization bug
+            "linuxgurugamer",  // helpful PR to fix Unity initialization bug
+            "Rodger",          // suggestion for vessel control level syntax
+            "Dominiquini"      // helpfully supplying config for Mk2 inline cockpit
         };
 
         internal void Awake()
