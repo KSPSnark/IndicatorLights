@@ -1,3 +1,7 @@
+Release v1.8.1
+* Fix a bug caused by a recent breaking change to KSP, that was causing the survey scanner to malfunction and spam errors to the log.
+
+
 Release v1.8
 * Updated for KSP 1.12 compatibility (fix "vanishing docking ports" bug).
 * Finally added crew indicators to the Mk2 inline cockpit. Thanks to Dominiquini in the KSP forums for helpfully supplying the config!
