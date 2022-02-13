@@ -39,7 +39,9 @@ namespace IndicatorLights
             "Tonka Crash",     // fix for missing Blinkenlights agent bug
             "linuxgurugamer",  // helpful PR to fix Unity initialization bug
             "Rodger",          // suggestion for vessel control level syntax
-            "Dominiquini"      // helpfully supplying config for Mk2 inline cockpit
+            "Dominiquini",     // helpfully supplying config for Mk2 inline cockpit
+            "MinchinWeb",      // pointing out that the HG-5 antenna needed updating
+            "zer0Kerbal"       // supplying  a fix for HG-5
         };
 
         internal void Awake()

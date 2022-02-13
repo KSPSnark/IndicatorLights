@@ -1,3 +1,8 @@
+Release v1.8.2
+* Update HG-5 antenna to work with the revamped model that was changed in recent KSP versions. Thanks to MinchinWeb for pointing this out, and to zer0kerbal for attempting a fix!
+* Update to ModuleManager 4.2.1.
+
+
 Release v1.8.1
 * Fix a bug caused by a recent breaking change to KSP, that was causing the survey scanner to malfunction and spam errors to the log.
 
