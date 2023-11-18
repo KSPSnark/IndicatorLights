@@ -22,8 +22,8 @@ namespace IndicatorLights
             ColorSources.Dim(ColorSources.Constant(DefaultColor.MediumScience), 0.9f), 150,
             ColorSources.Constant(DefaultColor.Off), 1050);
 
+        private readonly RateLimiter nextSituationUpdate = new RateLimiter(UPDATE_INTERVAL);
         private string _subjectIdForCurrentSituation = null;
-        private DateTime nextSituationUpdate = DateTime.MinValue;
 
         private IColorSource lowValueSource;
         private IColorSource mediumValueSource;
@@ -78,7 +78,7 @@ namespace IndicatorLights
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            nextSituationUpdate = DateTime.MinValue;
+            nextSituationUpdate.Reset();
         }
 
         public override void ParseIDs()
@@ -141,11 +141,12 @@ namespace IndicatorLights
         {
             get
             {
-                DateTime now = DateTime.Now;
-                if (now > nextSituationUpdate)
+                if (SourceModule != null)
                 {
-                    nextSituationUpdate = now + UPDATE_INTERVAL;
-                    _subjectIdForCurrentSituation = GetSubjectId(SourceModule.experiment, vessel);
+                    if (nextSituationUpdate.Check())
+                    {
+                        _subjectIdForCurrentSituation = GetSubjectId(SourceModule.experiment, vessel);
+                    }
                 }
                 return _subjectIdForCurrentSituation;
             }
@@ -160,6 +161,7 @@ namespace IndicatorLights
             {
                 if (vessel == null) return false;
                 if (!vessel.isCommandable) return false;
+                if (SourceModule == null) return false;
                 if (!SourceModule.rerunnable && SourceModule.Inoperable) return false;
 
                 return SourceModule.experiment.IsAvailableWhile(ScienceUtil.GetExperimentSituation(vessel), vessel.mainBody);

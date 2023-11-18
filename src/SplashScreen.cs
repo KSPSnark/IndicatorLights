@@ -41,7 +41,8 @@ namespace IndicatorLights
             "Rodger",          // suggestion for vessel control level syntax
             "Dominiquini",     // helpfully supplying config for Mk2 inline cockpit
             "MinchinWeb",      // pointing out that the HG-5 antenna needed updating
-            "zer0Kerbal"       // supplying  a fix for HG-5
+            "zer0Kerbal",      // supplying  a fix for HG-5
+            "Geonovast"        // feature suggestion
         };
 
         internal void Awake()

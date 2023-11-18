@@ -12,6 +12,8 @@ namespace IndicatorLights
     {
         private static readonly TimeSpan ORBIT_CALCULATION_INTERVAL = TimeSpan.FromMilliseconds(200);
 
+        private readonly RateLimiter nextOrbitCheck = new RateLimiter(ORBIT_CALCULATION_INTERVAL);
+
         private IColorSource alreadyScannedSource;
         private IColorSource potentialScanSource;
         private IColorSource readyScanSource;
@@ -19,7 +21,6 @@ namespace IndicatorLights
 
         private int vesselPartCount = -1;
         private bool cachedHasTransmitter = false;
-        private DateTime nextOrbitCheck = DateTime.MinValue;
         private bool cachedIsValidOrbit = false;
 
         /// <summary>
@@ -98,6 +99,7 @@ namespace IndicatorLights
                 if (requireTerrain && !HasTerrain) return ColorSources.BLACK;
 
                 // If we've already scanned the current body, go inactive.
+                if (SourceModule == null) return ColorSources.BLACK; // generally shouldn't happen
                 if (!SourceModule.Events["PerformSurvey"].active) return alreadyScannedSource;
 
                 // Show either "potential" or "ready", depending on whether we're in a valid orbital situation.
@@ -144,11 +146,9 @@ namespace IndicatorLights
             get
             {
                 if (vessel == null) return false;
-                DateTime now = DateTime.Now;
-                if (now > nextOrbitCheck)
+                if (SourceModule == null) return false;
+                if (nextOrbitCheck.Check())
                 {
-                    nextOrbitCheck = now + ORBIT_CALCULATION_INTERVAL;
-
                     // And now a bunch of code which, unfortunately, is totally duplicating what
                     // ModuleOrbitalSurveyor does.  I wish that ModuleOrbitalSurveyor exposed a
                     // simple "is valid orbit" boolean function so that I could call that instead.

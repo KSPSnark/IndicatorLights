@@ -107,6 +107,7 @@ namespace IndicatorLights
                 if (!HighLogic.LoadedSceneIsFlight) return inactiveSource;
 
                 // Can we scan, based on where we're currently located?
+                if (SourceModule == null) return inactiveSource;
                 bool canScan;
                 HarvestTypes scannerType = (HarvestTypes)SourceModule.ScannerType;
                 switch (scannerType)
@@ -177,6 +178,7 @@ namespace IndicatorLights
             {
                 // Toggle status is considered "active" if it can scan and there's anything available.
                 if (!HighLogic.LoadedSceneIsFlight) return false;
+                if (SourceModule == null) return false;
                 HarvestTypes scannerType = (HarvestTypes)SourceModule.ScannerType;
                 bool canScan = false;
                 switch (scannerType)
@@ -210,7 +212,7 @@ namespace IndicatorLights
 
         private double Abundance
         {
-            get { return SourceModule.abundance; }
+            get { return (SourceModule == null) ? 0.0 : SourceModule.abundance; }
         }
 
         public double ScalarValue

@@ -11,11 +11,12 @@ namespace IndicatorLights
     {
         private static readonly TimeSpan UPDATE_INTERVAL = new TimeSpan(0, 0, 0, 0, 300);
 
+        private readonly RateLimiter nextUpdate = new RateLimiter(UPDATE_INTERVAL);
+
         private IColorSource dataSource;
         private IColorSource partialDataSource;
         private IColorSource lowDataSource;
         private IColorSource emptySource;
-        private DateTime nextUpdate;
         private ScienceValue.Fraction? _scienceFraction;
 
         /// <summary>
@@ -66,7 +67,7 @@ namespace IndicatorLights
         {
             base.OnStart(state);
 
-            nextUpdate = DateTime.MinValue;
+            nextUpdate.Reset();
             _scienceFraction = null;
         }
 
@@ -115,11 +116,9 @@ namespace IndicatorLights
         {
             get
             {
-                DateTime now = DateTime.Now;
-                if (now > nextUpdate)
+                if (nextUpdate.Check())
                 {
                     _scienceFraction = GetCurrentFraction();
-                    nextUpdate = now + UPDATE_INTERVAL;
                 }
                 return _scienceFraction;
             }
@@ -129,7 +128,7 @@ namespace IndicatorLights
         {
             get
             {
-                return SourceModule.GetScienceCount() > 0;
+                return (SourceModule == null) ? false : (SourceModule.GetScienceCount() > 0);
             }
         }
 

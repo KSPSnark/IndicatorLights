@@ -39,9 +39,11 @@ namespace IndicatorLights
         {
             get
             {
-                if (string.IsNullOrEmpty(SourceModule.state)) return ready.OutputColor;
-                if (SourceModule.state.StartsWith(ACQUIRE)) return acquire.OutputColor;
-                if (SourceModule.state.StartsWith(DISENGAGE)) return disengage.OutputColor;
+                if (SourceModule == null) return ready.OutputColor;
+                string state = SourceModule.state;
+                if (string.IsNullOrEmpty(state)) return ready.OutputColor;
+                if (state.StartsWith(ACQUIRE)) return acquire.OutputColor;
+                if (state.StartsWith(DISENGAGE)) return disengage.OutputColor;
                 return ready.OutputColor;
             }
         }
@@ -54,9 +56,11 @@ namespace IndicatorLights
             get
             {
                 // Toggle is considered "on" when we're engaging or disengaging, off at all other times.
-                return string.IsNullOrEmpty(SourceModule.state)
-                    || SourceModule.state.StartsWith(ACQUIRE)
-                    || SourceModule.state.StartsWith(DISENGAGE);
+                if (SourceModule == null) return false;
+                string state = SourceModule.state;
+                return string.IsNullOrEmpty(state)
+                    || state.StartsWith(ACQUIRE)
+                    || state.StartsWith(DISENGAGE);
             }
         }
     }

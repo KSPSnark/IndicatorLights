@@ -7,6 +7,11 @@ namespace IndicatorLights
 {
     public static class Identifiers
     {
+        /// <summary>
+        /// Used as a special identifier meaning "the PartModule evaluating this"
+        /// </summary>
+        public const string THIS = "this";
+
         private const string IDENTIFIER_CHAR_PATTERN = "[A-Za-z0-9_]+";
         /// <summary>
         /// Pattern for strings used as identifiers.

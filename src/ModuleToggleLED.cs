@@ -19,9 +19,18 @@ namespace IndicatorLights
         private const float MID_AXIS = 0.5f * (MIN_AXIS + MAX_AXIS);
         private const float AXIS_THRESHOLD = 1.01f * MID_AXIS;
 
-        [KSPField(guiName = "LED Status", isPersistant = true, guiActive = true, guiActiveEditor = true), UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "On", disabledText = "Off")]
+        /// <summary>
+        /// Indicates whether the light is on or off.
+        /// </summary>
+        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true), UI_Toggle(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, enabledText = "On", disabledText = "Off")]
         public bool status = false;
         private BaseField StatusField { get { return Fields["status"]; } }
+
+        /// <summary>
+        /// The text to display in the UI for the status field.
+        /// </summary>
+        [KSPField]
+        public string statusText = "LED Status";
 
         /// <summary>
         /// This specifies the color of the toggle when it's in the "on" state. This might be a literal
@@ -111,6 +120,7 @@ namespace IndicatorLights
             axisGroupField = (BaseAxisField)Fields["axisGroup"];
 
             StatusField.uiControlEditor.onFieldChanged = OnEditorToggleChanged;
+            StatusField.guiName = statusText;
 
             SetInputUIState();
         }

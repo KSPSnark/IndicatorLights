@@ -29,6 +29,7 @@ namespace IndicatorLights
         {
             get
             {
+                if (SourceModule == null) return Color.black;
                 return SourceModule.crossfeed ? onSource.OutputColor : offSource.OutputColor;
             }
         }
@@ -40,7 +41,7 @@ namespace IndicatorLights
         {
             get
             {
-                return SourceModule.crossfeed;
+                return (SourceModule == null)? false : SourceModule.crossfeed;
             }
         }
     }

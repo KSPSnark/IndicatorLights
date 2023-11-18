@@ -87,6 +87,7 @@ namespace IndicatorLights
         {
             get
             {
+                if (SourceModule == null) return ColorSources.BLACK;
                 switch (SourceModule.State)
                 {
                     case ModuleReactionWheel.WheelState.Disabled:
@@ -112,7 +113,8 @@ namespace IndicatorLights
         {
             get
             {
-                return (SourceModule.State == ModuleReactionWheel.WheelState.Active)
+                return (SourceModule != null)
+                    && (SourceModule.State == ModuleReactionWheel.WheelState.Active)
                     && (SourceModule.authorityLimiter > 0);
             }
         }
@@ -121,6 +123,7 @@ namespace IndicatorLights
         {
             get
             {
+                if (SourceModule == null) return 0.0;
                 return (SourceModule.State == ModuleReactionWheel.WheelState.Active)
                     ? SourceModule.authorityLimiter
                     : 0.0;

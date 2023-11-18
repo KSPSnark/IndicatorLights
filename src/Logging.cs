@@ -50,21 +50,18 @@ namespace IndicatorLights
         public class Throttled
         {
             private readonly string label;
-            private readonly TimeSpan cooldown;
-            private DateTime nextLog;
+            private readonly RateLimiter cooldown;
 
             public Throttled(string label, long milliseconds)
             {
                 this.label = label;
-                this.cooldown = TimeSpan.FromMilliseconds(milliseconds);
-                nextLog = DateTime.MinValue;
+                this.cooldown = new RateLimiter(TimeSpan.FromMilliseconds(milliseconds));
             }
 
             public bool Log(object message)
             {
                 DateTime now = DateTime.Now;
-                if (now < nextLog) return false;
-                nextLog = now + cooldown;
+                if (!cooldown.Check()) return false;
                 if (string.IsNullOrEmpty(label))
                 {
                     Logging.Log(message);

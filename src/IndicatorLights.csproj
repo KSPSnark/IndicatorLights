@@ -87,6 +87,7 @@
     <Compile Include="ModuleResourceIndicator.cs" />
     <Compile Include="ModuleResourceScannerIndicator.cs" />
     <Compile Include="ModuleRoboticControllerIndicator.cs" />
+    <Compile Include="ModuleSasIndicator.cs" />
     <Compile Include="ModuleScalarIndicator.cs" />
     <Compile Include="ModuleScienceAvailabilityIndicator.cs" />
     <Compile Include="ModuleScienceContainerIndicator.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="ParsedParameters.cs" />
     <Compile Include="PartSearchStrategy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RateLimiter.cs" />
     <Compile Include="RenderType.cs" />
     <Compile Include="ScalarIDField.cs" />
     <Compile Include="StaticField.cs" />

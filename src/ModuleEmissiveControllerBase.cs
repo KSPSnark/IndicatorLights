@@ -66,7 +66,7 @@ namespace IndicatorLights
                 {
                     // Log an error so that it loudly announces itself, in case someone didn't
                     // get the memo "hey, this is experimental!"
-                    Logging.Error("Warning! " + ClassName + " (on " + part.GetTitle()
+                    Logging.Warn("Warning! " + ClassName + " (on " + part.GetTitle()
                         + ") is an experimental controller and subject to change without notice.");
                 }
 

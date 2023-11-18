@@ -123,6 +123,7 @@ namespace IndicatorLights
 
             // If they've ended with a colon and a list of indices, use that.
             Match match = TARGET_PATTERN.Match(target);
+            string targetBaseName = target;
             List<int> targetIndices = null;
             if (match.Success)
             {
@@ -134,7 +135,7 @@ namespace IndicatorLights
             MeshRenderer[] candidates = FilterMeshes(allRenderers, target);
             if (candidates.Length < 1)
             {
-                Logging.Warn("No emissive materials named '" + target + "' could be identified for " + part.GetTitle());
+                Logging.Warn("No emissive materials named '" + targetBaseName + "' could be identified for " + part.GetTitle());
                 for (int rendererIndex = 0; rendererIndex < allRenderers.Length; ++rendererIndex)
                 {
                     string rendererName = allRenderers[rendererIndex].name;

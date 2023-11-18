@@ -603,12 +603,12 @@ namespace IndicatorLights
         {
             private const string TYPE_NAME = "hasCrewEffect";
             private static readonly TimeSpan UPDATE_INTERVAL = TimeSpan.FromMilliseconds(250);
+            private readonly RateLimiter nextUpdate = new RateLimiter(UPDATE_INTERVAL);
             private readonly PartModule module;
             private readonly string effectName;
             private readonly int slot;
             private readonly int minLevel;
             private bool cachedValue = false;
-            private DateTime nextUpdate = DateTime.MinValue;
 
 
             private CrewEffectMatch(PartModule module, string effectName, int slot, int minLevel)
@@ -660,10 +660,8 @@ namespace IndicatorLights
             {
                 get
                 {
-                    DateTime now = DateTime.Now;
-                    if (now > nextUpdate)
+                    if (nextUpdate.Check())
                     {
-                        nextUpdate = now + UPDATE_INTERVAL;
                         cachedValue = CalculateStatus();
                     }
                     return cachedValue;

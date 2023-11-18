@@ -69,6 +69,20 @@ namespace IndicatorLights
                 return LinearTransform.Invert(Require(module, text.Substring(INVERT_OPERATOR.Length)));
             }
 
+            // Special case, if they're identifying the current module as a scalar
+            if (text.Equals(Identifiers.THIS))
+            {
+                IScalar scalar = module as IScalar;
+                if (scalar == null)
+                {
+                    throw new ArgumentException("Invalid use of '" + Identifiers.THIS + "': " + module.ClassName + " does not implement " + typeof(IScalar).Name);
+                }
+                else
+                {
+                    return scalar;
+                }
+            }
+
             // Maybe it's an identifier for a scalar.
             IScalar found = Identifiers.FindFirst<IScalar>(module.part, text);
             if (found != null) return found;

@@ -1,3 +1,12 @@
+Release v1.8.3
+* Add ModuleSasIndicator to allow showing SAS status.
+* Instrument the avionics nosecone to display SAS status.
+* Add "this" as a valid ColorSource identifier, meaning "the PartModule evaluating this".
+* Add "statusText" field to ModuleToggleLED to allow using config to set the UI text for the toggle button. Thanks to Geonovast for the feature suggestion!
+* Various minor bug-fixing and bullet-proofing.
+* Update to ModuleManager 4.2.3.
+
+
 Release v1.8.2
 * Update HG-5 antenna to work with the revamped model that was changed in recent KSP versions. Thanks to MinchinWeb for pointing this out, and to zer0kerbal for attempting a fix!
 * Update to ModuleManager 4.2.1.

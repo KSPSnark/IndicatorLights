@@ -78,7 +78,7 @@ namespace IndicatorLights
             get
             {
                 return ((deployable == null) || (deployable.deployState == ModuleDeployablePart.DeployState.EXTENDED))
-                    && SourceModule.IsBusy();
+                    && (SourceModule != null) && SourceModule.IsBusy();
             }
         }
     }

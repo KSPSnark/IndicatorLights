@@ -11,8 +11,8 @@ namespace IndicatorLights
     class ModuleRoboticControllerIndicator : ModuleSourceIndicator<ModuleRoboticController>, IToggle, IScalar
     {
         public override Color OutputColor => CurrentSource.OutputColor;
-        public bool ToggleStatus => SourceModule.SequenceIsPlaying;
-        public double ScalarValue => SourceModule.SequencePosition / SourceModule.SequenceLength;
+        public bool ToggleStatus => (SourceModule == null) ? false :  SourceModule.SequenceIsPlaying;
+        public double ScalarValue => (SourceModule == null) ? 0 : (SourceModule.SequencePosition / SourceModule.SequenceLength);
 
         private static readonly IColorSource DEFAULT_PLAYING_FORWARD_SOURCE = ColorSources.Blink(
             ColorSources.Constant(DefaultColor.ToggleLED), 850,
@@ -70,6 +70,7 @@ namespace IndicatorLights
         {
             get
             {
+                if (SourceModule == null) return ColorSources.BLACK;
                 if (SourceModule.SequenceIsPlaying)
                 {
                     switch (SourceModule.SequenceDirection)
